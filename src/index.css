@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #fffdf7;
+    color: #2c3e50;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: rgba(123, 196, 127, 0.3);
+    color: #2f5d50;
+  }
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .glass-dark {
+    background: rgba(47, 93, 80, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #2f5d50 0%, #7bc47f 50%, #6ec1e4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-warm {
+    background: linear-gradient(135deg, #ffd166 0%, #ffb067 100%);
+  }
+
+  .gradient-green {
+    background: linear-gradient(135deg, #7bc47f 0%, #2f5d50 100%);
+  }
+
+  .gradient-sky {
+    background: linear-gradient(135deg, #6ec1e4 0%, #4fa3d1 100%);
+  }
+
+  .text-shadow {
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .hover-lift {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 25px 50px rgba(47, 93, 80, 0.12);
+  }
+
+  .section-padding {
+    @apply px-6 md:px-12 lg:px-20 py-20 md:py-32;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes leafFall {
+  0% {
+    transform: translateY(-5vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(50vh) translateX(var(--sway, 30px)) rotate(180deg);
+    opacity: 0.4;
+  }
+  95% {
+    opacity: 0.2;
+  }
+  100% {
+    transform: translateY(105vh) translateX(calc(var(--sway, 30px) * -0.5)) rotate(360deg);
+    opacity: 0;
+  }
+}
