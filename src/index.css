@@ -38,6 +38,16 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Navbar: explicit colors so links never “vanish” in production/minified builds */
+  .nav-link-desktop {
+    color: rgba(44, 62, 80, 0.9);
+    opacity: 1;
+  }
+
+  .nav-link-desktop:hover {
+    color: #2f5d50;
+  }
+
   .gradient-text {
     background: linear-gradient(135deg, #2f5d50 0%, #7bc47f 50%, #6ec1e4 100%);
     -webkit-background-clip: text;

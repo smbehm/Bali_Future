@@ -1,7 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Users, MapPin, Calendar, Globe, Heart, Send, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { notifyVolunteerRecorded } from '../lib/sendEmailNotification';
+import { isValidPhoneForWhatsApp } from '../lib/phone';
+import {
+  buildVolunteerWhatsAppUrls,
+  openWhatsAppChatsFromUserGesture,
+  volunteerApplicantConfirmationMessage,
+  volunteerOrgWhatsAppMessage,
+} from '../lib/whatsapp';
 
 const journeySteps = [
   { icon: <Globe className="w-5 h-5" />, title: 'Share Your Heart', desc: 'Tell us what moves you to serve' },
@@ -10,16 +18,113 @@ const journeySteps = [
   { icon: <Heart className="w-5 h-5" />, title: 'Transform Lives', desc: 'Including your own' },
 ];
 
+const SUCCESS_VISIBLE_MS = 3000;
+
+const emptyForm = {
+  full_name: '',
+  email: '',
+  phone: '',
+  country: '',
+  skills: '',
+  availability: '',
+  message: '',
+};
+
 export default function Volunteer() {
-  const [formData, setFormData] = useState({
-    full_name: '', email: '', phone: '', country: '', skills: '', availability: '', message: ''
-  });
+  const [formData, setFormData] = useState(emptyForm);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const successTimeoutRef = useRef<number | null>(null);
+
+  const resetForm = useCallback(() => {
+    setFormData({ ...emptyForm });
+    setPhoneError('');
+  }, []);
+
+  const dismissSuccess = useCallback(() => {
+    if (successTimeoutRef.current !== null) {
+      window.clearTimeout(successTimeoutRef.current);
+      successTimeoutRef.current = null;
+    }
+    resetForm();
+    setSubmitted(false);
+  }, [resetForm]);
+
+  useEffect(() => {
+    if (!submitted) return;
+
+    successTimeoutRef.current = window.setTimeout(() => {
+      successTimeoutRef.current = null;
+      resetForm();
+      setSubmitted(false);
+    }, SUCCESS_VISIBLE_MS);
+
+    return () => {
+      if (successTimeoutRef.current !== null) {
+        window.clearTimeout(successTimeoutRef.current);
+        successTimeoutRef.current = null;
+      }
+    };
+  }, [submitted, resetForm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await supabase.from('volunteers').insert(formData);
-    setSubmitted(true);
+    if (isSubmitting) return;
+
+    if (!isValidPhoneForWhatsApp(formData.phone)) {
+      setPhoneError('Enter a valid phone number with country code (e.g. +1 415 555 0100).');
+      return;
+    }
+    setPhoneError('');
+
+    setIsSubmitting(true);
+
+    const timestamp = new Date().toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+
+    try {
+      const { error } = await supabase.from('volunteers').insert(formData);
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      void notifyVolunteerRecorded({
+        email: formData.email,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        country: formData.country,
+        skills: formData.skills,
+        availability: formData.availability,
+        message: formData.message,
+      });
+
+      const orgMessage = volunteerOrgWhatsAppMessage({
+        fullName: formData.full_name,
+        email: formData.email,
+        phone: formData.phone,
+        country: formData.country,
+        availability: formData.availability,
+        skills: formData.skills,
+        message: formData.message,
+        timestamp,
+      });
+
+      const applicantConfirmation = volunteerApplicantConfirmationMessage(formData.full_name);
+      const waUrls = buildVolunteerWhatsAppUrls({
+        applicantPhoneRaw: formData.phone,
+        orgMessage,
+        applicantConfirmationMessage: applicantConfirmation,
+      });
+      openWhatsAppChatsFromUserGesture(waUrls);
+
+      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -47,7 +152,6 @@ export default function Volunteer() {
           </p>
         </motion.div>
 
-        {/* Journey timeline */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           {journeySteps.map((step, i) => (
             <motion.div
@@ -67,7 +171,6 @@ export default function Volunteer() {
           ))}
         </div>
 
-        {/* Application form */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -80,7 +183,16 @@ export default function Volunteer() {
                 <Check className="w-10 h-10 text-white" />
               </div>
               <h3 className="font-sora font-bold text-2xl text-tropical mb-3">Welcome to the Family</h3>
-              <p className="text-dark/60">Your application is in our hands. We will be in touch within 48 hours to start your journey together.</p>
+              <p className="text-dark/60">
+                Your application is in our hands. We will be in touch within 48 hours to start your journey together.
+              </p>
+              <button
+                type="button"
+                onClick={dismissSuccess}
+                className="mt-8 px-8 py-3 rounded-full glass text-tropical font-semibold hover:bg-white/80 transition-colors"
+              >
+                Submit Another Application
+              </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-xl shadow-sky-100/50 p-8 md:p-10">
@@ -105,6 +217,24 @@ export default function Volunteer() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors"
                   />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-dark/70 mb-1 block">Phone (WhatsApp)</label>
+                  <input
+                    type="tel"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => {
+                      setFormData({ ...formData, phone: e.target.value });
+                      if (phoneError) setPhoneError('');
+                    }}
+                    placeholder="+1 415 555 0100"
+                    className={`w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors ${
+                      phoneError ? 'border-red-300 focus:border-red-400' : 'border-sky-100 focus:border-sky-300'
+                    }`}
+                  />
+                  {phoneError ? <p className="text-sm text-red-600 mt-1">{phoneError}</p> : null}
+                  <p className="text-xs text-dark/45 mt-1">Include country code for your WhatsApp confirmation.</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-dark/70 mb-1 block">Country</label>
@@ -151,10 +281,11 @@ export default function Volunteer() {
               </div>
               <button
                 type="submit"
-                className="mt-6 w-full flex items-center justify-center gap-2 py-4 rounded-xl gradient-sky text-white font-semibold shadow-lg shadow-sky-200/50 hover:shadow-xl transition-all"
+                disabled={isSubmitting}
+                className="mt-6 w-full flex items-center justify-center gap-2 py-4 rounded-xl gradient-sky text-white font-semibold shadow-lg shadow-sky-200/50 hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
-                Submit Application
+                {isSubmitting ? 'Submitting…' : 'Submit Application'}
               </button>
             </form>
           )}
