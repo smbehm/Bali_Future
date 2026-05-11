@@ -5,6 +5,7 @@ import {
   Tag, CircleDot, UserPlus, Flame, CheckCircle2, XCircle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { notifyNewsletterSubscriber } from '../lib/sendEmailNotification';
 
 interface Event {
   id: string;
@@ -255,7 +256,12 @@ export default function Events() {
   const handleNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newsletterEmail) return;
-    await supabase.from('newsletter_subscribers').insert({ email: newsletterEmail });
+    const { error } = await supabase.from('newsletter_subscribers').insert({ email: newsletterEmail });
+    if (error) {
+      console.error(error);
+      return;
+    }
+    void notifyNewsletterSubscriber({ email: newsletterEmail });
     setSubscribed(true);
   };
 

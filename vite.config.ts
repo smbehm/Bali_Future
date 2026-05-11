@@ -35,15 +35,17 @@ export default defineConfig(({ mode }) => {
             }
 
             const httpRes = res as ServerResponse;
+            const apiKeyDev = env.RESEND_API_KEY;
             console.log('[api/send-email] called', {
               method: incoming.method,
               url: incoming.url,
-              hasResendApiKey: Boolean(env.RESEND_API_KEY),
+              RESEND_API_KEY_loaded: Boolean(apiKeyDev?.trim()),
+              key_prefix: apiKeyDev?.trim() ? `${apiKeyDev.trim().slice(0, 8)}…` : '(missing — add RESEND_API_KEY to .env)',
             });
 
             try {
-              const apiKey = env.RESEND_API_KEY;
-              if (!apiKey) {
+              const apiKey = apiKeyDev;
+              if (!apiKey?.trim()) {
                 httpRes.statusCode = 503;
                 httpRes.setHeader('Content-Type', 'application/json');
                 httpRes.end(JSON.stringify({ error: 'RESEND_API_KEY is not configured' }));
@@ -53,13 +55,16 @@ export default defineConfig(({ mode }) => {
               const raw = await readRequestBody(incoming);
               console.log('[api/send-email] raw body', raw);
               const body = raw ? JSON.parse(raw) : null;
+              if (body && typeof body === 'object' && 'kind' in body) {
+                console.log('[api/send-email] payload kind:', (body as { kind: unknown }).kind);
+              }
               await dispatchNotifyPayload(apiKey, body);
               httpRes.statusCode = 200;
               httpRes.setHeader('Content-Type', 'application/json');
               httpRes.end(JSON.stringify({ ok: true }));
               console.log('[api/send-email] success');
             } catch (e) {
-              console.error('[api/send-email]', e);
+              console.error('[api/send-email] error', e);
               httpRes.statusCode = 500;
               httpRes.setHeader('Content-Type', 'application/json');
               httpRes.end(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }));

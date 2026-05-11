@@ -1,2 +1,0 @@
-ALTER TABLE donations
-  ADD COLUMN IF NOT EXISTS donor_phone text NOT NULL DEFAULT '';

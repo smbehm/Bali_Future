@@ -39,13 +39,24 @@
   }
 
   /* Navbar: explicit colors so links never “vanish” in production/minified builds */
+  nav[data-site-navbar] .nav-brand-text {
+    color: #2f5d50;
+    -webkit-text-fill-color: #2f5d50;
+  }
+
   .nav-link-desktop {
-    color: rgba(44, 62, 80, 0.9);
+    color: rgba(44, 62, 80, 0.95);
     opacity: 1;
+    -webkit-text-fill-color: rgba(44, 62, 80, 0.95);
   }
 
   .nav-link-desktop:hover {
     color: #2f5d50;
+    -webkit-text-fill-color: #2f5d50;
+  }
+
+  nav[data-site-navbar] a.nav-link-desktop {
+    visibility: visible;
   }
 
   .gradient-text {

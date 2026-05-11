@@ -6,6 +6,8 @@ export default {
   ],
   safelist: [
     'nav-link-desktop',
+    'nav-brand-text',
+    'text-tropical',
   ],
   theme: {
     extend: {

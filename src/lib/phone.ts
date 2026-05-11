@@ -1,5 +1,5 @@
-/** Digits-only international number for https://wa.me/<digits> (no +). */
-export function normalizePhoneForWhatsApp(raw: string): string | null {
+/** Normalize to digits-only international form for validation (typically 10–15 digits). */
+export function normalizeInternationalPhoneDigits(raw: string): string | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
 
@@ -19,6 +19,6 @@ export function normalizePhoneForWhatsApp(raw: string): string | null {
   return digits;
 }
 
-export function isValidPhoneForWhatsApp(raw: string): boolean {
-  return normalizePhoneForWhatsApp(raw) !== null;
+export function isValidContactPhone(raw: string): boolean {
+  return normalizeInternationalPhoneDigits(raw) !== null;
 }

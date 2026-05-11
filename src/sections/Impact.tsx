@@ -51,40 +51,72 @@ export default function Impact() {
           ))}
         </div>
 
-        {/* Timeline */}
+        {/* Timeline — centered vertical line + alternating cards (md+); stacked with left rail (mobile) */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="relative"
+          className="relative max-w-5xl mx-auto"
         >
           <h3 className="font-sora font-bold text-2xl md:text-3xl text-tropical text-center mb-12">
             Our Journey
           </h3>
 
-          <div className="hidden md:block absolute left-1/2 top-24 bottom-0 w-px bg-gradient-to-b from-primary-200 via-primary-300 to-primary-100" />
+          {/* Center spine — desktop only */}
+          <div
+            className="hidden md:block absolute left-1/2 -translate-x-1/2 top-14 bottom-0 w-0.5 bg-gradient-to-b from-primary-200 via-primary-300 to-primary-100 pointer-events-none"
+            aria-hidden
+          />
 
-          <div className="space-y-8 md:space-y-0">
-            {timeline.map((item, i) => (
-              <motion.div
-                key={item.year}
-                initial={{ opacity: 0, x: i % 2 === 0 ? -30 : 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className={`md:flex items-center ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} mb-8`}
-              >
-                <div className={`flex-1 ${i % 2 === 0 ? 'md:text-right md:pr-12' : 'md:text-left md:pl-12'}`}>
-                  <div className="p-6 rounded-2xl glass hover-lift inline-block max-w-sm">
-                    <span className="font-sora font-bold text-primary-300 text-lg">{item.year}</span>
-                    <h4 className="font-sora font-bold text-tropical mt-1">{item.title}</h4>
-                    <p className="text-dark/60 text-sm mt-2">{item.desc}</p>
+          <div className="relative space-y-8 md:space-y-14">
+            {timeline.map((item, i) => {
+              const isLeft = i % 2 === 0;
+              const cardInner = (
+                <>
+                  <span className="font-sora font-bold text-lg text-primary-500">{item.year}</span>
+                  <h4 className="font-sora font-bold text-tropical mt-1">{item.title}</h4>
+                  <p className="text-dark/60 text-sm mt-2">{item.desc}</p>
+                </>
+              );
+
+              return (
+                <motion.div
+                  key={item.year}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.08 }}
+                  className="relative"
+                >
+                  {/* Mobile: vertical line + dot + card */}
+                  <div className="md:hidden relative pl-9 border-l-2 border-primary-200 ml-1">
+                    <div className="absolute left-0 top-3 -translate-x-1/2 w-4 h-4 rounded-full bg-primary-300 border-4 border-cream shadow-md z-10" />
+                    <div className="p-6 rounded-2xl glass hover-lift">{cardInner}</div>
                   </div>
-                </div>
-                <div className="hidden md:flex w-4 h-4 rounded-full bg-primary-300 border-4 border-cream shadow-lg flex-shrink-0 relative z-10" />
-                <div className="flex-1" />
-              </motion.div>
-            ))}
+
+                  {/* Desktop: alternating halves + center dot on axis */}
+                  <div className="hidden md:flex flex-row items-center w-full">
+                    <div className="w-1/2 flex justify-end pr-8 lg:pr-12">
+                      {isLeft ? (
+                        <div className="p-6 rounded-2xl glass hover-lift w-full max-w-sm text-right">{cardInner}</div>
+                      ) : (
+                        <div className="w-full max-w-sm" aria-hidden />
+                      )}
+                    </div>
+                    <div className="w-12 flex-shrink-0 flex justify-center relative z-10">
+                      <div className="w-4 h-4 rounded-full bg-primary-300 border-4 border-cream shadow-lg ring-2 ring-primary-200/40" />
+                    </div>
+                    <div className="w-1/2 flex justify-start pl-8 lg:pl-12">
+                      {!isLeft ? (
+                        <div className="p-6 rounded-2xl glass hover-lift w-full max-w-sm text-left">{cardInner}</div>
+                      ) : (
+                        <div className="w-full max-w-sm" aria-hidden />
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>

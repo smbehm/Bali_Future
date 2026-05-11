@@ -1,15 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, GraduationCap, Utensils, Stethoscope, TreePine, Gift, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { notifyDonationRecorded } from '../lib/sendEmailNotification';
-import { isValidPhoneForWhatsApp } from '../lib/phone';
-import {
-  buildDonationWhatsAppUrls,
-  donationDonorConfirmationMessage,
-  donationOrgWhatsAppMessage,
-  openWhatsAppChatsFromUserGesture,
-} from '../lib/whatsapp';
+import { formatPostgrestLikeError } from '../lib/postgrestErrors';
 
 const categories = [
   { id: 'education', icon: <GraduationCap className="w-5 h-5" />, label: 'Education', desc: 'Give a child the gift of learning' },
@@ -36,10 +31,17 @@ export default function Donate() {
   const [anonymous, setAnonymous] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [phoneError, setPhoneError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [amountError, setAmountError] = useState('');
 
   const successTimeoutRef = useRef<number | null>(null);
-  const finalAmount = customAmount ? parseFloat(customAmount) : amount;
+  const successBlockRef = useRef<HTMLDivElement | null>(null);
+  const trimmedCustom = customAmount.trim();
+  const finalAmount: number = (() => {
+    if (trimmedCustom === '') return amount;
+    const n = Number.parseFloat(trimmedCustom.replace(/,/g, ''));
+    return Number.isFinite(n) && n > 0 ? n : Number.NaN;
+  })();
 
   const resetForm = useCallback(() => {
     setStep(1);
@@ -52,7 +54,8 @@ export default function Donate() {
     setPhone('');
     setMessage('');
     setAnonymous(false);
-    setPhoneError('');
+    setSubmitError('');
+    setAmountError('');
   }, []);
 
   const dismissSuccess = useCallback(() => {
@@ -64,60 +67,48 @@ export default function Donate() {
     setSubmitted(false);
   }, [resetForm]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!submitted) return;
+    successBlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [submitted]);
 
-    successTimeoutRef.current = window.setTimeout(() => {
-      successTimeoutRef.current = null;
-      resetForm();
-      setSubmitted(false);
-    }, SUCCESS_VISIBLE_MS);
-
+  useEffect(() => {
     return () => {
       if (successTimeoutRef.current !== null) {
         window.clearTimeout(successTimeoutRef.current);
         successTimeoutRef.current = null;
       }
     };
-  }, [submitted, resetForm]);
-
-  const validatePhone = () => {
-    if (!isValidPhoneForWhatsApp(phone)) {
-      setPhoneError('Enter a valid phone number with country code (e.g. +1 415 555 0100).');
-      return false;
-    }
-    setPhoneError('');
-    return true;
-  };
+  }, []);
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
-    if (!validatePhone()) return;
+    setSubmitError('');
+    if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
+      setSubmitError('Please go back and enter a valid donation amount.');
+      return;
+    }
 
     setIsSubmitting(true);
 
     const donorLabel = anonymous ? 'Anonymous' : name;
-    const donationTypeLabel = type === 'one_time' ? 'One-time' : 'Monthly';
-    const categoryLabel = categories.find((c) => c.id === category)?.label ?? category;
-    const timestamp = new Date().toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
+
+    const messageTrimmed = message.trim();
 
     try {
       const { error } = await supabase.from('donations').insert({
         donor_name: donorLabel,
         donor_email: email,
-        donor_phone: phone.trim(),
         amount: finalAmount,
         type,
         category,
-        message,
+        message: messageTrimmed,
         is_anonymous: anonymous,
       });
 
       if (error) {
         console.error(error);
+        setSubmitError(formatPostgrestLikeError(error));
         return;
       }
 
@@ -127,42 +118,43 @@ export default function Donate() {
         amount: finalAmount,
       });
 
-      if (message && category === 'tree') {
-        await supabase.from('tree_leaves').insert({
+      if (messageTrimmed && category === 'tree') {
+        const { error: leafErr } = await supabase.from('tree_leaves').insert({
           donor_name: donorLabel,
-          message,
+          message: messageTrimmed,
           amount: finalAmount,
         });
+        if (leafErr) console.error(leafErr);
       }
 
-      const orgMessage = donationOrgWhatsAppMessage({
-        donorName: donorLabel,
-        donorEmail: email,
-        donorPhone: phone.trim(),
-        amount: finalAmount,
-        donationTypeLabel,
-        categoryLabel,
-        timestamp,
+      if (successTimeoutRef.current !== null) {
+        window.clearTimeout(successTimeoutRef.current);
+        successTimeoutRef.current = null;
+      }
+      flushSync(() => {
+        setSubmitted(true);
       });
-
-      const donorConfirmation = donationDonorConfirmationMessage(finalAmount);
-      const waUrls = buildDonationWhatsAppUrls({
-        donorPhoneRaw: phone,
-        orgMessage,
-        donorConfirmationMessage: donorConfirmation,
-      });
-      openWhatsAppChatsFromUserGesture(waUrls);
-
-      setSubmitted(true);
+      successTimeoutRef.current = window.setTimeout(() => {
+        successTimeoutRef.current = null;
+        window.open('https://wa.me/14157170016?text=🎉 New donation received! Amount: $' + finalAmount + ' | From: ' + (anonymous ? 'Anonymous' : name) + ' | Category: ' + category, '_blank');
+        resetForm();
+        setSubmitted(false);
+      }, SUCCESS_VISIBLE_MS);
+    } catch (e) {
+      console.error(e);
+      setSubmitError(formatPostgrestLikeError(e));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (submitted) {
-    return (
-      <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
-        <div className="max-w-2xl mx-auto text-center">
+  return (
+    <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
+      {submitted ? (
+        <div
+          ref={successBlockRef}
+          className="max-w-2xl mx-auto text-center relative z-20"
+        >
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -185,8 +177,7 @@ export default function Donate() {
             transition={{ delay: 0.5 }}
             className="text-dark/60 text-lg mb-8"
           >
-            Your ${finalAmount} gift to {categories.find((c) => c.id === category)?.label} goes directly to
-            children in Bali who need it most. Because of you, a child will eat, learn, and dream tonight.
+            Thank you for supporting Bali Future. A confirmation email has been sent successfully.
           </motion.p>
           <motion.button
             initial={{ opacity: 0 }}
@@ -199,15 +190,11 @@ export default function Donate() {
             Make Another Donation
           </motion.button>
         </div>
-      </section>
-    );
-  }
+      ) : (
+        <>
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary-50/40 blur-[100px] pointer-events-none" />
 
-  return (
-    <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary-50/40 blur-[100px]" />
-
-      <div className="max-w-4xl mx-auto relative">
+      <div className="max-w-4xl mx-auto relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -331,9 +318,20 @@ export default function Donate() {
                   />
                 </div>
 
+                {amountError ? <p className="mt-4 text-sm text-red-600">{amountError}</p> : null}
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => {
+                    if (trimmedCustom !== '') {
+                      const n = Number.parseFloat(trimmedCustom.replace(/,/g, ''));
+                      if (!Number.isFinite(n) || n <= 0) {
+                        setAmountError('Enter a valid custom amount, or clear the field to use a preset.');
+                        return;
+                      }
+                    }
+                    setAmountError('');
+                    setStep(2);
+                  }}
                   className="mt-8 w-full flex items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all"
                 >
                   Continue
@@ -373,21 +371,17 @@ export default function Donate() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-dark/70 mb-1 block">Phone (WhatsApp)</label>
+                    <label className="text-sm font-medium text-dark/70 mb-1 block">Phone (optional)</label>
                     <input
                       type="tel"
                       value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value);
-                        if (phoneError) setPhoneError('');
-                      }}
+                      onChange={(e) => setPhone(e.target.value)}
                       placeholder="+1 415 555 0100"
-                      className={`w-full px-4 py-3 rounded-xl border-2 outline-none transition-colors ${
-                        phoneError ? 'border-red-300 focus:border-red-400' : 'border-primary-100 focus:border-primary-300'
-                      }`}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors"
                     />
-                    {phoneError ? <p className="text-sm text-red-600 mt-1">{phoneError}</p> : null}
-                    <p className="text-xs text-dark/45 mt-1">Include country code so we can send your WhatsApp confirmation.</p>
+                    <p className="text-xs text-dark/45 mt-1">
+                      For your reference only — not saved with your donation.
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-dark/70 mb-1 block">Message (optional)</label>
@@ -423,14 +417,14 @@ export default function Donate() {
                     type="button"
                     onClick={() => {
                       if (!name || !email) return;
-                      if (!isValidPhoneForWhatsApp(phone)) {
-                        setPhoneError('Enter a valid phone number with country code (e.g. +1 415 555 0100).');
+                      if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
+                        setSubmitError('Please enter a valid donation amount (step 1).');
                         return;
                       }
-                      setPhoneError('');
+                      setSubmitError('');
                       setStep(3);
                     }}
-                    disabled={!name || !email || !isValidPhoneForWhatsApp(phone)}
+                    disabled={!name || !email || !Number.isFinite(finalAmount) || finalAmount <= 0}
                     className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Review Donation
@@ -453,7 +447,8 @@ export default function Donate() {
                   <div className="flex justify-between">
                     <span className="text-dark/60">Amount</span>
                     <span className="font-bold text-tropical">
-                      ${finalAmount} {type === 'monthly' ? '/month' : ''}
+                      ${Number.isFinite(finalAmount) ? finalAmount : '—'}{' '}
+                      {type === 'monthly' ? '/month' : ''}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -476,10 +471,19 @@ export default function Donate() {
                   )}
                 </div>
 
+                {submitError ? (
+                  <div className="mb-4 rounded-xl border border-red-100 bg-red-50/80 px-4 py-3 text-left">
+                    <p className="text-sm text-red-700">{submitError}</p>
+                  </div>
+                ) : null}
+
                 <div className="flex gap-3">
                   <button
                     type="button"
-                    onClick={() => setStep(2)}
+                    onClick={() => {
+                      setSubmitError('');
+                      setStep(2);
+                    }}
                     disabled={isSubmitting}
                     className="flex items-center gap-2 px-6 py-4 rounded-xl glass text-tropical font-semibold hover:bg-white/80 transition-colors disabled:opacity-50"
                   >
@@ -501,6 +505,8 @@ export default function Donate() {
           </AnimatePresence>
         </div>
       </div>
+        </>
+      )}
     </section>
   );
 }

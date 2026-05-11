@@ -2,20 +2,25 @@ const SEND_EMAIL_PATH = '/api/send-email';
 
 async function postNotify(body: Record<string, unknown>) {
   try {
-    console.log('Sending transactional email payload:', body);
+    console.log('[sendEmailNotification] POST', SEND_EMAIL_PATH, 'payload:', body);
     const res = await fetch(SEND_EMAIL_PATH, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+    const responseText = await res.text();
+    console.log('[sendEmailNotification] response status:', res.status, 'body:', responseText);
     if (!res.ok) {
-      const t = await res.text();
-      console.warn('Transactional email request failed:', res.status, t, body);
+      console.warn('[sendEmailNotification] request failed — check Network tab and Vercel/server logs for /api/send-email', {
+        status: res.status,
+        responseText,
+        payload: body,
+      });
       return;
     }
-    console.log('Transactional email request succeeded');
+    console.log('[sendEmailNotification] request succeeded');
   } catch (e) {
-    console.warn('Transactional email request error:', e, body);
+    console.warn('[sendEmailNotification] fetch error (often means /api/send-email is missing in production):', e, body);
   }
 }
 
@@ -40,5 +45,12 @@ export function notifyVolunteerRecorded(params: {
   return postNotify({
     kind: 'volunteer',
     ...params,
+  });
+}
+
+export function notifyNewsletterSubscriber(params: { email: string }) {
+  return postNotify({
+    kind: 'newsletter',
+    email: params.email,
   });
 }

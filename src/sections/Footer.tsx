@@ -1,11 +1,36 @@
 import { motion } from 'framer-motion';
-import { TreePine, Heart, Instagram, Facebook, Twitter, Youtube, Mail, MapPin, Phone } from 'lucide-react';
+import {
+  TreePine,
+  Heart,
+  Instagram,
+  Facebook,
+  Twitter,
+  Youtube,
+  Mail,
+  MapPin,
+  MessageCircle,
+} from 'lucide-react';
 
-const footerLinks = {
-  'About': ['Our Story', 'Our Team', 'Partners', 'Transparency Reports', 'Press'],
-  'Programs': ['Education', 'Nutrition & Health', 'Sustainability', 'Safe Shelter', 'Volunteering'],
-  'Get Involved': ['Donate Now', 'Sponsor a Child', 'Corporate Partnerships', 'Fundraise for Us', 'Leave a Legacy'],
+const footerLinks: Record<string, { label: string; href: string }[]> = {
+  About: [
+    { label: 'Mission', href: '#mission' },
+    { label: 'Impact', href: '#impact' },
+    { label: 'Stories', href: '#stories' },
+  ],
+  Programs: [
+    { label: 'Tree of Future', href: '#tree-of-future' },
+    { label: 'Orphanage Homes', href: '#homes' },
+    { label: 'Gallery', href: '#gallery' },
+  ],
+  'Get Involved': [
+    { label: 'Donate', href: '#donate' },
+    { label: 'Volunteer', href: '#volunteer' },
+    { label: 'Events', href: '#events' },
+  ],
 };
+
+const iconBtnClass =
+  'w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center transition-colors';
 
 export default function Footer() {
   return (
@@ -13,7 +38,10 @@ export default function Footer() {
       {/* Top wave */}
       <div className="absolute top-0 left-0 right-0">
         <svg viewBox="0 0 1440 80" fill="none" className="w-full">
-          <path d="M0 0L60 10C120 20 240 40 360 50C480 60 600 60 720 50C840 40 960 20 1080 15C1200 10 1320 20 1380 25L1440 30V0H0Z" fill="#fffdf7" />
+          <path
+            d="M0 0L60 10C120 20 240 40 360 50C480 60 600 60 720 50C840 40 960 20 1080 15C1200 10 1320 20 1380 25L1440 30V0H0Z"
+            fill="#fffdf7"
+          />
         </svg>
       </div>
 
@@ -54,16 +82,35 @@ export default function Footer() {
               A community of compassionate people dedicated to providing vulnerable children in Bali
               with the love, care, and opportunities they deserve. Your support makes all the difference.
             </p>
-            <div className="flex gap-3">
-              {[Instagram, Facebook, Twitter, Youtube].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary-300/20 hover:border-primary-300/30 transition-colors"
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
+            <div className="flex gap-3 flex-wrap">
+              <span
+                className={`${iconBtnClass} opacity-50 cursor-default`}
+                title="Coming soon"
+                aria-hidden
+              >
+                <Instagram className="w-4 h-4" />
+              </span>
+              <span
+                className={`${iconBtnClass} opacity-50 cursor-default`}
+                title="Coming soon"
+                aria-hidden
+              >
+                <Facebook className="w-4 h-4" />
+              </span>
+              <span
+                className={`${iconBtnClass} opacity-50 cursor-default`}
+                title="Coming soon"
+                aria-hidden
+              >
+                <Twitter className="w-4 h-4" />
+              </span>
+              <span
+                className={`${iconBtnClass} opacity-50 cursor-default`}
+                title="Coming soon"
+                aria-hidden
+              >
+                <Youtube className="w-4 h-4" />
+              </span>
             </div>
           </div>
 
@@ -73,9 +120,12 @@ export default function Footer() {
               <h4 className="font-sora font-bold text-sm uppercase tracking-wider text-white/40 mb-4">{title}</h4>
               <ul className="space-y-2.5">
                 {links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-white/60 hover:text-primary-300 transition-colors text-sm">
-                      {link}
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      className="text-white/60 hover:text-primary-300 transition-colors text-sm"
+                    >
+                      {link.label}
                     </a>
                   </li>
                 ))}
@@ -86,15 +136,25 @@ export default function Footer() {
 
         {/* Contact & quick donate */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 py-8 border-t border-white/10">
-          <div className="flex flex-wrap gap-6 text-sm text-white/50">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-6 text-sm text-white/50">
+            <a
+              href="mailto:donate@balifuture.com"
+              className="flex items-center gap-2 hover:text-primary-300 transition-colors"
+            >
+              <Mail className="w-4 h-4 shrink-0 text-primary-300" />
+              donate@balifuture.com
+            </a>
+            <a
+              href="https://wa.me/14157170016"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:text-primary-300 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4 shrink-0 text-primary-300" />
+              WhatsApp
+            </a>
             <span className="flex items-center gap-2">
-              <Mail className="w-4 h-4" /> hello@balifuture.org
-            </span>
-            <span className="flex items-center gap-2">
-              <Phone className="w-4 h-4" /> +62 361 123 456
-            </span>
-            <span className="flex items-center gap-2">
-              <MapPin className="w-4 h-4" /> Ubud, Bali, Indonesia
+              <MapPin className="w-4 h-4 shrink-0" /> Ubud, Bali, Indonesia
             </span>
           </div>
           <a
@@ -108,11 +168,17 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 border-t border-white/5 text-xs text-white/30">
-          <span>2026 Bali Future Foundation. All rights reserved.</span>
+          <span>© 2026 Bali Future. All rights reserved.</span>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-white/60 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white/60 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-white/60 transition-colors">Cookie Policy</a>
+            <a href="#faq" className="hover:text-white/60 transition-colors">
+              FAQ
+            </a>
+            <a href="#donate" className="hover:text-white/60 transition-colors">
+              Donate
+            </a>
+            <a href="#volunteer" className="hover:text-white/60 transition-colors">
+              Volunteer
+            </a>
           </div>
         </div>
       </div>

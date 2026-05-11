@@ -3,13 +3,7 @@ import { motion } from 'framer-motion';
 import { Users, MapPin, Calendar, Globe, Heart, Send, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { notifyVolunteerRecorded } from '../lib/sendEmailNotification';
-import { isValidPhoneForWhatsApp } from '../lib/phone';
-import {
-  buildVolunteerWhatsAppUrls,
-  openWhatsAppChatsFromUserGesture,
-  volunteerApplicantConfirmationMessage,
-  volunteerOrgWhatsAppMessage,
-} from '../lib/whatsapp';
+import { isValidContactPhone } from '../lib/phone';
 
 const journeySteps = [
   { icon: <Globe className="w-5 h-5" />, title: 'Share Your Heart', desc: 'Tell us what moves you to serve' },
@@ -72,18 +66,13 @@ export default function Volunteer() {
     e.preventDefault();
     if (isSubmitting) return;
 
-    if (!isValidPhoneForWhatsApp(formData.phone)) {
+    if (!isValidContactPhone(formData.phone)) {
       setPhoneError('Enter a valid phone number with country code (e.g. +1 415 555 0100).');
       return;
     }
     setPhoneError('');
 
     setIsSubmitting(true);
-
-    const timestamp = new Date().toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
 
     try {
       const { error } = await supabase.from('volunteers').insert(formData);
@@ -102,26 +91,10 @@ export default function Volunteer() {
         message: formData.message,
       });
 
-      const orgMessage = volunteerOrgWhatsAppMessage({
-        fullName: formData.full_name,
-        email: formData.email,
-        phone: formData.phone,
-        country: formData.country,
-        availability: formData.availability,
-        skills: formData.skills,
-        message: formData.message,
-        timestamp,
-      });
-
-      const applicantConfirmation = volunteerApplicantConfirmationMessage(formData.full_name);
-      const waUrls = buildVolunteerWhatsAppUrls({
-        applicantPhoneRaw: formData.phone,
-        orgMessage,
-        applicantConfirmationMessage: applicantConfirmation,
-      });
-      openWhatsAppChatsFromUserGesture(waUrls);
-
       setSubmitted(true);
+      setTimeout(() => {
+        window.open('https://wa.me/14157170016?text=🙋 New volunteer application! Name: ' + formData.full_name + ' | Email: ' + formData.email + ' | Country: ' + formData.country + ' | Skills: ' + formData.skills, '_blank');
+      }, 2000);
     } finally {
       setIsSubmitting(false);
     }
@@ -184,7 +157,7 @@ export default function Volunteer() {
               </div>
               <h3 className="font-sora font-bold text-2xl text-tropical mb-3">Welcome to the Family</h3>
               <p className="text-dark/60">
-                Your application is in our hands. We will be in touch within 48 hours to start your journey together.
+                Thank you for applying to volunteer with Bali Future. We received your application successfully.
               </p>
               <button
                 type="button"

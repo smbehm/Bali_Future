@@ -22,7 +22,12 @@ export type VolunteerNotifyPayload = {
   message: string;
 };
 
-export type NotifyPayload = DonationNotifyPayload | VolunteerNotifyPayload;
+export type NewsletterNotifyPayload = {
+  kind: 'newsletter';
+  email: string;
+};
+
+export type NotifyPayload = DonationNotifyPayload | VolunteerNotifyPayload | NewsletterNotifyPayload;
 
 function assertResendResult(label: string, result: { error?: unknown }) {
   if (result.error) {
@@ -48,13 +53,24 @@ function isUnverifiedDomainError(error: unknown): boolean {
   return false;
 }
 
+function logResendApiResponse(label: string, attempt: 'primary' | 'fallback', result: unknown) {
+  try {
+    console.log(
+      `[notify] ${label} (${attempt}) full Resend API response:\n`,
+      JSON.stringify(result, null, 2)
+    );
+  } catch {
+    console.log(`[notify] ${label} (${attempt}) full Resend API response (could not JSON.stringify):`, result);
+  }
+}
+
 async function sendWithFallback(
   resend: Resend,
   label: string,
   args: { from: string; to: string; subject: string; text: string }
 ) {
   const first = await resend.emails.send(args);
-  console.log(`[notify] ${label} resend response`, first);
+  logResendApiResponse(label, 'primary', first);
   if (!first.error) return;
 
   if (!isUnverifiedDomainError(first.error) || args.from === FALLBACK_FROM) {
@@ -64,7 +80,7 @@ async function sendWithFallback(
 
   console.warn(`[notify] ${label} retrying with fallback sender`, FALLBACK_FROM);
   const retry = await resend.emails.send({ ...args, from: FALLBACK_FROM });
-  console.log(`[notify] ${label} fallback resend response`, retry);
+  logResendApiResponse(label, 'fallback', retry);
   assertResendResult(label, retry);
 }
 
@@ -132,6 +148,21 @@ export async function dispatchNotifyPayload(apiKey: string, raw: unknown): Promi
       to: ADMIN,
       subject: `New volunteer application: ${payload.full_name}`,
       text: `New volunteer application:\n\n${lines}`,
+    });
+    return;
+  }
+
+  if (payload.kind === 'newsletter') {
+    const subscriberEmail = String(payload.email ?? '').trim();
+    if (!subscriberEmail) {
+      throw new Error('email is required');
+    }
+    const text = `New newsletter subscriber: ${subscriberEmail}`;
+    await sendWithFallback(resend, 'newsletter admin notify', {
+      from: FROM,
+      to: ADMIN,
+      subject: 'New newsletter subscriber',
+      text,
     });
     return;
   }
