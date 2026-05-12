@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Users, Home, ArrowRight, Play, X } from 'lucide-react';
 
@@ -24,12 +23,6 @@ const stories = [
   },
 ];
 
-/** YouTube watch / youtu.be URLs → embed player (see https://www.youtube.com/embed/VIDEO_ID) */
-function youtubeEmbedSrc(videoId: string) {
-  const id = encodeURIComponent(videoId);
-  return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
-}
-
 function VideoModal({ videoId, onClose }: { videoId: string; onClose: () => void }) {
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'Escape') onClose();
@@ -44,8 +37,7 @@ function VideoModal({ videoId, onClose }: { videoId: string; onClose: () => void
     };
   }, [handleKeyDown]);
 
-  // Portal to document.body so the modal is not clipped by section overflow-hidden / transforms.
-  return createPortal(
+  return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -53,7 +45,6 @@ function VideoModal({ videoId, onClose }: { videoId: string; onClose: () => void
       transition={{ duration: 0.3 }}
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-8"
       onClick={onClose}
-      role="presentation"
     >
       <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" />
 
@@ -62,30 +53,26 @@ function VideoModal({ videoId, onClose }: { videoId: string; onClose: () => void
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.92, opacity: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="relative z-[1] w-full max-w-5xl aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black"
+        className="relative w-full max-w-5xl aspect-video rounded-2xl overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <iframe
-          key={videoId}
-          src={youtubeEmbedSrc(videoId)}
-          title="YouTube video player"
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+          title="Video Player"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
-          className="absolute inset-0 h-full w-full"
+          className="w-full h-full"
           style={{ border: 'none' }}
         />
       </motion.div>
 
       <button
-        type="button"
         onClick={onClose}
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[2] w-11 h-11 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/25 transition-all duration-200"
-        aria-label="Close video"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/25 transition-all duration-200"
       >
         <X className="w-5 h-5" />
       </button>
-    </motion.div>,
-    document.body
+    </motion.div>
   );
 }
 

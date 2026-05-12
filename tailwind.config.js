@@ -4,11 +4,6 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  safelist: [
-    'nav-link-desktop',
-    'nav-brand-text',
-    'text-tropical',
-  ],
   theme: {
     extend: {
       colors: {

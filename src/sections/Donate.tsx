@@ -1,10 +1,7 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { flushSync } from 'react-dom';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, GraduationCap, Utensils, Stethoscope, TreePine, Gift, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { notifyDonationRecorded } from '../lib/sendEmailNotification';
-import { formatPostgrestLikeError } from '../lib/postgrestErrors';
 
 const categories = [
   { id: 'education', icon: <GraduationCap className="w-5 h-5" />, label: 'Education', desc: 'Give a child the gift of learning' },
@@ -16,8 +13,6 @@ const categories = [
 
 const amounts = [25, 50, 100, 250, 500, 1000];
 
-const SUCCESS_VISIBLE_MS = 3000;
-
 export default function Donate() {
   const [step, setStep] = useState(1);
   const [type, setType] = useState<'one_time' | 'monthly'>('one_time');
@@ -26,135 +21,38 @@ export default function Donate() {
   const [customAmount, setCustomAmount] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [anonymous, setAnonymous] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  const [amountError, setAmountError] = useState('');
 
-  const successTimeoutRef = useRef<number | null>(null);
-  const successBlockRef = useRef<HTMLDivElement | null>(null);
-  const trimmedCustom = customAmount.trim();
-  const finalAmount: number = (() => {
-    if (trimmedCustom === '') return amount;
-    const n = Number.parseFloat(trimmedCustom.replace(/,/g, ''));
-    return Number.isFinite(n) && n > 0 ? n : Number.NaN;
-  })();
-
-  const resetForm = useCallback(() => {
-    setStep(1);
-    setType('one_time');
-    setCategory('general');
-    setAmount(50);
-    setCustomAmount('');
-    setName('');
-    setEmail('');
-    setPhone('');
-    setMessage('');
-    setAnonymous(false);
-    setSubmitError('');
-    setAmountError('');
-  }, []);
-
-  const dismissSuccess = useCallback(() => {
-    if (successTimeoutRef.current !== null) {
-      window.clearTimeout(successTimeoutRef.current);
-      successTimeoutRef.current = null;
-    }
-    resetForm();
-    setSubmitted(false);
-  }, [resetForm]);
-
-  useLayoutEffect(() => {
-    if (!submitted) return;
-    successBlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [submitted]);
-
-  useEffect(() => {
-    return () => {
-      if (successTimeoutRef.current !== null) {
-        window.clearTimeout(successTimeoutRef.current);
-        successTimeoutRef.current = null;
-      }
-    };
-  }, []);
+  const finalAmount = customAmount ? parseFloat(customAmount) : amount;
 
   const handleSubmit = async () => {
-    if (isSubmitting) return;
-    setSubmitError('');
-    if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
-      setSubmitError('Please go back and enter a valid donation amount.');
-      return;
-    }
+    await supabase.from('donations').insert({
+      donor_name: anonymous ? 'Anonymous' : name,
+      donor_email: email,
+      amount: finalAmount,
+      type,
+      category,
+      message,
+      is_anonymous: anonymous,
+    });
 
-    setIsSubmitting(true);
-
-    const donorLabel = anonymous ? 'Anonymous' : name;
-
-    const messageTrimmed = message.trim();
-
-    try {
-      const { error } = await supabase.from('donations').insert({
-        donor_name: donorLabel,
-        donor_email: email,
-        amount: finalAmount,
-        type,
-        category,
-        message: messageTrimmed,
-        is_anonymous: anonymous,
-      });
-
-      if (error) {
-        console.error(error);
-        setSubmitError(formatPostgrestLikeError(error));
-        return;
-      }
-
-      void notifyDonationRecorded({
-        donorEmail: email,
-        donorName: donorLabel,
+    if (message && category === 'tree') {
+      await supabase.from('tree_leaves').insert({
+        donor_name: anonymous ? 'Anonymous' : name,
+        message,
         amount: finalAmount,
       });
-
-      if (messageTrimmed && category === 'tree') {
-        const { error: leafErr } = await supabase.from('tree_leaves').insert({
-          donor_name: donorLabel,
-          message: messageTrimmed,
-          amount: finalAmount,
-        });
-        if (leafErr) console.error(leafErr);
-      }
-
-      if (successTimeoutRef.current !== null) {
-        window.clearTimeout(successTimeoutRef.current);
-        successTimeoutRef.current = null;
-      }
-      flushSync(() => {
-        setSubmitted(true);
-      });
-      successTimeoutRef.current = window.setTimeout(() => {
-        successTimeoutRef.current = null;
-        window.open('https://wa.me/14157170016?text=🎉 New donation received! Amount: $' + finalAmount + ' | From: ' + (anonymous ? 'Anonymous' : name) + ' | Category: ' + category, '_blank');
-        resetForm();
-        setSubmitted(false);
-      }, SUCCESS_VISIBLE_MS);
-    } catch (e) {
-      console.error(e);
-      setSubmitError(formatPostgrestLikeError(e));
-    } finally {
-      setIsSubmitting(false);
     }
+
+    setSubmitted(true);
   };
 
-  return (
-    <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
-      {submitted ? (
-        <div
-          ref={successBlockRef}
-          className="max-w-2xl mx-auto text-center relative z-20"
-        >
+  if (submitted) {
+    return (
+      <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
+        <div className="max-w-2xl mx-auto text-center">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -177,24 +75,28 @@ export default function Donate() {
             transition={{ delay: 0.5 }}
             className="text-dark/60 text-lg mb-8"
           >
-            Thank you for supporting Bali Future. A confirmation email has been sent successfully.
+            Your ${finalAmount} gift to {categories.find(c => c.id === category)?.label} goes directly to
+            children in Bali who need it most. Because of you, a child will eat, learn, and dream tonight.
           </motion.p>
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
-            type="button"
-            onClick={dismissSuccess}
+            onClick={() => { setSubmitted(false); setStep(1); }}
             className="px-8 py-3 rounded-full glass text-tropical font-semibold hover:bg-white/80 transition-colors"
           >
             Make Another Donation
           </motion.button>
         </div>
-      ) : (
-        <>
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary-50/40 blur-[100px] pointer-events-none" />
+      </section>
+    );
+  }
 
-      <div className="max-w-4xl mx-auto relative z-10">
+  return (
+    <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary-50/40 blur-[100px]" />
+
+      <div className="max-w-4xl mx-auto relative">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -214,23 +116,21 @@ export default function Donate() {
           </p>
         </motion.div>
 
+        {/* Progress bar */}
         <div className="flex items-center justify-center gap-2 mb-10">
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex items-center gap-2">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                  step >= s ? 'gradient-green text-white shadow-lg shadow-primary-300/30' : 'bg-primary-50 text-dark/40'
-                }`}
-              >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                step >= s ? 'gradient-green text-white shadow-lg shadow-primary-300/30' : 'bg-primary-50 text-dark/40'
+              }`}>
                 {step > s ? <Check className="w-4 h-4" /> : s}
               </div>
-              {s < 3 && (
-                <div className={`w-12 md:w-20 h-1 rounded-full transition-all ${step > s ? 'bg-primary-300' : 'bg-primary-50'}`} />
-              )}
+              {s < 3 && <div className={`w-12 md:w-20 h-1 rounded-full transition-all ${step > s ? 'bg-primary-300' : 'bg-primary-50'}`} />}
             </div>
           ))}
         </div>
 
+        {/* Steps */}
         <div className="bg-white rounded-3xl shadow-xl shadow-primary-100/50 p-8 md:p-12">
           <AnimatePresence mode="wait">
             {step === 1 && (
@@ -242,9 +142,9 @@ export default function Donate() {
               >
                 <h3 className="font-sora font-bold text-xl text-tropical mb-6">Choose How You Want to Help</h3>
 
+                {/* Type toggle */}
                 <div className="flex gap-2 p-1 rounded-xl bg-primary-50 w-fit mb-8">
                   <button
-                    type="button"
                     onClick={() => setType('one_time')}
                     className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                       type === 'one_time' ? 'bg-white text-tropical shadow-md' : 'text-dark/50'
@@ -253,7 +153,6 @@ export default function Donate() {
                     One-Time
                   </button>
                   <button
-                    type="button"
                     onClick={() => setType('monthly')}
                     className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                       type === 'monthly' ? 'bg-white text-tropical shadow-md' : 'text-dark/50'
@@ -263,10 +162,10 @@ export default function Donate() {
                   </button>
                 </div>
 
+                {/* Categories */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
                   {categories.map((cat) => (
                     <button
-                      type="button"
                       key={cat.id}
                       onClick={() => setCategory(cat.id)}
                       className={`p-4 rounded-2xl border-2 text-center transition-all hover-lift ${
@@ -275,11 +174,9 @@ export default function Donate() {
                           : 'border-transparent bg-gray-50 hover:border-primary-100'
                       }`}
                     >
-                      <div
-                        className={`w-10 h-10 rounded-xl mx-auto flex items-center justify-center mb-2 ${
-                          category === cat.id ? 'gradient-green text-white' : 'bg-white text-dark/50'
-                        }`}
-                      >
+                      <div className={`w-10 h-10 rounded-xl mx-auto flex items-center justify-center mb-2 ${
+                        category === cat.id ? 'gradient-green text-white' : 'bg-white text-dark/50'
+                      }`}>
                         {cat.icon}
                       </div>
                       <div className="text-xs font-semibold text-tropical">{cat.label}</div>
@@ -287,15 +184,12 @@ export default function Donate() {
                   ))}
                 </div>
 
+                {/* Amounts */}
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
                   {amounts.map((a) => (
                     <button
-                      type="button"
                       key={a}
-                      onClick={() => {
-                        setAmount(a);
-                        setCustomAmount('');
-                      }}
+                      onClick={() => { setAmount(a); setCustomAmount(''); }}
                       className={`py-3 rounded-xl text-center font-bold transition-all ${
                         amount === a && !customAmount
                           ? 'gradient-green text-white shadow-lg shadow-primary-300/30'
@@ -318,20 +212,8 @@ export default function Donate() {
                   />
                 </div>
 
-                {amountError ? <p className="mt-4 text-sm text-red-600">{amountError}</p> : null}
                 <button
-                  type="button"
-                  onClick={() => {
-                    if (trimmedCustom !== '') {
-                      const n = Number.parseFloat(trimmedCustom.replace(/,/g, ''));
-                      if (!Number.isFinite(n) || n <= 0) {
-                        setAmountError('Enter a valid custom amount, or clear the field to use a preset.');
-                        return;
-                      }
-                    }
-                    setAmountError('');
-                    setStep(2);
-                  }}
+                  onClick={() => setStep(2)}
                   className="mt-8 w-full flex items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all"
                 >
                   Continue
@@ -371,19 +253,6 @@ export default function Donate() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-dark/70 mb-1 block">Phone (optional)</label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+1 415 555 0100"
-                      className="w-full px-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors"
-                    />
-                    <p className="text-xs text-dark/45 mt-1">
-                      For your reference only — not saved with your donation.
-                    </p>
-                  </div>
-                  <div>
                     <label className="text-sm font-medium text-dark/70 mb-1 block">Message (optional)</label>
                     <textarea
                       value={message}
@@ -406,7 +275,6 @@ export default function Donate() {
 
                 <div className="flex gap-3 mt-8">
                   <button
-                    type="button"
                     onClick={() => setStep(1)}
                     className="flex items-center gap-2 px-6 py-4 rounded-xl glass text-tropical font-semibold hover:bg-white/80 transition-colors"
                   >
@@ -414,17 +282,8 @@ export default function Donate() {
                     Back
                   </button>
                   <button
-                    type="button"
-                    onClick={() => {
-                      if (!name || !email) return;
-                      if (!Number.isFinite(finalAmount) || finalAmount <= 0) {
-                        setSubmitError('Please enter a valid donation amount (step 1).');
-                        return;
-                      }
-                      setSubmitError('');
-                      setStep(3);
-                    }}
-                    disabled={!name || !email || !Number.isFinite(finalAmount) || finalAmount <= 0}
+                    onClick={() => setStep(3)}
+                    disabled={!name || !email}
                     className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Review Donation
@@ -446,58 +305,38 @@ export default function Donate() {
                 <div className="bg-primary-50/50 rounded-2xl p-6 mb-6 space-y-3">
                   <div className="flex justify-between">
                     <span className="text-dark/60">Amount</span>
-                    <span className="font-bold text-tropical">
-                      ${Number.isFinite(finalAmount) ? finalAmount : '—'}{' '}
-                      {type === 'monthly' ? '/month' : ''}
-                    </span>
+                    <span className="font-bold text-tropical">${finalAmount} {type === 'monthly' ? '/month' : ''}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-dark/60">Category</span>
-                    <span className="font-medium text-tropical">{categories.find((c) => c.id === category)?.label}</span>
+                    <span className="font-medium text-tropical">{categories.find(c => c.id === category)?.label}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-dark/60">Donor</span>
                     <span className="font-medium text-tropical">{anonymous ? 'Anonymous' : name}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-dark/60">Phone</span>
-                    <span className="font-medium text-tropical">{phone}</span>
-                  </div>
                   {message && (
                     <div className="pt-3 border-t border-primary-100">
                       <span className="text-dark/60 text-sm">Message:</span>
-                      <p className="text-tropical italic mt-1">&quot;{message}&quot;</p>
+                      <p className="text-tropical italic mt-1">"{message}"</p>
                     </div>
                   )}
                 </div>
 
-                {submitError ? (
-                  <div className="mb-4 rounded-xl border border-red-100 bg-red-50/80 px-4 py-3 text-left">
-                    <p className="text-sm text-red-700">{submitError}</p>
-                  </div>
-                ) : null}
-
                 <div className="flex gap-3">
                   <button
-                    type="button"
-                    onClick={() => {
-                      setSubmitError('');
-                      setStep(2);
-                    }}
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 px-6 py-4 rounded-xl glass text-tropical font-semibold hover:bg-white/80 transition-colors disabled:opacity-50"
+                    onClick={() => setStep(2)}
+                    className="flex items-center gap-2 px-6 py-4 rounded-xl glass text-tropical font-semibold hover:bg-white/80 transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back
                   </button>
                   <button
-                    type="button"
                     onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all"
                   >
                     <Heart className="w-5 h-5" />
-                    {isSubmitting ? 'Processing…' : 'Complete Donation'}
+                    Complete Donation
                   </button>
                 </div>
               </motion.div>
@@ -505,8 +344,6 @@ export default function Donate() {
           </AnimatePresence>
         </div>
       </div>
-        </>
-      )}
     </section>
   );
 }

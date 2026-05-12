@@ -24,23 +24,22 @@ export default function Navbar() {
   return (
     <>
       <motion.nav
-        data-site-navbar
-        initial={false}
+        initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
-        className={`fixed top-0 left-0 right-0 z-50 isolate transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
             ? 'glass shadow-lg shadow-primary-300/10'
             : 'bg-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-[51]">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-20">
             <a href="#" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-xl gradient-green flex items-center justify-center shadow-lg shadow-primary-300/30 group-hover:scale-110 transition-transform">
                 <TreePine className="w-5 h-5 text-white" />
               </div>
-              <span className="nav-brand-text font-sora font-bold text-xl text-tropical">
+              <span className="font-sora font-bold text-xl text-tropical">
                 Bali Future
               </span>
             </a>
@@ -50,10 +49,10 @@ export default function Navbar() {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="nav-link-desktop text-sm font-medium transition-colors relative group"
+                  className="text-sm font-medium text-dark/70 hover:text-tropical transition-colors relative group"
                 >
                   {link.label}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-300 rounded-full group-hover:w-full transition-all duration-300 opacity-100" />
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary-300 rounded-full group-hover:w-full transition-all duration-300" />
                 </a>
               ))}
             </div>
@@ -92,7 +91,7 @@ export default function Navbar() {
                   <div className="w-10 h-10 rounded-xl gradient-green flex items-center justify-center">
                     <TreePine className="w-5 h-5 text-white" />
                   </div>
-                  <span className="nav-brand-text font-sora font-bold text-xl text-tropical">
+                  <span className="font-sora font-bold text-xl text-tropical">
                     Bali Future
                   </span>
                 </div>
@@ -110,7 +109,7 @@ export default function Navbar() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="text-2xl font-sora font-semibold text-tropical opacity-100"
+                    className="text-2xl font-sora font-semibold text-tropical"
                   >
                     {link.label}
                   </motion.a>
