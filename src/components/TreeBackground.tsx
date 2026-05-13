@@ -62,8 +62,10 @@ export default function TreeBackground() {
 
     // ── Scene ─────────────────────────────────────────────────────────────────
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x04090F);
-    scene.fog = new THREE.FogExp2(0x04090F, 0.026);
+    // Warm cream sky — matches body cream (#fffdf7)
+    scene.background = new THREE.Color(0xFFFDF7);
+    // Soft warm haze so distant branches fade gently into the cream backdrop
+    scene.fog = new THREE.FogExp2(0xFAF1DC, 0.022);
 
     // ── Camera ────────────────────────────────────────────────────────────────
     const camera = new THREE.PerspectiveCamera(
@@ -76,45 +78,47 @@ export default function TreeBackground() {
     camera.lookAt(0, 4.8, 0);
 
     // ── Lighting ─────────────────────────────────────────────────────────────
-    // Low ambient — night scene
-    scene.add(new THREE.AmbientLight(0x172640, 0.65));
+    // Bright warm ambient — soft daylight feel
+    scene.add(new THREE.AmbientLight(0xFFF1D8, 0.95));
 
-    // Warm amber ground fill — campfire / lantern feel
-    const warmLight = new THREE.PointLight(0xFF9922, 2.8, 16);
-    warmLight.position.set(1.2, 0.3, 3.5);
+    // Warm directional "sun" — high & slightly behind, casts warm side light
+    const warmLight = new THREE.DirectionalLight(0xFFE0A8, 1.05);
+    warmLight.position.set(3.5, 9.0, 5.0);
     scene.add(warmLight);
 
-    // Cool jade canopy fill
-    const coolLight = new THREE.PointLight(0x00DDAA, 1.6, 24);
-    coolLight.position.set(-2.8, 8.0, 2.0);
+    // Cool soft fill from opposite side — keeps shadows from going muddy
+    const coolLight = new THREE.DirectionalLight(0xCEDDE6, 0.45);
+    coolLight.position.set(-4.0, 6.0, -2.0);
     scene.add(coolLight);
 
-    // Subtle backlight
-    const rimLight = new THREE.DirectionalLight(0xFFDDCC, 0.45);
+    // Subtle backlight — light catches branch tops
+    const rimLight = new THREE.DirectionalLight(0xFFF6E2, 0.35);
     rimLight.position.set(4, 12, -3);
     scene.add(rimLight);
 
-    // ── Ground disc ───────────────────────────────────────────────────────────
+    // ── Ground disc — pale earth/sand ─────────────────────────────────────────
     const ground = new THREE.Mesh(
       new THREE.CircleGeometry(8, 56),
-      new THREE.MeshLambertMaterial({ color: 0x050C05 })
+      new THREE.MeshLambertMaterial({ color: 0xE8D6B0 })
     );
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -0.03;
     scene.add(ground);
 
     // ── Shared materials (bark by depth band, leaves) ─────────────────────────
-    const BARK_COLS   = [0x6E3E1C, 0x7E4E28, 0x8E5E30] as const;
-    const BARK_EMIS   = [0x1E0A04, 0x200C06, 0x220E08] as const;
+    // Earth-tone bark: deeper sienna at trunk → warm sand at outer twigs
+    const BARK_COLS   = [0x946D3D, 0xAE8854, 0xC9A578] as const;
+    const BARK_EMIS   = [0x1A1108, 0x1C1409, 0x20180C] as const;
     const barkMats    = BARK_COLS.map((c, i) =>
       new THREE.MeshLambertMaterial({ color: c, emissive: BARK_EMIS[i] })
     );
 
+    // Sage / olive leaves — light, slightly translucent so they blend into cream sky
     const leafMat = new THREE.MeshLambertMaterial({
-      color:    0x1A5C28,
-      emissive: 0x0A2210,
+      color:    0x9CB07A,
+      emissive: 0x1F2A14,
       transparent: true,
-      opacity:  0.86,
+      opacity:  0.78,
     });
 
     const barkAt = (d: number) => barkMats[Math.min(d, barkMats.length - 1)];
@@ -228,12 +232,12 @@ export default function TreeBackground() {
     const pGeo = new THREE.BufferGeometry();
     pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 
+    // Soft warm dust motes — quietly drifting in front of the cream sky
     const pMesh = new THREE.Points(pGeo, new THREE.PointsMaterial({
-      color:      0xFFDE60,
-      size:       0.058,
+      color:      0xC9A578,
+      size:       0.045,
       transparent: true,
-      opacity:    0.72,
-      blending:   THREE.AdditiveBlending,
+      opacity:    0.32,
       depthWrite: false,
     }));
     scene.add(pMesh);
@@ -339,8 +343,8 @@ export default function TreeBackground() {
       }
       pGeo.attributes.position.needsUpdate = true;
 
-      // Breathe warm light
-      warmLight.intensity = 2.5 + Math.sin(elapsed * 1.05) * 0.6;
+      // Subtle daylight breathing — clouds drifting feel
+      warmLight.intensity = 1.05 + Math.sin(elapsed * 0.6) * 0.12;
 
       renderer.render(scene, camera);
     };

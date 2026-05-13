@@ -23,7 +23,7 @@ export default function Volunteer() {
   };
 
   return (
-    <section id="volunteer" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-sky-50/30 to-cream">
+    <section id="volunteer" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-sky-50/20 to-cream/55">
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-sky-50/50 blur-[80px]" />
 
       <div className="max-w-7xl mx-auto relative">

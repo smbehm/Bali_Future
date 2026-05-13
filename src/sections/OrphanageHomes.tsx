@@ -162,7 +162,7 @@ export default function OrphanageHomes() {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   return (
-    <section id="homes" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
+    <section id="homes" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55">
       <div className="absolute top-[5%] left-0 w-[500px] h-[500px] rounded-full bg-sky-50/40 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[10%] right-0 w-[400px] h-[400px] rounded-full bg-primary-50/30 blur-[80px] pointer-events-none" />
 

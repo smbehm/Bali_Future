@@ -160,14 +160,13 @@ function AtmosphericParticles() {
 export default function Hero() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Deep background atmosphere */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-50/60 via-cream to-cream" />
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-sky-50/20 to-warm-50/20" />
-        <div className="absolute top-0 right-0 w-[900px] h-[900px] rounded-full bg-primary-100/30 blur-[120px] -translate-y-1/3 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[700px] h-[700px] rounded-full bg-sky-100/30 blur-[100px] translate-y-1/4 -translate-x-1/4" />
-        <div className="absolute top-[20%] left-[40%] w-[500px] h-[500px] rounded-full bg-warm-100/20 blur-[80px]" />
-        <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] rounded-full bg-primary-200/15 blur-[60px] animate-pulse-soft" />
+      {/* Soft atmosphere — tinted glow orbs only, no opaque cream layer so the
+         3D tree background shows through */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[900px] h-[900px] rounded-full bg-warm-100/20 blur-[120px] -translate-y-1/3 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[700px] h-[700px] rounded-full bg-primary-100/20 blur-[100px] translate-y-1/4 -translate-x-1/4" />
+        <div className="absolute top-[20%] left-[40%] w-[500px] h-[500px] rounded-full bg-warm-200/15 blur-[80px]" />
+        <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] rounded-full bg-primary-200/12 blur-[60px] animate-pulse-soft" />
       </div>
 
       {/* Sunlight rays */}
@@ -276,12 +275,13 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Bottom wave with gradient */}
-      <div className="absolute bottom-0 left-0 right-0">
+      {/* Bottom wave — translucent cream so tree continues smoothly below */}
+      <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
         <svg viewBox="0 0 1440 120" fill="none" className="w-full">
           <path
             d="M0 120L48 108C96 96 192 72 288 66C384 60 480 72 576 78C672 84 768 84 864 78C960 72 1056 60 1152 60C1248 60 1344 72 1392 78L1440 84V120H0Z"
             fill="#fffdf7"
+            fillOpacity="0.55"
           />
         </svg>
       </div>
