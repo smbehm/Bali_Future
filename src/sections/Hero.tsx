@@ -159,7 +159,7 @@ function AtmosphericParticles() {
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
+    <section className="relative min-h-screen min-h-[100dvh] flex items-center overflow-hidden">
       {/* Soft atmosphere — tinted glow orbs only, no opaque cream layer so the
          3D tree background shows through */}
       <div className="absolute inset-0 pointer-events-none">

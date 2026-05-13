@@ -52,9 +52,25 @@ export default function TreeBackground() {
     const el = mountRef.current;
     if (!el) return;
 
+    // ── Device tier detection ────────────────────────────────────────────────
+    // Phones / tablets get a lighter scene: lower DPR, fewer particles, no AA.
+    // We probe both viewport width AND pointer type so the trigger is robust
+    // across iOS/Android device pixel-ratio quirks.
+    const isMobile =
+      typeof window.matchMedia === 'function' &&
+      (window.matchMedia('(max-width: 820px)').matches ||
+        window.matchMedia('(pointer: coarse)').matches);
+
+    const DPR_CAP        = isMobile ? 1.4 : 2;
+    const PARTICLE_COUNT = isMobile ? 90  : 260;
+
     // ── Renderer ──────────────────────────────────────────────────────────────
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({
+      antialias:        !isMobile, // MSAA is expensive on phone GPUs
+      alpha:            false,
+      powerPreference:  'high-performance',
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, DPR_CAP));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping       = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.25;
@@ -214,7 +230,7 @@ export default function TreeBackground() {
     bfsQueue.forEach((n, i) => { n.revealTime = i / total; });
 
     // ── Firefly particles ─────────────────────────────────────────────────────
-    const N   = 260;
+    const N   = PARTICLE_COUNT;
     const pos = new Float32Array(N * 3);
     const vel: [number, number, number][] = [];
 
@@ -254,12 +270,41 @@ export default function TreeBackground() {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
 
-    const onResize = () => {
+    /*
+     * iOS Safari fires a resize every time the URL bar shows/hides while
+     * scrolling, which would re-allocate the WebGL backbuffer constantly.
+     * Debounce by ~150ms — the few frames of stretched canvas during that
+     * window are imperceptible vs. the perf cost of constant re-sizing.
+     */
+    let resizeT: number | undefined;
+    const doResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
+    const onResize = () => {
+      if (resizeT !== undefined) window.clearTimeout(resizeT);
+      resizeT = window.setTimeout(doResize, 150);
+    };
     window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+
+    /*
+     * Pause the render loop when the tab is hidden — saves battery on mobile
+     * and prevents the requestAnimationFrame queue from piling up frames
+     * while the user is in another app.
+     */
+    let isHidden = false;
+    const onVisibility = () => {
+      const nowHidden = document.hidden;
+      if (nowHidden === isHidden) return;
+      isHidden = nowHidden;
+      if (!isHidden) {
+        // Resync timing so the growth animation doesn't jump forward on resume
+        lastT = performance.now();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
 
     // ── Easing ────────────────────────────────────────────────────────────────
     const easeOutExpo = (t: number) =>
@@ -275,6 +320,10 @@ export default function TreeBackground() {
 
     const tick = () => {
       raf = requestAnimationFrame(tick);
+
+      // Skip rendering while the tab/app is backgrounded — saves battery on
+      // mobile and prevents a frame-time spike on resume
+      if (isHidden) return;
 
       const now     = performance.now();
       const elapsed = (now - t0) / 1000;
@@ -354,8 +403,11 @@ export default function TreeBackground() {
     // ── Cleanup ───────────────────────────────────────────────────────────────
     return () => {
       cancelAnimationFrame(raf);
+      if (resizeT !== undefined) window.clearTimeout(resizeT);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+      document.removeEventListener('visibilitychange', onVisibility);
 
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh) {
