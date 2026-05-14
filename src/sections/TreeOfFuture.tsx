@@ -38,7 +38,7 @@ export default function TreeOfFuture() {
   ];
 
   return (
-    <section className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-tropical/5 to-cream/55">
+    <section className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-tropical/5 to-cream">
       <div className="max-w-7xl mx-auto relative">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

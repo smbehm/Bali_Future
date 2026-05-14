@@ -18,7 +18,7 @@ export default function Gallery() {
   const [selected, setSelected] = useState<number | null>(null);
 
   return (
-    <section id="gallery" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-warm-50/15 to-cream/55">
+    <section id="gallery" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

@@ -51,7 +51,7 @@ export default function Donate() {
 
   if (submitted) {
     return (
-      <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55">
+      <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
         <div className="max-w-2xl mx-auto text-center">
           <motion.div
             initial={{ scale: 0 }}
@@ -93,7 +93,7 @@ export default function Donate() {
   }
 
   return (
-    <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55">
+    <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
       <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary-50/40 blur-[100px]" />
 
       <div className="max-w-4xl mx-auto relative">

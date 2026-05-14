@@ -1,6 +1,5 @@
 import Navbar from './components/Navbar';
 import FloatingLeaves from './components/FloatingLeaves';
-import TreeBackground from './components/TreeBackground';
 import Hero from './sections/Hero';
 import Mission from './sections/Mission';
 import OrphanageHomes from './sections/OrphanageHomes';
@@ -16,25 +15,22 @@ import Footer from './sections/Footer';
 
 function App() {
   return (
-    <>
-      <TreeBackground />
-      <div className="relative z-10 min-h-screen">
-        <FloatingLeaves />
-        <Navbar />
-        <Hero />
-        <Mission />
-        <OrphanageHomes />
-        <Impact />
-        <TreeOfFuture />
-        <Stories />
-        <Donate />
-        <Volunteer />
-        <Events />
-        <Gallery />
-        <FAQ />
-        <Footer />
-      </div>
-    </>
+    <div className="min-h-screen bg-cream">
+      <FloatingLeaves />
+      <Navbar />
+      <Hero />
+      <Mission />
+      <OrphanageHomes />
+      <Impact />
+      <TreeOfFuture />
+      <Stories />
+      <Donate />
+      <Volunteer />
+      <Events />
+      <Gallery />
+      <FAQ />
+      <Footer />
+    </div>
   );
 }
 

@@ -8,19 +8,9 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Prevent background scroll while the mobile menu is open (iOS/Android)
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const { overflow } = document.body.style;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = overflow;
-    };
-  }, [mobileOpen]);
 
   const links = [
     { label: 'Mission', href: '#mission' },
@@ -79,9 +69,7 @@ export default function Navbar() {
 
             <button
               onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
-              aria-expanded={mobileOpen}
-              className="lg:hidden -mr-2 p-3 text-tropical rounded-lg active:bg-primary-50/60"
+              className="lg:hidden p-2 text-tropical"
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -95,15 +83,9 @@ export default function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-cream/95 backdrop-blur-xl lg:hidden overflow-y-auto overscroll-contain"
-            style={{
-              paddingTop:    'env(safe-area-inset-top)',
-              paddingBottom: 'env(safe-area-inset-bottom)',
-              paddingLeft:   'env(safe-area-inset-left)',
-              paddingRight:  'env(safe-area-inset-right)',
-            }}
+            className="fixed inset-0 z-[60] bg-cream/95 backdrop-blur-xl lg:hidden"
           >
-            <div className="flex flex-col min-h-full p-6 gap-10">
+            <div className="flex flex-col h-full p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl gradient-green flex items-center justify-center">
@@ -113,16 +95,12 @@ export default function Navbar() {
                     Bali Future
                   </span>
                 </div>
-                <button
-                  onClick={() => setMobileOpen(false)}
-                  aria-label="Close menu"
-                  className="-mr-2 p-3 rounded-lg active:bg-primary-50/60"
-                >
+                <button onClick={() => setMobileOpen(false)} className="p-2">
                   <X className="w-6 h-6 text-tropical" />
                 </button>
               </div>
 
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-6 mt-16">
                 {links.map((link, i) => (
                   <motion.a
                     key={link.href}
@@ -130,8 +108,8 @@ export default function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                    className="text-2xl font-sora font-semibold text-tropical py-2"
+                    transition={{ delay: i * 0.1 }}
+                    className="text-2xl font-sora font-semibold text-tropical"
                   >
                     {link.label}
                   </motion.a>

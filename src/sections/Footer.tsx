@@ -10,10 +10,10 @@ const footerLinks = {
 export default function Footer() {
   return (
     <footer className="relative overflow-hidden bg-tropical text-white">
-      {/* Top wave — translucent so the tree continues into the footer */}
-      <div className="absolute top-0 left-0 right-0 pointer-events-none">
+      {/* Top wave */}
+      <div className="absolute top-0 left-0 right-0">
         <svg viewBox="0 0 1440 80" fill="none" className="w-full">
-          <path d="M0 0L60 10C120 20 240 40 360 50C480 60 600 60 720 50C840 40 960 20 1080 15C1200 10 1320 20 1380 25L1440 30V0H0Z" fill="#fffdf7" fillOpacity="0.55" />
+          <path d="M0 0L60 10C120 20 240 40 360 50C480 60 600 60 720 50C840 40 960 20 1080 15C1200 10 1320 20 1380 25L1440 30V0H0Z" fill="#fffdf7" />
         </svg>
       </div>
 

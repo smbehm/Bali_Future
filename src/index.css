@@ -6,13 +6,10 @@
   * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    -webkit-tap-highlight-color: transparent;
   }
 
   html {
     scroll-behavior: smooth;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
   }
 
   body {
@@ -20,33 +17,11 @@
     background-color: #fffdf7;
     color: #2c3e50;
     overflow-x: hidden;
-    overscroll-behavior-y: none;
   }
 
   ::selection {
     background-color: rgba(123, 196, 127, 0.3);
     color: #2f5d50;
-  }
-
-  /*
-   * iOS Safari zooms into any <input>/<select>/<textarea> whose computed
-   * font-size is < 16px. Force a 16px floor on touch devices so forms never
-   * trigger that zoom.
-   */
-  @media (pointer: coarse) {
-    input, select, textarea {
-      font-size: 16px;
-    }
-  }
-
-  /* Honor reduced-motion preferences across the board */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
   }
 }
 

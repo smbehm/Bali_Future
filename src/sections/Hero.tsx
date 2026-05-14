@@ -32,6 +32,182 @@ function SunlightRays() {
   );
 }
 
+function GlowingTree() {
+  return (
+    <div className="absolute right-0 top-0 bottom-0 w-full lg:w-[55%] pointer-events-none">
+      {/* Deep background glow */}
+      <div className="absolute top-[10%] right-[5%] w-[400px] h-[400px] rounded-full bg-primary-200/20 blur-[80px] animate-pulse-soft" />
+      <div className="absolute top-[25%] right-[15%] w-[250px] h-[250px] rounded-full bg-warm-200/15 blur-[60px]" />
+
+      <svg viewBox="0 0 500 750" className="h-full w-full" fill="none" preserveAspectRatio="xMidYMid slice">
+        {/* Trunk with bark texture */}
+        <motion.path
+          d="M250 720 C250 720 252 550 250 480 C248 420 235 380 240 340 C245 300 238 280 242 250"
+          stroke="url(#trunkGradient)"
+          strokeWidth="12"
+          strokeLinecap="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 2.5, ease: 'easeInOut' }}
+        />
+        <motion.path
+          d="M250 480 C230 440 200 420 185 380"
+          stroke="url(#trunkGradient)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 0.7 }}
+          transition={{ duration: 2, delay: 1.2 }}
+        />
+        <motion.path
+          d="M250 420 C270 380 300 370 320 340"
+          stroke="url(#trunkGradient)"
+          strokeWidth="5"
+          strokeLinecap="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 0.7 }}
+          transition={{ duration: 2, delay: 1.5 }}
+        />
+        <motion.path
+          d="M248 360 C225 330 195 320 175 290"
+          stroke="url(#trunkGradient)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 0.6 }}
+          transition={{ duration: 1.8, delay: 1.8 }}
+        />
+
+        {/* Canopy layers - atmospheric depth */}
+        <motion.ellipse
+          cx="250" cy="200" rx="180" ry="170"
+          fill="url(#canopyOuter)"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 2, delay: 0.8 }}
+        />
+        <motion.ellipse
+          cx="230" cy="220" rx="140" ry="130"
+          fill="url(#canopyMid)"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 2, delay: 1.1 }}
+        />
+        <motion.ellipse
+          cx="270" cy="190" rx="120" ry="110"
+          fill="url(#canopyInner)"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 2, delay: 1.4 }}
+        />
+        <motion.ellipse
+          cx="250" cy="210" rx="90" ry="85"
+          fill="url(#canopyCore)"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.8, delay: 1.7 }}
+        />
+
+        {/* Glowing leaves scattered in canopy */}
+        {[
+          { cx: 180, cy: 140, r: 6 }, { cx: 300, cy: 130, r: 5 },
+          { cx: 220, cy: 100, r: 7 }, { cx: 280, cy: 170, r: 5 },
+          { cx: 150, cy: 200, r: 6 }, { cx: 330, cy: 190, r: 5 },
+          { cx: 200, cy: 250, r: 7 }, { cx: 310, cy: 240, r: 6 },
+          { cx: 170, cy: 160, r: 4 }, { cx: 260, cy: 110, r: 5 },
+          { cx: 340, cy: 150, r: 4 }, { cx: 190, cy: 280, r: 5 },
+          { cx: 290, cy: 270, r: 4 }, { cx: 240, cy: 150, r: 6 },
+        ].map((leaf, i) => (
+          <motion.circle
+            key={i}
+            cx={leaf.cx}
+            cy={leaf.cy}
+            r={leaf.r}
+            fill="url(#leafGlow)"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+              opacity: [0.4, 0.9, 0.4],
+              scale: [0.8, 1.2, 0.8],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              delay: 2 + i * 0.2,
+              ease: 'easeInOut',
+            }}
+          />
+        ))}
+
+        {/* Roots */}
+        <motion.path
+          d="M250 720 C220 740 170 750 130 755"
+          stroke="#2f5d50"
+          strokeWidth="3"
+          strokeOpacity="0.3"
+          strokeLinecap="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 2, delay: 2.5 }}
+        />
+        <motion.path
+          d="M250 720 C280 740 330 750 370 755"
+          stroke="#2f5d50"
+          strokeWidth="3"
+          strokeOpacity="0.3"
+          strokeLinecap="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 2, delay: 2.7 }}
+        />
+        <motion.path
+          d="M248 715 C235 735 200 745 170 748"
+          stroke="#2f5d50"
+          strokeWidth="2"
+          strokeOpacity="0.2"
+          strokeLinecap="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.8, delay: 2.9 }}
+        />
+
+        {/* Gradient definitions */}
+        <defs>
+          <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#5b8a6a" />
+            <stop offset="50%" stopColor="#4a6b52" />
+            <stop offset="100%" stopColor="#3d5542" />
+          </linearGradient>
+          <radialGradient id="canopyOuter" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#7bc47f" stopOpacity="0.08" />
+            <stop offset="70%" stopColor="#7bc47f" stopOpacity="0.04" />
+            <stop offset="100%" stopColor="#7bc47f" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="canopyMid" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#2f5d50" stopOpacity="0.12" />
+            <stop offset="60%" stopColor="#2f5d50" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#2f5d50" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="canopyInner" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#6ec1e4" stopOpacity="0.08" />
+            <stop offset="70%" stopColor="#6ec1e4" stopOpacity="0.03" />
+            <stop offset="100%" stopColor="#6ec1e4" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="canopyCore" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#7bc47f" stopOpacity="0.15" />
+            <stop offset="50%" stopColor="#2f5d50" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#2f5d50" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="leafGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#a8e6a3" stopOpacity="0.9" />
+            <stop offset="60%" stopColor="#7bc47f" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#7bc47f" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+  );
+}
+
 function FloatingHeroLeaves() {
   const leaves = [
     { x: '70%', y: '15%', size: 14, delay: 0, duration: 12 },
@@ -159,14 +335,15 @@ function AtmosphericParticles() {
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen min-h-[100dvh] flex items-center overflow-hidden">
-      {/* Soft atmosphere — tinted glow orbs only, no opaque cream layer so the
-         3D tree background shows through */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[900px] h-[900px] rounded-full bg-warm-100/20 blur-[120px] -translate-y-1/3 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[700px] h-[700px] rounded-full bg-primary-100/20 blur-[100px] translate-y-1/4 -translate-x-1/4" />
-        <div className="absolute top-[20%] left-[40%] w-[500px] h-[500px] rounded-full bg-warm-200/15 blur-[80px]" />
-        <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] rounded-full bg-primary-200/12 blur-[60px] animate-pulse-soft" />
+    <section className="relative min-h-screen flex items-center overflow-hidden">
+      {/* Deep background atmosphere */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-50/60 via-cream to-cream" />
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-sky-50/20 to-warm-50/20" />
+        <div className="absolute top-0 right-0 w-[900px] h-[900px] rounded-full bg-primary-100/30 blur-[120px] -translate-y-1/3 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[700px] h-[700px] rounded-full bg-sky-100/30 blur-[100px] translate-y-1/4 -translate-x-1/4" />
+        <div className="absolute top-[20%] left-[40%] w-[500px] h-[500px] rounded-full bg-warm-100/20 blur-[80px]" />
+        <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] rounded-full bg-primary-200/15 blur-[60px] animate-pulse-soft" />
       </div>
 
       {/* Sunlight rays */}
@@ -174,6 +351,9 @@ export default function Hero() {
 
       {/* Atmospheric particles */}
       <AtmosphericParticles />
+
+      {/* Artistic tree illustration */}
+      <GlowingTree />
 
       {/* Floating hero leaves */}
       <FloatingHeroLeaves />
@@ -275,13 +455,12 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Bottom wave — translucent cream so tree continues smoothly below */}
-      <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+      {/* Bottom wave with gradient */}
+      <div className="absolute bottom-0 left-0 right-0">
         <svg viewBox="0 0 1440 120" fill="none" className="w-full">
           <path
             d="M0 120L48 108C96 96 192 72 288 66C384 60 480 72 576 78C672 84 768 84 864 78C960 72 1056 60 1152 60C1248 60 1344 72 1392 78L1440 84V120H0Z"
             fill="#fffdf7"
-            fillOpacity="0.55"
           />
         </svg>
       </div>

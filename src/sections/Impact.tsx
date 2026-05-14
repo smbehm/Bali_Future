@@ -22,7 +22,7 @@ const timeline = [
 
 export default function Impact() {
   return (
-    <section id="impact" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/20 to-cream/55">
+    <section id="impact" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/30 to-cream">
       <div className="absolute top-1/2 left-0 w-[600px] h-[600px] rounded-full bg-sky-50/50 blur-[100px] -translate-x-1/2" />
 
       <div className="max-w-7xl mx-auto relative">
