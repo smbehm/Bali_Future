@@ -2,12 +2,11 @@ import {
   memo,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Sparkles,
   Mail,
@@ -23,7 +22,7 @@ type ActivityEvent = {
   id: string;
   title: string;
   tagline: string;
-  video: string;
+  youtubeId: string;
   icon: string;
 };
 
@@ -32,95 +31,98 @@ const EVENTS: ActivityEvent[] = [
     id: 'football',
     title: 'Football',
     tagline: 'Teamwork, discipline, and pure fun.',
-    video: '/shelter/football.mp4',
+    youtubeId: '3aEgg9pj_DY',
     icon: '\u26BD',
   },
   {
     id: 'computer-day',
     title: 'Computer Day',
     tagline: 'Teaching Photoshop, design, and digital skills.',
-    video: '/shelter/computer.mp4',
+    youtubeId: 'JXNzNkOxklU',
     icon: '\uD83D\uDCBB',
   },
   {
     id: 'basketball',
     title: 'Basketball',
     tagline: 'Building confidence one shot at a time.',
-    video: '/shelter/basketball.mp4',
+    youtubeId: '6zrT6zDjltU',
     icon: '\uD83C\uDFC0',
   },
   {
     id: 'painting',
     title: 'Painting & Coloring',
     tagline: 'Where little hands create big dreams.',
-    video: '/shelter/painting.mp4',
+    youtubeId: 'hSREFTWK0h4',
     icon: '\uD83C\uDFA8',
   },
   {
     id: 'singing',
     title: 'Singing & Music',
     tagline: 'Every voice deserves to be heard.',
-    video: '/shelter/IMG_3254.mp4',
+    youtubeId: 'b6nn6t9X62E',
     icon: '\uD83C\uDFB5',
   },
   {
     id: 'dancing',
     title: 'Dancing',
     tagline: 'Joy in every move, culture in every step.',
-    video: '/shelter/img-3257.mp4',
+    youtubeId: 'aTj8lMYF53g',
     icon: '\uD83D\uDC83',
   },
 ];
 
+function buildEmbedUrl(videoId: string, muted: boolean): string {
+  const params = new URLSearchParams({
+    autoplay: '1',
+    mute: muted ? '1' : '0',
+    loop: '1',
+    playlist: videoId,
+    controls: '0',
+    playsinline: '1',
+    modestbranding: '1',
+    rel: '0',
+    showinfo: '0',
+    enablejsapi: '0',
+  });
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
 type EventCardProps = {
   event: ActivityEvent;
   index: number;
-  isPlaying: boolean;
+  isActive: boolean;
   onVisible: (id: string) => void;
   onHidden: (id: string) => void;
 };
 
-const EventCard = memo(function EventCard({ event, index, isPlaying, onVisible, onHidden }: EventCardProps) {
+const EventCard = memo(function EventCard({ event, index, isActive, onVisible, onHidden }: EventCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
-  const inView = useInView(containerRef, { amount: 0.6 });
 
   useEffect(() => {
-    if (inView) {
-      onVisible(event.id);
-    } else {
-      onHidden(event.id);
-    }
-  }, [inView, event.id, onVisible, onHidden]);
-
-  useLayoutEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.setAttribute('playsinline', '');
-    v.setAttribute('webkit-playsinline', '');
-  }, []);
+    const el = containerRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          onVisible(event.id);
+        } else {
+          onHidden(event.id);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [event.id, onVisible, onHidden]);
 
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (isPlaying) {
-      void v.play().catch(() => {});
-    } else {
-      v.pause();
-      v.currentTime = 0;
+    if (!isActive) {
       setMuted(true);
     }
-  }, [isPlaying]);
+  }, [isActive]);
 
-  const toggleMute = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    setMuted((m) => {
-      v.muted = !m;
-      return !m;
-    });
-  };
+  const thumbnail = `https://img.youtube.com/vi/${event.youtubeId}/hqdefault.jpg`;
 
   return (
     <motion.div
@@ -134,19 +136,26 @@ const EventCard = memo(function EventCard({ event, index, isPlaying, onVisible, 
     >
       <div className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-0 ring-2 ring-primary-300/0 transition-opacity duration-500 group-hover:opacity-100 group-hover:ring-primary-300/35" aria-hidden />
 
-      {/* Video area - 70% */}
+      {/* Video area */}
       <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-neutral-950">
-        <video
-          ref={videoRef}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-          src={event.video}
-          muted={muted}
-          loop
-          playsInline
-          preload="metadata"
-          controls={false}
-          disableRemotePlayback
-        />
+        {isActive ? (
+          <iframe
+            key={`${event.youtubeId}-${muted}`}
+            title={event.title}
+            src={buildEmbedUrl(event.youtubeId, muted)}
+            className="pointer-events-none absolute inset-0 h-full w-full scale-[1.35]"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            loading="lazy"
+          />
+        ) : (
+          <img
+            src={thumbnail}
+            alt={event.title}
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            loading="lazy"
+            decoding="async"
+          />
+        )}
 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/5" aria-hidden />
 
@@ -154,8 +163,8 @@ const EventCard = memo(function EventCard({ event, index, isPlaying, onVisible, 
         <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-10">
           <button
             type="button"
-            onClick={toggleMute}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
+            onClick={() => setMuted((m) => !m)}
+            className="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
             aria-label={muted ? 'Unmute video' : 'Mute video'}
           >
             {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -163,7 +172,7 @@ const EventCard = memo(function EventCard({ event, index, isPlaying, onVisible, 
         </div>
       </div>
 
-      {/* Title & tagline - 30% */}
+      {/* Title & tagline */}
       <div className="relative flex flex-1 flex-col justify-center border-t border-white/60 bg-gradient-to-b from-white via-primary-50/30 to-primary-50/50 px-6 py-5 md:px-7 md:py-6">
         <div className="flex items-start gap-4">
           <span className="select-none text-2xl leading-none md:text-3xl" aria-hidden>
@@ -288,7 +297,7 @@ export default function Events() {
               key={event.id}
               event={event}
               index={i}
-              isPlaying={activeId === event.id}
+              isActive={activeId === event.id}
               onVisible={onVisible}
               onHidden={onHidden}
             />

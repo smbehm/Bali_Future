@@ -1,10 +1,10 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 
 type VideoStat = {
   id: string;
-  src: string;
+  youtubeId: string;
   end: number;
   prefix?: string;
   suffix?: string;
@@ -13,32 +13,40 @@ type VideoStat = {
 };
 
 const VIDEOS: VideoStat[] = [
-  { id: 'children', src: '/shelter/C0779%20(2).mp4', end: 100, suffix: '+', label: 'Children in Our Care' },
-  { id: 'homes', src: '/shelter/C0780%20(1).mp4', end: 6, label: 'Homes We Support' },
-  { id: 'impact', src: '/shelter/C0785%20(1).mp4', end: 100, suffix: '%', label: '100% Goes to Children' },
-  { id: 'lives', src: '/shelter/IMG_5495%20(1).mp4', end: 0, staticValue: 'Countless', label: 'Lives Changed' },
+  { id: 'children', youtubeId: '9T-9MWcET0U', end: 100, suffix: '+', label: 'Children in Our Care' },
+  { id: 'homes', youtubeId: 'dgDtnlfV3v0', end: 6, label: 'Homes We Support' },
+  { id: 'impact', youtubeId: 'MeNbGmgXhLY', end: 100, suffix: '%', label: '100% Goes to Children' },
+  { id: 'lives', youtubeId: 'scLzTS5CoAQ', end: 0, staticValue: 'Countless', label: 'Lives Changed' },
 ];
 
 const VISIBILITY_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i * 0.05);
 
+function buildEmbedUrl(videoId: string, muted: boolean): string {
+  const params = new URLSearchParams({
+    autoplay: '1',
+    mute: muted ? '1' : '0',
+    loop: '1',
+    playlist: videoId,
+    controls: '0',
+    playsinline: '1',
+    modestbranding: '1',
+    rel: '0',
+    showinfo: '0',
+    enablejsapi: '0',
+  });
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
 type VideoStatCardProps = {
   stat: VideoStat;
   index: number;
-  isPlaying: boolean;
+  isActive: boolean;
   onRatio: (id: string, ratio: number) => void;
 };
 
-const VideoStatCard = memo(function VideoStatCard({ stat, index, isPlaying, onRatio }: VideoStatCardProps) {
+const VideoStatCard = memo(function VideoStatCard({ stat, index, isActive, onRatio }: VideoStatCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
-
-  useLayoutEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    el.setAttribute('playsinline', '');
-    el.setAttribute('webkit-playsinline', '');
-  }, [stat.src]);
 
   useEffect(() => {
     const root = containerRef.current;
@@ -60,25 +68,12 @@ const VideoStatCard = memo(function VideoStatCard({ stat, index, isPlaying, onRa
   }, [stat.id, onRatio]);
 
   useEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    if (isPlaying) {
-      void el.play().catch(() => {});
-    } else {
-      el.pause();
-      el.currentTime = 0;
+    if (!isActive) {
       setMuted(true);
     }
-  }, [isPlaying]);
+  }, [isActive]);
 
-  const toggleMute = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    setMuted((m) => {
-      v.muted = !m;
-      return !m;
-    });
-  };
+  const thumbnail = `https://img.youtube.com/vi/${stat.youtubeId}/hqdefault.jpg`;
 
   const displayValue =
     stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
@@ -93,17 +88,24 @@ const VideoStatCard = memo(function VideoStatCard({ stat, index, isPlaying, onRa
       whileHover={{ y: -6 }}
       className="group relative overflow-hidden rounded-2xl shadow-lg shadow-primary-900/[0.10] ring-1 ring-white/20 bg-black"
     >
-      <video
-        ref={videoRef}
-        src={stat.src}
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.05]"
-        muted={muted}
-        loop
-        playsInline
-        preload="metadata"
-        disableRemotePlayback
-        aria-hidden
-      />
+      {isActive ? (
+        <iframe
+          key={`${stat.youtubeId}-${muted}`}
+          title={stat.label}
+          src={buildEmbedUrl(stat.youtubeId, muted)}
+          className="pointer-events-none absolute inset-0 h-full w-full scale-[1.35]"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          loading="lazy"
+        />
+      ) : (
+        <img
+          src={thumbnail}
+          alt={stat.label}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.05]"
+          loading="lazy"
+          decoding="async"
+        />
+      )}
 
       {/* Bottom readability gradient */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
@@ -117,8 +119,8 @@ const VideoStatCard = memo(function VideoStatCard({ stat, index, isPlaying, onRa
       <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
         <button
           type="button"
-          onClick={toggleMute}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
+          onClick={() => setMuted((m) => !m)}
+          className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
           aria-label={muted ? 'Unmute video' : 'Mute video'}
         >
           {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -187,7 +189,7 @@ export default function Gallery() {
               key={stat.id}
               stat={stat}
               index={i}
-              isPlaying={activeId === stat.id}
+              isActive={activeId === stat.id}
               onRatio={onRatio}
             />
           ))}
