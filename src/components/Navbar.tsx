@@ -21,6 +21,15 @@ export default function Navbar() {
     };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mobileOpen]);
+
   const links = [
     { label: 'Mission', href: '#mission' },
     { label: 'Stories', href: '#stories' },
@@ -96,7 +105,7 @@ export default function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-cream/95 backdrop-blur-xl lg:hidden"
+            className="fixed inset-0 z-[60] bg-cream/95 glass lg:hidden"
           >
             <div className="flex h-full flex-col p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
               <div className="flex items-center justify-between">

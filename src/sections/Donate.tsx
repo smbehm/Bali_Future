@@ -232,7 +232,7 @@ export default function Donate() {
                 </div>
 
                 {/* Categories */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
                   {categories.map((cat) => (
                     <button
                       key={cat.id}
@@ -254,7 +254,7 @@ export default function Donate() {
                 </div>
 
                 {/* Amounts */}
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
                   {amounts.map((a) => (
                     <button
                       key={a}
@@ -277,7 +277,7 @@ export default function Donate() {
                     value={customAmount}
                     onChange={(e) => setCustomAmount(e.target.value)}
                     placeholder="Custom amount"
-                    className="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors"
+                    className="form-field w-full pl-8 pr-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors"
                   />
                 </div>
 
@@ -308,7 +308,7 @@ export default function Donate() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Your name"
-                      className="w-full px-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors"
+                      className="form-field w-full px-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -318,7 +318,7 @@ export default function Donate() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="your@email.com"
-                      className="w-full px-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors"
+                      className="form-field w-full px-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors"
                     />
                   </div>
                   <div>
@@ -328,7 +328,7 @@ export default function Donate() {
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Share a word of encouragement for the children..."
                       rows={3}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors resize-none"
+                      className="form-field w-full px-4 py-3 rounded-xl border-2 border-primary-100 focus:border-primary-300 outline-none transition-colors resize-none"
                     />
                   </div>
                   <label className="flex items-center gap-3 cursor-pointer">

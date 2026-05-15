@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface Props {
   end: number;
@@ -16,11 +16,31 @@ function easeOutCubic(t: number): number {
 
 export default function AnimatedCounter({ end, duration = 2, prefix = '', suffix = '', label, icon }: Props) {
   const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const [hasEnteredView, setHasEnteredView] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isInView) return;
+    const el = ref.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.target === el && entry.isIntersecting) {
+            setHasEnteredView(true);
+            io.disconnect();
+          }
+        }
+      },
+      { threshold: 0.15, rootMargin: '-80px 0px' },
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!hasEnteredView) return;
 
     setCount(0);
     const durationMs = duration * 1000;
@@ -37,7 +57,7 @@ export default function AnimatedCounter({ end, duration = 2, prefix = '', suffix
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [isInView, end, duration]);
+  }, [hasEnteredView, end, duration]);
 
   return (
     <motion.div

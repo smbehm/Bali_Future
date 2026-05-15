@@ -5,7 +5,7 @@ import { useCountUp } from '../hooks/useCountUp';
 
 function SunlightRays() {
   return (
-    <div className="absolute top-0 right-[15%] w-[500px] h-[700px] pointer-events-none overflow-hidden opacity-40">
+    <div className="absolute top-0 right-[15%] w-[min(500px,100vw)] h-[min(700px,100vh)] pointer-events-none overflow-hidden opacity-40">
       {[...Array(5)].map((_, i) => (
         <motion.div
           key={i}
@@ -41,44 +41,6 @@ function GlowingTree() {
       <div className="absolute top-[25%] right-[15%] w-[250px] h-[250px] rounded-full bg-warm-200/15 blur-[60px]" />
 
       <svg viewBox="0 0 500 750" className="h-full w-full" fill="none" preserveAspectRatio="xMidYMid slice">
-        {/* Trunk with bark texture */}
-        <motion.path
-          d="M250 720 C250 720 252 550 250 480 C248 420 235 380 240 340 C245 300 238 280 242 250"
-          stroke="url(#trunkGradient)"
-          strokeWidth="12"
-          strokeLinecap="round"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 2.5, ease: 'easeInOut' }}
-        />
-        <motion.path
-          d="M250 480 C230 440 200 420 185 380"
-          stroke="url(#trunkGradient)"
-          strokeWidth="6"
-          strokeLinecap="round"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 0.7 }}
-          transition={{ duration: 2, delay: 1.2 }}
-        />
-        <motion.path
-          d="M250 420 C270 380 300 370 320 340"
-          stroke="url(#trunkGradient)"
-          strokeWidth="5"
-          strokeLinecap="round"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 0.7 }}
-          transition={{ duration: 2, delay: 1.5 }}
-        />
-        <motion.path
-          d="M248 360 C225 330 195 320 175 290"
-          stroke="url(#trunkGradient)"
-          strokeWidth="4"
-          strokeLinecap="round"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 0.6 }}
-          transition={{ duration: 1.8, delay: 1.8 }}
-        />
-
         {/* Canopy layers - atmospheric depth */}
         <motion.ellipse
           cx="250" cy="200" rx="180" ry="170"
@@ -173,11 +135,6 @@ function GlowingTree() {
 
         {/* Gradient definitions */}
         <defs>
-          <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#5b8a6a" />
-            <stop offset="50%" stopColor="#4a6b52" />
-            <stop offset="100%" stopColor="#3d5542" />
-          </linearGradient>
           <radialGradient id="canopyOuter" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#7bc47f" stopOpacity="0.08" />
             <stop offset="70%" stopColor="#7bc47f" stopOpacity="0.04" />

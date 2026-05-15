@@ -17,7 +17,7 @@ function readViteEnv(name: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'): stri
 const supabaseUrl = readViteEnv('VITE_SUPABASE_URL');
 const supabaseAnonKey = readViteEnv('VITE_SUPABASE_ANON_KEY');
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (import.meta.env.DEV && (!supabaseUrl || !supabaseAnonKey)) {
   console.error(
     '[Supabase] VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY is missing or empty after trim(). ' +
       'Vite only exposes variables prefixed with VITE_; they must be set before `vite build` (e.g. Vercel project env).',

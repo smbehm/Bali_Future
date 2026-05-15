@@ -1,4 +1,4 @@
-/** Escape text for safe inclusion in HTML email bodies. */
+﻿/** Escape text for safe inclusion in HTML email bodies. */
 export function escapeForEmailHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -13,7 +13,7 @@ export function linesToEmailHtml(lines: string[]): string {
     .join('');
 }
 
-/** Sent to POST /api/send-email — organization uses INTAKE_EMAIL_TO on the server. */
+/** Sent to POST /api/send-email ΓÇö organization uses INTAKE_EMAIL_TO on the server. */
 export type SendEmailRequestBody = {
   organization: {
     subject: string;
@@ -27,28 +27,26 @@ export type SendEmailRequestBody = {
   } | null;
 };
 
+/**
+ * Dev: POST /api/send-email (Vite middleware). Production: Vercel serverless at /api/send-email.
+ */
 export async function sendEmailNotification(payload: SendEmailRequestBody): Promise<void> {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const url = `${supabaseUrl}/functions/v1/send-email`;
-
   let res: Response;
   try {
-    res = await fetch(url, {
+    res = await fetch('/api/send-email', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
   } catch (e) {
-    console.error('[sendEmailNotification] fetch threw:', e);
+    if (import.meta.env.DEV) {
+      console.error('[sendEmailNotification] fetch threw:', e);
+    }
     return;
   }
 
-  if (!res.ok) {
+  if (!res.ok && import.meta.env.DEV) {
     const bodyText = await res.text();
-    console.error('[sendEmailNotification] error:', res.status, bodyText);
+    console.error('[sendEmailNotification]', res.status, bodyText);
   }
 }

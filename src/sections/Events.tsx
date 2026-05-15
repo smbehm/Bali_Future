@@ -1,180 +1,109 @@
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+﻿import { memo, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
   Mail,
   ArrowRight,
   CheckCircle2,
-  Volume2,
-  VolumeX,
 } from 'lucide-react';
 import { formatPostgrestError, supabase } from '../lib/supabase';
 import { linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
+import { YouTubeCardMedia } from '../components/youtube/YouTubeCardMedia';
+import { useCardVideoActivation } from '../hooks/useCardVideoActivation';
+import { CLOUDINARY_EVENTS, cloudinaryPosterFromMp4 } from '../lib/cloudinary';
 
-type ActivityEvent = {
+export type ShelterShowcaseEvent = {
   id: string;
   title: string;
-  tagline: string;
-  youtubeId: string;
+  description: string;
+  mp4Src: string;
+  poster?: string;
   icon: string;
 };
 
-const EVENTS: ActivityEvent[] = [
+const EVENTS: ShelterShowcaseEvent[] = [
   {
     id: 'football',
     title: 'Football',
-    tagline: 'Teamwork, discipline, and pure fun.',
-    youtubeId: '3aEgg9pj_DY',
-    icon: '\u26BD',
+    description: 'Teamwork, discipline, and pure fun.',
+    mp4Src: CLOUDINARY_EVENTS.football,
+    icon: 'ΓÜ╜',
   },
   {
     id: 'computer-day',
     title: 'Computer Day',
-    tagline: 'Teaching Photoshop, design, and digital skills.',
-    youtubeId: 'JXNzNkOxklU',
-    icon: '\uD83D\uDCBB',
+    description: 'Teaching Photoshop, design, and digital skills.',
+    mp4Src: CLOUDINARY_EVENTS.computerDay,
+    icon: '≡ƒÆ╗',
   },
   {
     id: 'basketball',
     title: 'Basketball',
-    tagline: 'Building confidence one shot at a time.',
-    youtubeId: '6zrT6zDjltU',
-    icon: '\uD83C\uDFC0',
+    description: 'Building confidence one shot at a time.',
+    mp4Src: CLOUDINARY_EVENTS.basketball,
+    icon: '≡ƒÅÇ',
   },
   {
     id: 'painting',
     title: 'Painting & Coloring',
-    tagline: 'Where little hands create big dreams.',
-    youtubeId: 'hSREFTWK0h4',
-    icon: '\uD83C\uDFA8',
+    description: 'Where little hands create big dreams.',
+    mp4Src: CLOUDINARY_EVENTS.painting,
+    icon: '≡ƒÄ¿',
   },
   {
     id: 'singing',
     title: 'Singing & Music',
-    tagline: 'Every voice deserves to be heard.',
-    youtubeId: 'b6nn6t9X62E',
-    icon: '\uD83C\uDFB5',
+    description: 'Every voice deserves to be heard.',
+    mp4Src: CLOUDINARY_EVENTS.singing,
+    icon: '≡ƒÄ╡',
   },
   {
     id: 'dancing',
     title: 'Dancing',
-    tagline: 'Joy in every move, culture in every step.',
-    youtubeId: 'aTj8lMYF53g',
-    icon: '\uD83D\uDC83',
+    description: 'Joy in every move, culture in every step.',
+    mp4Src: CLOUDINARY_EVENTS.dancing,
+    icon: '≡ƒÆâ',
   },
 ];
 
-function buildEmbedUrl(videoId: string, muted: boolean): string {
-  const params = new URLSearchParams({
-    autoplay: '1',
-    mute: muted ? '1' : '0',
-    loop: '1',
-    playlist: videoId,
-    controls: '0',
-    playsinline: '1',
-    modestbranding: '1',
-    rel: '0',
-    showinfo: '0',
-    enablejsapi: '0',
-  });
-  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
-}
-
 type EventCardProps = {
-  event: ActivityEvent;
+  event: ShelterShowcaseEvent;
   index: number;
-  isActive: boolean;
-  onVisible: (id: string) => void;
-  onHidden: (id: string) => void;
 };
 
-const EventCard = memo(function EventCard({ event, index, isActive, onVisible, onHidden }: EventCardProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [muted, setMuted] = useState(true);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          onVisible(event.id);
-        } else {
-          onHidden(event.id);
-        }
-      },
-      { threshold: 0.5 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [event.id, onVisible, onHidden]);
-
-  useEffect(() => {
-    if (!isActive) {
-      setMuted(true);
-    }
-  }, [isActive]);
-
-  const thumbnail = `https://img.youtube.com/vi/${event.youtubeId}/hqdefault.jpg`;
+const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
+  const cardId = `events-${event.id}`;
+  const { isActive, handlers, tabIndex } = useCardVideoActivation(cardId);
+  const poster = event.poster ?? cloudinaryPosterFromMp4(event.mp4Src);
 
   return (
-    <motion.div
-      ref={containerRef}
+    <motion.article
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.55, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -8 }}
-      className="group relative flex flex-col overflow-hidden rounded-[1.75rem] bg-white/90 shadow-[0_20px_50px_-20px_rgba(47,93,80,0.25)] ring-1 ring-primary-100/70 backdrop-blur-sm transition-shadow duration-500 ease-out hover:shadow-[0_28px_60px_-18px_rgba(47,93,80,0.35)]"
+      className="group yt-premium-card"
+      data-active={isActive ? 'true' : 'false'}
+      tabIndex={tabIndex}
+      role={tabIndex === 0 ? 'button' : undefined}
+      aria-pressed={tabIndex === 0 ? isActive : undefined}
+      {...handlers}
     >
-      <div className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-0 ring-2 ring-primary-300/0 transition-opacity duration-500 group-hover:opacity-100 group-hover:ring-primary-300/35" aria-hidden />
+      <div
+        className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-0 ring-2 ring-primary-300/0 transition-opacity duration-500 group-hover:opacity-100 group-hover:ring-primary-300/35 group-data-[active=true]:opacity-100 group-data-[active=true]:ring-primary-300/35"
+        aria-hidden
+      />
 
-      {/* Video area */}
-      <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-neutral-950">
-        {isActive ? (
-          <iframe
-            key={`${event.youtubeId}-${muted}`}
-            title={event.title}
-            src={buildEmbedUrl(event.youtubeId, muted)}
-            className="pointer-events-none absolute inset-0 h-full w-full scale-[1.35]"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            loading="lazy"
-          />
-        ) : (
-          <img
-            src={thumbnail}
-            alt={event.title}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-            loading="lazy"
-            decoding="async"
-          />
-        )}
+      <YouTubeCardMedia
+        cardId={cardId}
+        mp4Src={event.mp4Src}
+        title={event.title}
+        poster={poster}
+        aspectClass="aspect-[16/10] sm:aspect-[16/10]"
+      />
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/5" aria-hidden />
-
-        {/* Mute/Unmute button */}
-        <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-10">
-          <button
-            type="button"
-            onClick={() => setMuted((m) => !m)}
-            className="pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
-            aria-label={muted ? 'Unmute video' : 'Mute video'}
-          >
-            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Title & tagline */}
-      <div className="relative flex flex-1 flex-col justify-center border-t border-white/60 bg-gradient-to-b from-white via-primary-50/30 to-primary-50/50 px-6 py-5 md:px-7 md:py-6">
-        <div className="flex items-start gap-4">
+      <div className="relative flex flex-1 flex-col justify-center border-t border-white/60 bg-gradient-to-b from-white via-primary-50/30 to-primary-50/50 px-5 py-5 sm:px-6 md:px-7 md:py-6">
+        <div className="flex items-start gap-3 sm:gap-4">
           <span className="select-none text-2xl leading-none md:text-3xl" aria-hidden>
             {event.icon}
           </span>
@@ -183,12 +112,12 @@ const EventCard = memo(function EventCard({ event, index, isActive, onVisible, o
               {event.title}
             </h3>
             <p className="mt-1.5 text-sm leading-relaxed text-dark/60 md:text-[15px]">
-              {event.tagline}
+              {event.description}
             </p>
           </div>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 });
 
@@ -196,24 +125,8 @@ export default function Events() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [newsletterError, setNewsletterError] = useState<string | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const visibleSet = useRef(new Set<string>());
 
   const events = useMemo(() => EVENTS, []);
-
-  const onVisible = useCallback((id: string) => {
-    visibleSet.current.add(id);
-    setActiveId((cur) => cur ?? id);
-  }, []);
-
-  const onHidden = useCallback((id: string) => {
-    visibleSet.current.delete(id);
-    setActiveId((cur) => {
-      if (cur !== id) return cur;
-      const remaining = Array.from(visibleSet.current);
-      return remaining.length > 0 ? remaining[0] : null;
-    });
-  }, []);
 
   const handleNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,7 +149,7 @@ export default function Events() {
     try {
       await sendEmailNotification({
         organization: {
-          subject: `New newsletter subscriber \u2014 ${em}`,
+          subject: `New newsletter subscriber ΓÇö ${em}`,
           html: linesToEmailHtml([`Email: ${em}`]),
         },
         donor: {
@@ -291,16 +204,9 @@ export default function Events() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 xl:grid-cols-3">
           {events.map((event, i) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              index={i}
-              isActive={activeId === event.id}
-              onVisible={onVisible}
-              onHidden={onHidden}
-            />
+            <EventCard key={event.id} event={event} index={i} />
           ))}
         </div>
 
@@ -335,7 +241,7 @@ export default function Events() {
                     }}
                     placeholder="your@email.com"
                     required
-                    className="flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-white outline-none placeholder:text-white/40 focus:border-white/50"
+                    className="form-field flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-white outline-none placeholder:text-white/40 focus:border-white/50"
                   />
                   <button
                     type="submit"
@@ -355,4 +261,4 @@ export default function Events() {
       </div>
     </section>
   );
-}
+};
