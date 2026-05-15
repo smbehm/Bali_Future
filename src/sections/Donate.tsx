@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, GraduationCap, Utensils, Stethoscope, TreePine, Gift, Check, ArrowRight, ArrowLeft } from 'lucide-react';
+import FormSuccessState from '../components/FormSuccessState';
 import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
 import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
@@ -28,7 +29,16 @@ export default function Donate() {
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitWarning, setSubmitWarning] = useState<string | null>(null);
+  const [whatsappMessage, setWhatsappMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const resetSuccess = useCallback(() => {
+    setSubmitted(false);
+    setStep(1);
+    setSubmitError(null);
+    setSubmitWarning(null);
+    setWhatsappMessage(null);
+  }, []);
 
   const parsedCustom = parseFloat(customAmount.replace(/,/g, '').trim());
   const finalAmount =
@@ -132,73 +142,46 @@ export default function Donate() {
       setSubmitWarning(formatEmailWarning(emailResult));
     }
 
+    setWhatsappMessage(
+      `New donation received: $${finalAmount} from ${anonymous ? 'Anonymous' : name} category: ${category}`,
+    );
     setSubmitted(true);
     setIsSubmitting(false);
-
-    const waText = `New donation received: $${finalAmount} from ${anonymous ? 'Anonymous' : name} category: ${category}`;
-    window.setTimeout(() => {
-      window.open(`https://wa.me/14157170016?text=${encodeURIComponent(waText)}`, '_blank');
-    }, 3000);
   };
 
   useEffect(() => {
     if (!submitted) return;
-    const t = window.setTimeout(() => {
-      setSubmitted(false);
-      setStep(1);
-      setSubmitError(null);
-      setSubmitWarning(null);
-    }, 5000);
+    const t = window.setTimeout(resetSuccess, 12000);
     return () => window.clearTimeout(t);
-  }, [submitted]);
+  }, [submitted, resetSuccess]);
 
   return (
-    <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55">
+    <section
+      id="donate"
+      className={`section-padding relative bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55 ${
+        submitted ? 'overflow-x-clip' : 'overflow-hidden'
+      }`}
+    >
       {!submitted && (
         <div className="decorative-blur absolute top-0 right-0 h-[min(600px,100vh)] w-[min(600px,100vw)] rounded-full bg-primary-50/40 blur-[100px]" />
       )}
 
       {submitted ? (
-        <div className="max-w-2xl mx-auto text-center relative">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', damping: 15 }}
-            className="w-24 h-24 rounded-full gradient-green flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary-300/30"
-          >
-            <Check className="w-12 h-12 text-white" />
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="font-sora font-bold text-3xl md:text-4xl text-tropical mb-4"
-          >
-            You Just Changed a Life
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="text-dark/60 text-lg mb-8"
-          >
-            Your ${finalAmount} gift to {categories.find(c => c.id === category)?.label} goes directly to
-            children in Bali who need it most. Because of you, a child will eat, learn, and dream tonight.
-          </motion.p>
-          {submitWarning ? (
-            <p className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              {submitWarning}
-            </p>
-          ) : null}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            onClick={() => { setSubmitted(false); setStep(1); }}
-            className="px-8 py-3 rounded-full glass text-tropical font-semibold hover:bg-white/80 transition-colors"
-          >
-            Make Another Donation
-          </motion.button>
+        <div className="section-container relative">
+          <FormSuccessState
+            title="You Just Changed a Life"
+            message={
+              <>
+                Your ${finalAmount} gift to {categories.find((c) => c.id === category)?.label} goes directly to
+                children in Bali who need it most. Because of you, a child will eat, learn, and dream tonight.
+              </>
+            }
+            warning={submitWarning}
+            whatsappMessage={whatsappMessage}
+            accent="green"
+            resetLabel="Make Another Donation"
+            onReset={resetSuccess}
+          />
         </div>
       ) : (
       <div className="mx-auto w-full min-w-0 max-w-4xl relative">

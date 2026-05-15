@@ -1,14 +1,13 @@
 import { useCallback, useMemo } from 'react';
 import { useHoverVideo } from '../contexts/HoverVideoContext';
-
-const canHover =
-  typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+import { usePrefersHover } from './usePrefersHover';
 
 /**
  * Desktop: hover/focus activates card video.
  * Touch: tap toggles (hover-only events do not fire on iOS/Android).
  */
 export function useCardVideoActivation(cardId: string) {
+  const prefersHover = usePrefersHover();
   const { activeCardId, setActiveCard } = useHoverVideo();
   const isActive = activeCardId === cardId;
 
@@ -23,7 +22,7 @@ export function useCardVideoActivation(cardId: string) {
 
   const handlers = useMemo(
     () =>
-      canHover
+      prefersHover
         ? {
             onMouseEnter: activate,
             onMouseLeave: deactivate,
@@ -33,8 +32,8 @@ export function useCardVideoActivation(cardId: string) {
         : {
             onClick: toggle,
           },
-    [activate, deactivate, toggle],
+    [activate, deactivate, toggle, prefersHover],
   );
 
-  return { isActive, handlers, tabIndex: canHover ? undefined : 0 };
+  return { isActive, handlers, tabIndex: prefersHover ? undefined : 0, prefersHover };
 }

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, MapPin, Calendar, Globe, Heart, Send, Check } from 'lucide-react';
+import { Users, MapPin, Calendar, Globe, Heart, Send } from 'lucide-react';
+import FormSuccessState from '../components/FormSuccessState';
 import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
 import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
@@ -19,7 +20,16 @@ export default function Volunteer() {
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitWarning, setSubmitWarning] = useState<string | null>(null);
+  const [whatsappMessage, setWhatsappMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const resetSuccess = useCallback(() => {
+    setSubmitted(false);
+    setSubmitError(null);
+    setSubmitWarning(null);
+    setWhatsappMessage(null);
+    setFormData({ full_name: '', email: '', phone: '', country: '', skills: '', availability: '', message: '' });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,25 +99,18 @@ export default function Volunteer() {
       setSubmitWarning(formatEmailWarning(emailResult));
     }
 
+    setWhatsappMessage(
+      `New volunteer application from ${formData.full_name} email: ${formData.email} country: ${formData.country}`,
+    );
     setSubmitted(true);
     setIsSubmitting(false);
-
-    const waText = `New volunteer application from ${formData.full_name} email: ${formData.email} country: ${formData.country}`;
-    window.setTimeout(() => {
-      window.open(`https://wa.me/14157170016?text=${encodeURIComponent(waText)}`, '_blank');
-    }, 3000);
   };
 
   useEffect(() => {
     if (!submitted) return;
-    const t = window.setTimeout(() => {
-      setSubmitted(false);
-      setSubmitError(null);
-      setSubmitWarning(null);
-      setFormData({ full_name: '', email: '', phone: '', country: '', skills: '', availability: '', message: '' });
-    }, 5000);
+    const t = window.setTimeout(resetSuccess, 12000);
     return () => window.clearTimeout(t);
-  }, [submitted]);
+  }, [submitted, resetSuccess]);
 
   return (
     <section id="volunteer" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-sky-50/30 to-cream">
@@ -162,17 +165,16 @@ export default function Volunteer() {
           className="max-w-2xl mx-auto"
         >
           {submitted ? (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 rounded-full gradient-sky flex items-center justify-center mx-auto mb-6 shadow-xl">
-                <Check className="w-10 h-10 text-white" />
-              </div>
-              <h3 className="font-sora font-bold text-2xl text-tropical mb-3">Welcome to the Family</h3>
-              <p className="text-dark/60">Your application is in our hands. We will be in touch within 48 hours to start your journey together.</p>
-              {submitWarning ? (
-                <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                  {submitWarning}
-                </p>
-              ) : null}
+            <div className="rounded-3xl bg-white p-4 shadow-xl shadow-sky-100/50 sm:p-6">
+              <FormSuccessState
+                title="Welcome to the Family"
+                message="Your application is in our hands. We will be in touch within 48 hours to start your journey together."
+                warning={submitWarning}
+                whatsappMessage={whatsappMessage}
+                accent="sky"
+                resetLabel="Submit another application"
+                onReset={resetSuccess}
+              />
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-xl shadow-sky-100/50 p-8 md:p-10">
