@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, MapPin, Calendar, Globe, Heart, Send, Check } from 'lucide-react';
 import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
+import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 
 const journeySteps = [
@@ -34,7 +35,7 @@ export default function Volunteer() {
     }
 
     setIsSubmitting(true);
-    console.log('[volunteers] insert', { email: formData.email.trim(), full_name: formData.full_name.trim() });
+    devLog('[volunteers] insert', { email: formData.email.trim(), full_name: formData.full_name.trim() });
 
     const { error } = await supabase.from('volunteers').insert(formData);
 
@@ -46,15 +47,16 @@ export default function Volunteer() {
     }
 
     const displayName = formData.full_name.trim() || 'Applicant';
-    const orgSubject = `New Volunteer Application â€” ${displayName}`;
+    const dash = '\u2014';
+    const orgSubject = `New Volunteer Application ${dash} ${displayName}`;
     const orgHtml = linesToEmailHtml([
       `Name: ${displayName}`,
       `Email: ${formData.email.trim()}`,
-      `Phone: ${formData.phone.trim() || 'â€”'}`,
-      `Country: ${formData.country.trim() || 'â€”'}`,
-      `Skills: ${formData.skills.trim() || 'â€”'}`,
-      `Availability: ${formData.availability.trim() || 'â€”'}`,
-      `Message: ${formData.message.trim() || 'â€”'}`,
+      `Phone: ${formData.phone.trim() || dash}`,
+      `Country: ${formData.country.trim() || dash}`,
+      `Skills: ${formData.skills.trim() || dash}`,
+      `Availability: ${formData.availability.trim() || dash}`,
+      `Message: ${formData.message.trim() || dash}`,
     ]);
 
     const volunteerEmailTrim = formData.email.trim();
@@ -62,18 +64,18 @@ export default function Volunteer() {
       volunteerEmailTrim.includes('@')
         ? {
             to: volunteerEmailTrim,
-            subject: "We've received your volunteer application â€” Bali Future",
+            subject: `We've received your volunteer application ${dash} Bali Future`,
             html: linesToEmailHtml([
               'Thank you for offering your time and heart to the children we serve.',
               '',
               'Here is a copy of what you submitted:',
               `Name: ${displayName}`,
               `Email: ${volunteerEmailTrim}`,
-              `Phone: ${formData.phone.trim() || 'â€”'}`,
-              `Country: ${formData.country.trim() || 'â€”'}`,
-              `Skills: ${formData.skills.trim() || 'â€”'}`,
-              `Availability: ${formData.availability.trim() || 'â€”'}`,
-              `Message: ${formData.message.trim() || 'â€”'}`,
+              `Phone: ${formData.phone.trim() || dash}`,
+              `Country: ${formData.country.trim() || dash}`,
+              `Skills: ${formData.skills.trim() || dash}`,
+              `Availability: ${formData.availability.trim() || dash}`,
+              `Message: ${formData.message.trim() || dash}`,
             ]),
           }
         : null;
@@ -232,7 +234,7 @@ export default function Volunteer() {
                   value={formData.skills}
                   onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
                   placeholder="Teaching, construction, medical, tech..."
-                  className="w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors"
+                  className="form-field w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors"
                 />
               </div>
               <div className="mt-4">

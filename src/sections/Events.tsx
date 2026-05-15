@@ -7,6 +7,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
+import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 import { YouTubeCardMedia } from '../components/youtube/YouTubeCardMedia';
 import { useCardVideoActivation } from '../hooks/useCardVideoActivation';
@@ -142,7 +143,7 @@ export default function Events() {
 
     setIsSubmitting(true);
     const em = newsletterEmail.trim();
-    console.log('[newsletter] insert', { email: em });
+    devLog('[newsletter] insert', { email: em });
 
     const { error } = await supabase.from('newsletter_subscribers').insert({ email: em });
 

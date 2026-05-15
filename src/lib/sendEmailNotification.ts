@@ -1,3 +1,4 @@
+﻿import { devLog, devWarn } from './devLog';
 import { supabaseAnonKey, supabaseUrl } from './supabase';
 
 /** Escape text for safe inclusion in HTML email bodies. */
@@ -58,7 +59,7 @@ async function postEmailEndpoint(
   payload: SendEmailRequestBody,
   headers: Record<string, string>,
 ): Promise<EmailNotificationResult> {
-  console.log('[sendEmailNotification] POST', endpoint, {
+  devLog('[sendEmailNotification] POST', endpoint, {
     organizationSubject: payload.organization.subject,
     hasDonor: Boolean(payload.donor?.to),
   });
@@ -77,7 +78,7 @@ async function postEmailEndpoint(
   }
 
   const bodyText = await res.text();
-  console.log('[sendEmailNotification] response', {
+  devLog('[sendEmailNotification] response', {
     endpoint,
     status: res.status,
     body: bodyText.slice(0, 500),
@@ -145,7 +146,7 @@ export async function sendEmailNotification(payload: SendEmailRequestBody): Prom
 
   if (supabaseUrl && supabaseAnonKey) {
     const edgeUrl = `${supabaseUrl.replace(/\/$/, '')}/functions/v1/send-email`;
-    console.warn('[sendEmailNotification] /api/send-email returned 404, trying Supabase Edge Function');
+    devWarn('[sendEmailNotification] /api/send-email returned 404, trying Supabase Edge Function');
     return postEmailEndpoint(edgeUrl, payload, {
       Authorization: `Bearer ${supabaseAnonKey}`,
       apikey: supabaseAnonKey,

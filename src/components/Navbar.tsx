@@ -91,6 +91,7 @@ export default function Navbar() {
               type="button"
               onClick={() => setMobileOpen(true)}
               aria-label="Open menu"
+              aria-expanded={mobileOpen}
               className="lg:hidden p-2 text-tropical"
             >
               <Menu className="w-6 h-6" />
@@ -122,6 +123,7 @@ export default function Navbar() {
                   </span>
                 </a>
                 <button
+                  type="button"
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
                   className="-mr-2 p-3 rounded-lg active:bg-primary-50/60"

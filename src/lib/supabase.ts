@@ -31,7 +31,7 @@ export const SUPABASE_CONFIG_ERROR =
   'Form submissions are unavailable: database connection is not configured on this deployment. ' +
   'Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in Vercel for Production and Preview builds, then redeploy.';
 
-if (!isSupabaseConfigured()) {
+if (!isSupabaseConfigured() && import.meta.env.DEV) {
   console.error('[Supabase] Client misconfigured at runtime', {
     hasUrl: supabaseUrl.length > 0,
     hasKey: supabaseAnonKey.length > 0,

@@ -102,9 +102,18 @@
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .hover-lift:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 25px 50px rgba(47, 93, 80, 0.12);
+  @media (hover: hover) {
+    .hover-lift:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 25px 50px rgba(47, 93, 80, 0.12);
+    }
+  }
+
+  @media (hover: none) {
+    .hover-lift:active {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 32px rgba(47, 93, 80, 0.1);
+    }
   }
 
   .section-padding {
@@ -265,6 +274,12 @@
     );
     background-size: 220% 100%;
     animation: yt-shimmer 1.35s ease-in-out infinite;
+  }
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .yt-premium-card {
+      background: rgba(255, 255, 255, 0.97);
+    }
   }
 
   .yt-premium-card {

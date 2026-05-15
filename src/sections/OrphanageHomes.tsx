@@ -110,7 +110,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-white/20 blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative h-[72px] w-[72px] rounded-full bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-2xl shadow-black/30 transition-all duration-400 group-hover:scale-110 group-hover:bg-white/25 group-hover:border-white/50">
+            <div className="relative h-[72px] w-[72px] rounded-full bg-white/15 border border-white/30 flex items-center justify-center shadow-2xl shadow-black/30 transition-all duration-400 group-hover:scale-110 [-webkit-backdrop-filter:blur(12px)] [backdrop-filter:blur(12px)] group-hover:bg-white/25 group-hover:border-white/50">
               <Play className="w-8 h-8 text-white fill-white ml-1 drop-shadow-lg" />
             </div>
           </div>
@@ -118,7 +118,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
 
         {/* Tag */}
         <div className="absolute top-4 left-4">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold bg-white/90 backdrop-blur-sm text-tropical shadow-sm border border-white/50">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold bg-white/90 text-tropical shadow-sm border border-white/50 [-webkit-backdrop-filter:blur(8px)] [backdrop-filter:blur(8px)]">
             <Heart className="w-3 h-3 text-warm-500" />
             {story.tag}
           </span>

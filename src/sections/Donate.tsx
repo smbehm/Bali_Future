@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, GraduationCap, Utensils, Stethoscope, TreePine, Gift, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
+import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 
 const categories = [
@@ -59,7 +60,7 @@ export default function Donate() {
       message,
       is_anonymous: anonymous,
     };
-    console.log('[donations] insert', { ...row, donor_email: row.donor_email ? '(set)' : '(empty)' });
+    devLog('[donations] insert', { ...row, donor_email: row.donor_email ? '(set)' : '(empty)' });
 
     const { error } = await supabase.from('donations').insert({
       donor_name: anonymous ? 'Anonymous' : name,

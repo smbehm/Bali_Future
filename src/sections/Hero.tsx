@@ -311,16 +311,16 @@ function HeroStatCell({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col"
+      className="flex min-w-0 flex-col"
     >
-      <div className="flex items-start gap-2">
+      <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-start sm:gap-2">
         {icon}
-        <span className="flex flex-wrap items-baseline gap-x-1">
-          <strong className="font-sora text-3xl font-bold text-tropical tabular-nums leading-none">
+        <span className="flex min-w-0 flex-col items-center gap-0.5 text-center sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-1 sm:text-left">
+          <strong className="font-sora text-xl font-bold text-tropical tabular-nums leading-none sm:text-3xl">
             {n.toLocaleString()}
             {suffix}
           </strong>
-          <span className="text-base text-dark/60 leading-snug">{after}</span>
+          <span className="text-[11px] leading-tight text-dark/60 sm:text-base sm:leading-snug">{after}</span>
         </span>
       </div>
     </motion.div>
@@ -334,9 +334,9 @@ const heroStats: Array<{
   icon: ReactNode;
   durationMs: number;
 }> = [
-  { end: 6, after: ' homes supported', icon: <Home className="size-[1em] shrink-0 text-primary-300 text-3xl" />, durationMs: 1500 },
-  { end: 100, suffix: '+', after: ' children in our care', icon: <Heart className="size-[1em] shrink-0 text-warm-400 text-3xl" />, durationMs: 2000 },
-  { end: 100, suffix: '%', after: ' of support goes to them', icon: <Users className="size-[1em] shrink-0 text-sky-300 text-3xl" />, durationMs: 2000 },
+  { end: 6, after: ' homes supported', icon: <Home className="size-[1em] shrink-0 text-2xl text-primary-300 sm:text-3xl" />, durationMs: 1500 },
+  { end: 100, suffix: '+', after: ' children in our care', icon: <Heart className="size-[1em] shrink-0 text-2xl text-warm-400 sm:text-3xl" />, durationMs: 2000 },
+  { end: 100, suffix: '%', after: ' of support goes to them', icon: <Users className="size-[1em] shrink-0 text-2xl text-sky-300 sm:text-3xl" />, durationMs: 2000 },
 ];
 
 export default function Hero() {
@@ -435,7 +435,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.9 }}
-              className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6"
+              className="grid grid-cols-3 gap-2 sm:gap-6"
             >
               {heroStats.map((stat) => (
                 <HeroStatCell
