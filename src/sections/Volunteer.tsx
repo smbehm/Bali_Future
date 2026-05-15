@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, MapPin, Calendar, Globe, Heart, Send, Check } from 'lucide-react';
-import { formatPostgrestError, supabase } from '../lib/supabase';
-import { linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
+import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
+import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 
 const journeySteps = [
   { icon: <Globe className="w-5 h-5" />, title: 'Share Your Heart', desc: 'Tell us what moves you to serve' },
@@ -17,29 +17,44 @@ export default function Volunteer() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitWarning, setSubmitWarning] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     setSubmitError(null);
+    setSubmitWarning(null);
+
+    if (!isSupabaseConfigured()) {
+      console.error('[volunteers] Supabase not configured at runtime');
+      setSubmitError(SUPABASE_CONFIG_ERROR);
+      return;
+    }
+
+    setIsSubmitting(true);
+    console.log('[volunteers] insert', { email: formData.email.trim(), full_name: formData.full_name.trim() });
 
     const { error } = await supabase.from('volunteers').insert(formData);
 
     if (error) {
-      console.error('[volunteers]', error);
+      console.error('[volunteers] Supabase insert failed', error);
       setSubmitError(formatPostgrestError(error));
+      setIsSubmitting(false);
       return;
     }
 
     const displayName = formData.full_name.trim() || 'Applicant';
-    const orgSubject = `New Volunteer Application — ${displayName}`;
+    const orgSubject = `New Volunteer Application â€” ${displayName}`;
     const orgHtml = linesToEmailHtml([
       `Name: ${displayName}`,
       `Email: ${formData.email.trim()}`,
-      `Phone: ${formData.phone.trim() || '—'}`,
-      `Country: ${formData.country.trim() || '—'}`,
-      `Skills: ${formData.skills.trim() || '—'}`,
-      `Availability: ${formData.availability.trim() || '—'}`,
-      `Message: ${formData.message.trim() || '—'}`,
+      `Phone: ${formData.phone.trim() || 'â€”'}`,
+      `Country: ${formData.country.trim() || 'â€”'}`,
+      `Skills: ${formData.skills.trim() || 'â€”'}`,
+      `Availability: ${formData.availability.trim() || 'â€”'}`,
+      `Message: ${formData.message.trim() || 'â€”'}`,
     ]);
 
     const volunteerEmailTrim = formData.email.trim();
@@ -47,28 +62,33 @@ export default function Volunteer() {
       volunteerEmailTrim.includes('@')
         ? {
             to: volunteerEmailTrim,
-            subject: "We've received your volunteer application — Bali Future",
+            subject: "We've received your volunteer application â€” Bali Future",
             html: linesToEmailHtml([
               'Thank you for offering your time and heart to the children we serve.',
               '',
               'Here is a copy of what you submitted:',
               `Name: ${displayName}`,
               `Email: ${volunteerEmailTrim}`,
-              `Phone: ${formData.phone.trim() || '—'}`,
-              `Country: ${formData.country.trim() || '—'}`,
-              `Skills: ${formData.skills.trim() || '—'}`,
-              `Availability: ${formData.availability.trim() || '—'}`,
-              `Message: ${formData.message.trim() || '—'}`,
+              `Phone: ${formData.phone.trim() || 'â€”'}`,
+              `Country: ${formData.country.trim() || 'â€”'}`,
+              `Skills: ${formData.skills.trim() || 'â€”'}`,
+              `Availability: ${formData.availability.trim() || 'â€”'}`,
+              `Message: ${formData.message.trim() || 'â€”'}`,
             ]),
           }
         : null;
 
-    setSubmitted(true);
-
-    void sendEmailNotification({
+    const emailResult = await sendEmailNotification({
       organization: { subject: orgSubject, html: orgHtml },
       donor: donorConfirmation,
-    }).catch(() => {});
+    });
+    if (!emailResult.ok) {
+      console.error('[volunteers] email notification failed', emailResult);
+      setSubmitWarning(formatEmailWarning(emailResult));
+    }
+
+    setSubmitted(true);
+    setIsSubmitting(false);
 
     const waText = `New volunteer application from ${formData.full_name} email: ${formData.email} country: ${formData.country}`;
     window.setTimeout(() => {
@@ -81,6 +101,7 @@ export default function Volunteer() {
     const t = window.setTimeout(() => {
       setSubmitted(false);
       setSubmitError(null);
+      setSubmitWarning(null);
       setFormData({ full_name: '', email: '', phone: '', country: '', skills: '', availability: '', message: '' });
     }, 5000);
     return () => window.clearTimeout(t);
@@ -145,6 +166,11 @@ export default function Volunteer() {
               </div>
               <h3 className="font-sora font-bold text-2xl text-tropical mb-3">Welcome to the Family</h3>
               <p className="text-dark/60">Your application is in our hands. We will be in touch within 48 hours to start your journey together.</p>
+              {submitWarning ? (
+                <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                  {submitWarning}
+                </p>
+              ) : null}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-xl shadow-sky-100/50 p-8 md:p-10">
@@ -220,7 +246,8 @@ export default function Volunteer() {
               </div>
               <button
                 type="submit"
-                className="mt-6 w-full flex items-center justify-center gap-2 py-4 rounded-xl gradient-sky text-white font-semibold shadow-lg shadow-sky-200/50 hover:shadow-xl transition-all"
+                disabled={isSubmitting}
+                className="mt-6 w-full flex items-center justify-center gap-2 py-4 rounded-xl gradient-sky text-white font-semibold shadow-lg shadow-sky-200/50 hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
                 Submit Application

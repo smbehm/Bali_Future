@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "Bali Future <onboarding@resend.dev>";
-const ORG_EMAIL = "donate@balifuture.com";
+const ORG_EMAIL = Deno.env.get("INTAKE_EMAIL_TO")?.trim() || "donate@balifuture.com";
 
 function isValidPayload(obj: unknown): obj is {
   organization: { subject: string; html: string };

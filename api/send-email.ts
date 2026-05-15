@@ -22,6 +22,15 @@ function normalizeFromAddress(raw: string): string {
   return `Bali Future <${trimmed}>`;
 }
 
+function corsHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get('Origin');
+  return {
+    'Access-Control-Allow-Origin': origin ?? '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+}
+
 async function postResend(
   apiKey: string,
   from: string,
@@ -41,12 +50,13 @@ async function postResend(
   return { ok: resendRes.ok, status: resendRes.status, body };
 }
 
-function jsonResponse(data: unknown, status: number): Response {
+function jsonResponse(request: Request, data: unknown, status: number): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store',
+      ...corsHeaders(request),
     },
   });
 }
@@ -55,15 +65,12 @@ export default async function handler(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
-      headers: {
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      headers: corsHeaders(request),
     });
   }
 
   if (request.method !== 'POST') {
-    return jsonResponse({ error: 'Method Not Allowed' }, 405);
+    return jsonResponse(request, { error: 'Method Not Allowed' }, 405);
   }
 
   const key = (process.env.RESEND_API_KEY ?? '').trim();
@@ -71,18 +78,20 @@ export default async function handler(request: Request): Promise<Response> {
   const from = normalizeFromAddress(process.env.RESEND_FROM_EMAIL ?? '');
 
   if (!key) {
-    return jsonResponse({ skipped: true, reason: 'RESEND_API_KEY not set' }, 200);
+    console.error('[api/send-email] RESEND_API_KEY is not set');
+    return jsonResponse(request, { skipped: true, reason: 'RESEND_API_KEY not set' }, 503);
   }
 
   if (!orgTo) {
-    return jsonResponse({ error: 'INTAKE_EMAIL_TO not set in env' }, 500);
+    console.error('[api/send-email] INTAKE_EMAIL_TO is not set');
+    return jsonResponse(request, { error: 'INTAKE_EMAIL_TO not set in env' }, 500);
   }
 
   let clientPayload: unknown;
   try {
     clientPayload = await request.json();
   } catch {
-    return jsonResponse({ error: 'Invalid JSON' }, 400);
+    return jsonResponse(request, { error: 'Invalid JSON' }, 400);
   }
 
   const results: Array<{ target: string; status: number; ok: boolean; detail?: string }> = [];
@@ -90,6 +99,9 @@ export default async function handler(request: Request): Promise<Response> {
   if (isNewEmailPayload(clientPayload)) {
     const org = clientPayload.organization;
     const r0 = await postResend(key, from, orgTo, org.subject, org.html);
+    if (!r0.ok) {
+      console.error('[api/send-email] Resend organization failed', r0.status, r0.body);
+    }
     results.push({
       target: 'organization',
       status: r0.status,
@@ -100,6 +112,9 @@ export default async function handler(request: Request): Promise<Response> {
     const donor = clientPayload.donor;
     if (donor && typeof donor.to === 'string' && donor.to.includes('@')) {
       const r1 = await postResend(key, from, donor.to.trim(), donor.subject, donor.html);
+      if (!r1.ok) {
+        console.error('[api/send-email] Resend donor failed', r1.status, r1.body);
+      }
       results.push({
         target: 'donor',
         status: r1.status,
@@ -126,5 +141,5 @@ export default async function handler(request: Request): Promise<Response> {
 
   const allOk = results.length > 0 && results.every((x) => x.ok);
   const status = allOk ? 200 : results.some((x) => x.ok) ? 207 : 502;
-  return jsonResponse({ results }, status);
+  return jsonResponse(request, { results }, status);
 }

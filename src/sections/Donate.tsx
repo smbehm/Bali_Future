@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, GraduationCap, Utensils, Stethoscope, TreePine, Gift, Check, ArrowRight, ArrowLeft } from 'lucide-react';
-import { formatPostgrestError, supabase } from '../lib/supabase';
-import { linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
+import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
+import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 
 const categories = [
   { id: 'education', icon: <GraduationCap className="w-5 h-5" />, label: 'Education', desc: 'Give a child the gift of learning' },
@@ -26,6 +26,8 @@ export default function Donate() {
   const [anonymous, setAnonymous] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitWarning, setSubmitWarning] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const parsedCustom = parseFloat(customAmount.replace(/,/g, '').trim());
   const finalAmount =
@@ -35,8 +37,29 @@ export default function Donate() {
 
   const handleSubmit = async () => {
     if (!Number.isFinite(finalAmount) || finalAmount <= 0) return;
+    if (isSubmitting) return;
 
     setSubmitError(null);
+    setSubmitWarning(null);
+
+    if (!isSupabaseConfigured()) {
+      console.error('[donations] Supabase not configured at runtime');
+      setSubmitError(SUPABASE_CONFIG_ERROR);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const row = {
+      donor_name: anonymous ? 'Anonymous' : name,
+      donor_email: email,
+      amount: finalAmount,
+      type,
+      category,
+      message,
+      is_anonymous: anonymous,
+    };
+    console.log('[donations] insert', { ...row, donor_email: row.donor_email ? '(set)' : '(empty)' });
 
     const { error } = await supabase.from('donations').insert({
       donor_name: anonymous ? 'Anonymous' : name,
@@ -49,8 +72,9 @@ export default function Donate() {
     });
 
     if (error) {
-      console.error('[donations]', error);
+      console.error('[donations] Supabase insert failed', error);
       setSubmitError(formatPostgrestError(error));
+      setIsSubmitting(false);
       return;
     }
 
@@ -98,12 +122,17 @@ export default function Donate() {
           }
         : null;
 
-    setSubmitted(true);
-
-    void sendEmailNotification({
+    const emailResult = await sendEmailNotification({
       organization: { subject: orgSubject, html: orgHtml },
       donor: donorConfirmation,
-    }).catch(() => {});
+    });
+    if (!emailResult.ok) {
+      console.error('[donations] email notification failed', emailResult);
+      setSubmitWarning(formatEmailWarning(emailResult));
+    }
+
+    setSubmitted(true);
+    setIsSubmitting(false);
 
     const waText = `New donation received: $${finalAmount} from ${anonymous ? 'Anonymous' : name} category: ${category}`;
     window.setTimeout(() => {
@@ -117,6 +146,7 @@ export default function Donate() {
       setSubmitted(false);
       setStep(1);
       setSubmitError(null);
+      setSubmitWarning(null);
     }, 5000);
     return () => window.clearTimeout(t);
   }, [submitted]);
@@ -154,6 +184,11 @@ export default function Donate() {
             Your ${finalAmount} gift to {categories.find(c => c.id === category)?.label} goes directly to
             children in Bali who need it most. Because of you, a child will eat, learn, and dream tonight.
           </motion.p>
+          {submitWarning ? (
+            <p className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              {submitWarning}
+            </p>
+          ) : null}
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -413,7 +448,8 @@ export default function Donate() {
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    className="flex flex-1 items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all"
+                    disabled={isSubmitting}
+                    className="flex flex-1 items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <Heart className="w-5 h-5" />
                     Complete Donation

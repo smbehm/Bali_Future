@@ -14,14 +14,30 @@ function readViteEnv(name: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_ANON_KEY'): stri
   return String(raw).trim();
 }
 
-const supabaseUrl = readViteEnv('VITE_SUPABASE_URL');
-const supabaseAnonKey = readViteEnv('VITE_SUPABASE_ANON_KEY');
+export const supabaseUrl = readViteEnv('VITE_SUPABASE_URL');
+export const supabaseAnonKey = readViteEnv('VITE_SUPABASE_ANON_KEY');
 
-if (import.meta.env.DEV && (!supabaseUrl || !supabaseAnonKey)) {
-  console.error(
-    '[Supabase] VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY is missing or empty after trim(). ' +
-      'Vite only exposes variables prefixed with VITE_; they must be set before `vite build` (e.g. Vercel project env).',
+/** True when Vite inlined non-empty Supabase credentials at build time. */
+export function isSupabaseConfigured(): boolean {
+  return (
+    supabaseUrl.length > 0 &&
+    supabaseAnonKey.length > 0 &&
+    supabaseUrl.startsWith('https://') &&
+    supabaseUrl.includes('supabase')
   );
+}
+
+export const SUPABASE_CONFIG_ERROR =
+  'Form submissions are unavailable: database connection is not configured on this deployment. ' +
+  'Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in Vercel for Production and Preview builds, then redeploy.';
+
+if (!isSupabaseConfigured()) {
+  console.error('[Supabase] Client misconfigured at runtime', {
+    hasUrl: supabaseUrl.length > 0,
+    hasKey: supabaseAnonKey.length > 0,
+    urlPrefix: supabaseUrl.slice(0, 30) || '(empty)',
+    mode: import.meta.env.MODE,
+  });
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

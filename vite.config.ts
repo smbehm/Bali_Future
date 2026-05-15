@@ -171,9 +171,16 @@ function sendEmailDevApi(env: Record<string, string>): Plugin {
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
+  // VITE_* must exist in the environment when `vite build` runs (Vercel → Production + Preview).
   const env = loadEnv(mode, process.cwd(), '');
+  if (!env.VITE_SUPABASE_URL || !env.VITE_SUPABASE_ANON_KEY) {
+    console.warn(
+      '[vite build] VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is missing — production forms will not save until set and redeployed.',
+    );
+  }
 
   return {
+    envDir: process.cwd(),
     plugins: [react(), sendEmailDevApi(env)],
     server: {
       headers: { 'Cache-Control': 'no-store' },

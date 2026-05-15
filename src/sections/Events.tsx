@@ -6,8 +6,8 @@ import {
   ArrowRight,
   CheckCircle2,
 } from 'lucide-react';
-import { formatPostgrestError, supabase } from '../lib/supabase';
-import { linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
+import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
+import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 import { YouTubeCardMedia } from '../components/youtube/YouTubeCardMedia';
 import { useCardVideoActivation } from '../hooks/useCardVideoActivation';
 import { CLOUDINARY_EVENTS, cloudinaryPosterFromMp4 } from '../lib/cloudinary';
@@ -27,42 +27,42 @@ const EVENTS: ShelterShowcaseEvent[] = [
     title: 'Football',
     description: 'Teamwork, discipline, and pure fun.',
     mp4Src: CLOUDINARY_EVENTS.football,
-    icon: 'ΓÜ╜',
+    icon: '\u26BD',
   },
   {
     id: 'computer-day',
     title: 'Computer Day',
     description: 'Teaching Photoshop, design, and digital skills.',
     mp4Src: CLOUDINARY_EVENTS.computerDay,
-    icon: '≡ƒÆ╗',
+    icon: '\uD83D\uDCBB',
   },
   {
     id: 'basketball',
     title: 'Basketball',
     description: 'Building confidence one shot at a time.',
     mp4Src: CLOUDINARY_EVENTS.basketball,
-    icon: '≡ƒÅÇ',
+    icon: '\uD83C\uDFC0',
   },
   {
     id: 'painting',
     title: 'Painting & Coloring',
     description: 'Where little hands create big dreams.',
     mp4Src: CLOUDINARY_EVENTS.painting,
-    icon: '≡ƒÄ¿',
+    icon: '\uD83C\uDFA8',
   },
   {
     id: 'singing',
     title: 'Singing & Music',
     description: 'Every voice deserves to be heard.',
     mp4Src: CLOUDINARY_EVENTS.singing,
-    icon: '≡ƒÄ╡',
+    icon: '\uD83C\uDFB5',
   },
   {
     id: 'dancing',
     title: 'Dancing',
     description: 'Joy in every move, culture in every step.',
     mp4Src: CLOUDINARY_EVENTS.dancing,
-    icon: '≡ƒÆâ',
+    icon: '\uD83D\uDC83',
   },
 ];
 
@@ -125,46 +125,58 @@ export default function Events() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [newsletterError, setNewsletterError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const events = useMemo(() => EVENTS, []);
 
   const handleNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsletterEmail) return;
+    if (!newsletterEmail || isSubmitting) return;
     setNewsletterError(null);
 
-    const { error } = await supabase.from('newsletter_subscribers').insert({ email: newsletterEmail });
+    if (!isSupabaseConfigured()) {
+      console.error('[newsletter] Supabase not configured at runtime');
+      setNewsletterError(SUPABASE_CONFIG_ERROR);
+      return;
+    }
+
+    setIsSubmitting(true);
+    const em = newsletterEmail.trim();
+    console.log('[newsletter] insert', { email: em });
+
+    const { error } = await supabase.from('newsletter_subscribers').insert({ email: em });
 
     if (error) {
-      console.error('[newsletter]', error);
+      console.error('[newsletter] Supabase insert failed', error);
       setNewsletterError(
         error.code === '23505'
           ? 'You are already subscribed! Thank you for your support.'
           : formatPostgrestError(error),
       );
+      setIsSubmitting(false);
       return;
     }
 
-    const em = newsletterEmail.trim();
-    try {
-      await sendEmailNotification({
-        organization: {
-          subject: `New newsletter subscriber ΓÇö ${em}`,
-          html: linesToEmailHtml([`Email: ${em}`]),
-        },
-        donor: {
-          to: em,
-          subject: 'Welcome to the Bali Future Community!',
-          html: linesToEmailHtml([
-            'Thank you for subscribing! You will receive stories from the field, event invitations, and updates on the children whose lives you are helping change. Together we can make a difference.',
-          ]),
-        },
-      });
-    } catch {
-      /* logged inside sendEmailNotification */
+    const emailResult = await sendEmailNotification({
+      organization: {
+        subject: `New newsletter subscriber — ${em}`,
+        html: linesToEmailHtml([`Email: ${em}`]),
+      },
+      donor: {
+        to: em,
+        subject: 'Welcome to the Bali Future Community!',
+        html: linesToEmailHtml([
+          'Thank you for subscribing! You will receive stories from the field, event invitations, and updates on the children whose lives you are helping change. Together we can make a difference.',
+        ]),
+      },
+    });
+    if (!emailResult.ok) {
+      console.error('[newsletter] email notification failed', emailResult);
+      setNewsletterError(formatEmailWarning(emailResult));
     }
 
     setSubscribed(true);
+    setIsSubmitting(false);
   };
 
   useEffect(() => {
@@ -226,9 +238,14 @@ export default function Events() {
                 updates on the children whose lives you are helping change.
               </p>
               {subscribed ? (
-                <div className="flex items-center justify-center gap-2 font-semibold text-primary-100">
-                  <CheckCircle2 className="h-5 w-5" />
-                  Thank you for subscribing!
+                <div>
+                  <div className="flex items-center justify-center gap-2 font-semibold text-primary-100">
+                    <CheckCircle2 className="h-5 w-5" />
+                    Thank you for subscribing!
+                  </div>
+                  {newsletterError ? (
+                    <p className="mt-3 text-sm text-amber-100/95">{newsletterError}</p>
+                  ) : null}
                 </div>
               ) : (
                 <form onSubmit={handleNewsletter} className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row">
@@ -245,7 +262,8 @@ export default function Events() {
                   />
                   <button
                     type="submit"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-tropical transition-colors hover:bg-primary-50"
+                    disabled={isSubmitting}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-tropical transition-colors hover:bg-primary-50 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     Subscribe
                     <ArrowRight className="h-4 w-4" />
