@@ -48,7 +48,7 @@ export default function Volunteer() {
         </motion.div>
 
         {/* Journey timeline */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-1 gap-6 mb-16 sm:grid-cols-2 md:grid-cols-4">
           {journeySteps.map((step, i) => (
             <motion.div
               key={step.title}

@@ -1,19 +1,31 @@
 import { motion } from 'framer-motion';
-import { TreePine, Heart, Instagram, Facebook, Twitter, Youtube, Mail, MapPin, Phone } from 'lucide-react';
+import { TreePine, Heart, Instagram, Mail, MapPin, MessageCircle } from 'lucide-react';
 
-const footerLinks = {
-  'About': ['Our Story', 'Our Team', 'Partners', 'Transparency Reports', 'Press'],
-  'Programs': ['Education', 'Nutrition & Health', 'Sustainability', 'Safe Shelter', 'Volunteering'],
-  'Get Involved': ['Donate Now', 'Sponsor a Child', 'Corporate Partnerships', 'Fundraise for Us', 'Leave a Legacy'],
+const footerLinks: Record<string, { label: string; href: string }[]> = {
+  About: [
+    { label: 'Mission', href: '#mission' },
+    { label: 'Impact', href: '#impact' },
+  ],
+  Programs: [
+    { label: 'Tree of Future', href: '#tree-of-future' },
+    { label: 'Orphanage Homes', href: '#stories' },
+    { label: 'Gallery', href: '#gallery' },
+  ],
+  'Get Involved': [
+    { label: 'Donate', href: '#donate' },
+    { label: 'Volunteer', href: '#volunteer' },
+    { label: 'Events', href: '#events' },
+    { label: 'FAQ', href: '#faq' },
+  ],
 };
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-tropical text-white">
-      {/* Top wave */}
-      <div className="absolute top-0 left-0 right-0">
+    <footer id="footer" className="relative overflow-hidden bg-tropical text-white">
+      {/* Top wave — translucent so the tree continues into the footer */}
+      <div className="absolute top-0 left-0 right-0 pointer-events-none">
         <svg viewBox="0 0 1440 80" fill="none" className="w-full">
-          <path d="M0 0L60 10C120 20 240 40 360 50C480 60 600 60 720 50C840 40 960 20 1080 15C1200 10 1320 20 1380 25L1440 30V0H0Z" fill="#fffdf7" />
+          <path d="M0 0L60 10C120 20 240 40 360 50C480 60 600 60 720 50C840 40 960 20 1080 15C1200 10 1320 20 1380 25L1440 30V0H0Z" fill="#fffdf7" fillOpacity="0.55" />
         </svg>
       </div>
 
@@ -44,21 +56,31 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-primary-300/20 flex items-center justify-center">
-                <TreePine className="w-5 h-5 text-primary-300" />
+            <a href="#top" className="mb-4 flex w-fit min-w-0 max-w-full items-center gap-3 rounded-lg outline-none ring-offset-2 ring-offset-tropical focus-visible:ring-2 focus-visible:ring-primary-300">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-300/20">
+                <TreePine className="h-5 w-5 text-primary-300" />
               </div>
-              <span className="font-sora font-bold text-xl">Bali Future</span>
-            </div>
+              <span className="font-sora text-xl font-bold truncate">Bali Future</span>
+            </a>
             <p className="text-white/60 leading-relaxed mb-6 max-w-sm">
               A community of compassionate people dedicated to providing vulnerable children in Bali
               with the love, care, and opportunities they deserve. Your support makes all the difference.
             </p>
-            <div className="flex gap-3">
-              {[Instagram, Facebook, Twitter, Youtube].map((Icon, i) => (
+            <div className="flex flex-wrap gap-3">
+              {[
+                {
+                  Icon: Instagram,
+                  href: 'https://www.instagram.com/balifuture_com?igsh=YjJhemhxcG11ZGZy&utm_source=qr',
+                  label: 'Instagram',
+                },
+                { Icon: MessageCircle, href: 'https://wa.me/14157170016', label: 'WhatsApp' },
+              ].map(({ Icon, href, label }) => (
                 <a
-                  key={i}
-                  href="#"
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Bali Future on ${label}`}
                   className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary-300/20 hover:border-primary-300/30 transition-colors"
                 >
                   <Icon className="w-4 h-4" />
@@ -73,9 +95,9 @@ export default function Footer() {
               <h4 className="font-sora font-bold text-sm uppercase tracking-wider text-white/40 mb-4">{title}</h4>
               <ul className="space-y-2.5">
                 {links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-white/60 hover:text-primary-300 transition-colors text-sm">
-                      {link}
+                  <li key={link.label}>
+                    <a href={link.href} className="text-white/60 hover:text-primary-300 transition-colors text-sm">
+                      {link.label}
                     </a>
                   </li>
                 ))}
@@ -86,15 +108,21 @@ export default function Footer() {
 
         {/* Contact & quick donate */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 py-8 border-t border-white/10">
-          <div className="flex flex-wrap gap-6 text-sm text-white/50">
-            <span className="flex items-center gap-2">
-              <Mail className="w-4 h-4" /> hello@balifuture.org
-            </span>
-            <span className="flex items-center gap-2">
-              <Phone className="w-4 h-4" /> +62 361 123 456
-            </span>
-            <span className="flex items-center gap-2">
-              <MapPin className="w-4 h-4" /> Ubud, Bali, Indonesia
+          <div className="flex flex-col gap-4 text-sm text-white/50 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
+            <a href="mailto:donate@balifuture.com" className="flex items-center gap-2 transition-colors hover:text-white/80">
+              <Mail className="w-4 h-4 shrink-0" /> donate@balifuture.com
+            </a>
+            <a
+              href="https://wa.me/14157170016"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 transition-colors hover:text-white/80"
+            >
+              <MessageCircle className="w-4 h-4 shrink-0" /> +1 (415) 717-0016
+            </a>
+            <span className="flex items-start gap-2 sm:items-center">
+              <MapPin className="w-4 h-4 shrink-0 mt-0.5 sm:mt-0" />
+              Jl. Panji I no.7, Br. Kwanji, Dalung, Kec. Kuta Utara, Kabupaten Badung, Bali 80361, Indonesia
             </span>
           </div>
           <a
@@ -108,11 +136,26 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 border-t border-white/5 text-xs text-white/30">
-          <span>2026 Bali Future Foundation. All rights reserved.</span>
-          <div className="flex gap-4">
-            <a href="#" className="hover:text-white/60 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white/60 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-white/60 transition-colors">Cookie Policy</a>
+          <span className="text-center md:text-left">2026 Bali Future Foundation. All rights reserved.</span>
+          <div className="flex flex-wrap justify-center gap-4 md:justify-end">
+            <a
+              href="mailto:hello@balifuture.org?subject=Privacy%20policy%20inquiry"
+              className="hover:text-white/60 transition-colors"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="mailto:hello@balifuture.org?subject=Terms%20of%20service%20inquiry"
+              className="hover:text-white/60 transition-colors"
+            >
+              Terms of Service
+            </a>
+            <a
+              href="mailto:hello@balifuture.org?subject=Cookie%20policy%20inquiry"
+              className="hover:text-white/60 transition-colors"
+            >
+              Cookie Policy
+            </a>
           </div>
         </div>
       </div>

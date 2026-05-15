@@ -89,8 +89,12 @@ export default function Mission() {
           </h2>
           <p className="text-dark/60 text-lg leading-relaxed">
             We believe in a world where children without families still grow up in supportive,
-            loving environments. By meeting their most basic needs -- food, shelter, education,
-            and unconditional care -- we help them discover their potential and pursue their dreams.
+            loving environments. The shelter serves children aged 3-18 from across Bali and Indonesia.
+            Our mission is physical, spiritual, and emotional guidance alongside education, with the
+            goal of empowering children to become independent, responsible citizens. Through the
+            Inspire The Youth initiative, we teach kids CAD design, Adobe Photoshop, and other creative
+            tools. By meeting their most basic needs — food, shelter, and unconditional care — we help
+            them discover their potential and pursue their dreams.
           </p>
         </motion.div>
 

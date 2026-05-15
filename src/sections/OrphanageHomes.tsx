@@ -1,24 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Users, Home, ArrowRight, Play, X } from 'lucide-react';
+import { Heart, Home, ArrowRight, Play, X } from 'lucide-react';
 
 const stories = [
   {
     title: 'Where Hope Finds a Home',
     videoId: 'B6GnSJkj4SI',
-    description: 'In a quiet corner of Bali, children who once knew only uncertainty now wake up to the sound of laughter. This is the story of a community that refused to look away -- and the lives that were transformed because of it.',
+    description: 'In a quiet shelter in Bali, 100+ children — orphaned, abandoned, or rejected — found a home. And found hope.',
     tag: 'Community & Care',
   },
   {
     title: 'Growing Together, One Day at a Time',
     videoId: 'Bik2-QjACWM',
-    description: 'Education is more than textbooks. It is the moment a child realizes they matter. Watch how volunteers and local mentors are helping young girls discover their voices, their dreams, and their power to change the world.',
+    description: 'They had aged chromebooks and big dreams. When we saw a child mastering Adobe Photoshop, we knew — their potential is limitless.',
     tag: 'Education & Growth',
   },
   {
     title: 'Building a Brighter Future in Bali',
     videoId: '4K4vTQEYBXg',
-    description: 'Every hand that builds, every heart that gives, creates a ripple. Meet the people -- local and global -- who are proving that when we show up for children, we show up for the future of an entire island.',
+    description: "Every hand that shows up changes a life. These children don't just need resources — they need to know the world hasn't forgotten them.",
     tag: 'Volunteers & Impact',
   },
 ];
@@ -95,6 +95,8 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
         <img
           src={thumbnail}
           alt={story.title}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
 
@@ -106,7 +108,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-white/20 blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative w-18 h-18 w-[72px] h-[72px] rounded-full bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-2xl shadow-black/30 transition-all duration-400 group-hover:scale-110 group-hover:bg-white/25 group-hover:border-white/50">
+            <div className="relative h-[72px] w-[72px] rounded-full bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-2xl shadow-black/30 transition-all duration-400 group-hover:scale-110 group-hover:bg-white/25 group-hover:border-white/50">
               <Play className="w-8 h-8 text-white fill-white ml-1 drop-shadow-lg" />
             </div>
           </div>
@@ -134,7 +136,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
           {story.description}
         </p>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <button
             onClick={() => onPlay(story.videoId)}
             className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl gradient-green text-white text-sm font-semibold shadow-md shadow-primary-200/30 hover:shadow-lg hover:shadow-primary-300/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
@@ -144,7 +146,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
           </button>
           <a
             href="#donate"
-            className="flex items-center justify-center gap-1.5 px-5 py-3.5 rounded-2xl border-2 border-primary-200 text-tropical text-sm font-semibold hover:bg-primary-50 hover:border-primary-300 transition-all"
+            className="flex w-full items-center justify-center gap-1.5 px-5 py-3.5 rounded-2xl border-2 border-primary-200 text-tropical text-sm font-semibold hover:bg-primary-50 hover:border-primary-300 transition-all sm:w-auto sm:shrink-0"
           >
             <Heart className="w-4 h-4" />
             Give
@@ -162,7 +164,7 @@ export default function OrphanageHomes() {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   return (
-    <section id="homes" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
+    <section id="stories" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55">
       <div className="absolute top-[5%] left-0 w-[500px] h-[500px] rounded-full bg-sky-50/40 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[10%] right-0 w-[400px] h-[400px] rounded-full bg-primary-50/30 blur-[80px] pointer-events-none" />
 
@@ -186,30 +188,6 @@ export default function OrphanageHomes() {
             they are invitations to witness the extraordinary courage of children
             who still believe in tomorrow.
           </p>
-
-          {/* Stats strip */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-6 px-6 py-3 rounded-2xl glass shadow-sm mt-8"
-          >
-            <div className="flex items-center gap-2">
-              <Home className="w-4 h-4 text-primary-300" />
-              <span className="text-sm text-dark/60"><strong className="text-tropical">6</strong> homes supported</span>
-            </div>
-            <div className="w-px h-4 bg-primary-100" />
-            <div className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-warm-400" />
-              <span className="text-sm text-dark/60"><strong className="text-tropical">128</strong> children in our care</span>
-            </div>
-            <div className="w-px h-4 bg-primary-100 hidden sm:block" />
-            <div className="hidden sm:flex items-center gap-2">
-              <Users className="w-4 h-4 text-sky-300" />
-              <span className="text-sm text-dark/60">100% of support goes to them</span>
-            </div>
-          </motion.div>
         </motion.div>
 
         {/* Video Story Cards */}

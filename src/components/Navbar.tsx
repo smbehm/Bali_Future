@@ -8,17 +8,28 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const { overflow } = document.body.style;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [mobileOpen]);
+
   const links = [
     { label: 'Mission', href: '#mission' },
-    { label: 'Impact', href: '#impact' },
     { label: 'Stories', href: '#stories' },
+    { label: 'Impact', href: '#impact' },
+    { label: 'Tree', href: '#tree-of-future' },
     { label: 'Volunteer', href: '#volunteer' },
     { label: 'Events', href: '#events' },
     { label: 'Gallery', href: '#gallery' },
+    { label: 'FAQ', href: '#faq' },
   ];
 
   return (
@@ -33,9 +44,9 @@ export default function Navbar() {
             : 'bg-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 pt-[env(safe-area-inset-top,0px)]">
           <div className="flex items-center justify-between h-20">
-            <a href="#" className="flex items-center gap-3 group">
+            <a href="#top" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-xl gradient-green flex items-center justify-center shadow-lg shadow-primary-300/30 group-hover:scale-110 transition-transform">
                 <TreePine className="w-5 h-5 text-white" />
               </div>
@@ -44,7 +55,7 @@ export default function Navbar() {
               </span>
             </a>
 
-            <div className="hidden lg:flex items-center gap-8">
+            <div className="hidden lg:flex flex-wrap items-center justify-end gap-x-5 gap-y-1 xl:gap-x-8">
               {links.map((link) => (
                 <a
                   key={link.href}
@@ -87,15 +98,23 @@ export default function Navbar() {
           >
             <div className="flex flex-col h-full p-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl gradient-green flex items-center justify-center">
+                <a
+                  href="#top"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex min-w-0 items-center gap-3 rounded-lg outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-primary-300"
+                >
+                  <div className="w-10 h-10 shrink-0 rounded-xl gradient-green flex items-center justify-center">
                     <TreePine className="w-5 h-5 text-white" />
                   </div>
-                  <span className="font-sora font-bold text-xl text-tropical">
+                  <span className="font-sora font-bold text-xl text-tropical truncate">
                     Bali Future
                   </span>
-                </div>
-                <button onClick={() => setMobileOpen(false)} className="p-2">
+                </a>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  aria-label="Close menu"
+                  className="-mr-2 p-3 rounded-lg active:bg-primary-50/60"
+                >
                   <X className="w-6 h-6 text-tropical" />
                 </button>
               </div>

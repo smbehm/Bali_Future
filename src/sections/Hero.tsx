@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Users, Compass, Sparkles, Globe, BookOpen } from 'lucide-react';
+import { Heart, Users, Compass, Sparkles, Home } from 'lucide-react';
+import { useCountUp } from '../hooks/useCountUp';
 
 function SunlightRays() {
   return (
@@ -333,17 +334,64 @@ function AtmosphericParticles() {
   );
 }
 
+function HeroStatCell({
+  icon,
+  end,
+  suffix = '',
+  after,
+  durationMs,
+}: {
+  icon: ReactNode;
+  end: number;
+  suffix?: string;
+  after: string;
+  durationMs: number;
+}) {
+  const n = useCountUp(end, durationMs);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="flex flex-col"
+    >
+      <div className="flex items-start gap-2">
+        {icon}
+        <span className="flex flex-wrap items-baseline gap-x-1">
+          <strong className="font-sora text-3xl font-bold text-tropical tabular-nums leading-none">
+            {n.toLocaleString()}
+            {suffix}
+          </strong>
+          <span className="text-base text-dark/60 leading-snug">{after}</span>
+        </span>
+      </div>
+    </motion.div>
+  );
+}
+
+const heroStats: Array<{
+  end: number;
+  suffix?: string;
+  after: string;
+  icon: ReactNode;
+  durationMs: number;
+}> = [
+  { end: 6, after: ' homes supported', icon: <Home className="size-[1em] shrink-0 text-primary-300 text-3xl" />, durationMs: 1500 },
+  { end: 100, suffix: '+', after: ' children in our care', icon: <Heart className="size-[1em] shrink-0 text-warm-400 text-3xl" />, durationMs: 2000 },
+  { end: 100, suffix: '%', after: ' of support goes to them', icon: <Users className="size-[1em] shrink-0 text-sky-300 text-3xl" />, durationMs: 2000 },
+];
+
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Deep background atmosphere */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-50/60 via-cream to-cream" />
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-sky-50/20 to-warm-50/20" />
-        <div className="absolute top-0 right-0 w-[900px] h-[900px] rounded-full bg-primary-100/30 blur-[120px] -translate-y-1/3 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[700px] h-[700px] rounded-full bg-sky-100/30 blur-[100px] translate-y-1/4 -translate-x-1/4" />
-        <div className="absolute top-[20%] left-[40%] w-[500px] h-[500px] rounded-full bg-warm-100/20 blur-[80px]" />
-        <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] rounded-full bg-primary-200/15 blur-[60px] animate-pulse-soft" />
+    <section id="top" className="relative min-h-screen min-h-[100dvh] flex items-center overflow-hidden">
+      {/* Soft atmosphere — tinted glow orbs only, no opaque cream layer so the
+         3D tree background shows through */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[900px] h-[900px] rounded-full bg-warm-100/20 blur-[120px] -translate-y-1/3 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[700px] h-[700px] rounded-full bg-primary-100/20 blur-[100px] translate-y-1/4 -translate-x-1/4" />
+        <div className="absolute top-[20%] left-[40%] w-[500px] h-[500px] rounded-full bg-warm-200/15 blur-[80px]" />
+        <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] rounded-full bg-primary-200/12 blur-[60px] animate-pulse-soft" />
       </div>
 
       {/* Sunlight rays */}
@@ -362,8 +410,8 @@ export default function Hero() {
       <ChildSilhouettes />
 
       {/* Content */}
-      <div className="relative z-20 max-w-7xl mx-auto px-6 md:px-12 pt-32 pb-20">
-        <div className="max-w-3xl">
+      <div className="relative z-20 max-w-7xl mx-auto px-6 md:px-12 pt-[max(8rem,calc(env(safe-area-inset-top,0px)+5.5rem))] pb-20">
+        <div className="max-w-3xl min-w-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -399,59 +447,51 @@ export default function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-wrap gap-4"
+            className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4"
           >
             <a
               href="#donate"
-              className="flex items-center gap-2 px-8 py-4 rounded-full gradient-green text-white font-semibold shadow-xl shadow-primary-300/30 hover:shadow-2xl hover:shadow-primary-300/40 hover:scale-105 transition-all"
+              className="flex w-full min-w-0 items-center justify-center gap-2 px-8 py-4 text-center text-base font-semibold transition-all hover:scale-105 sm:w-auto sm:shrink-0 rounded-full gradient-green text-white shadow-xl shadow-primary-300/30 hover:shadow-2xl hover:shadow-primary-300/40"
             >
-              <Heart className="w-5 h-5" />
+              <Heart className="h-5 w-5 shrink-0" />
               Change a Child's Life
             </a>
             <a
               href="#volunteer"
-              className="flex items-center gap-2 px-8 py-4 rounded-full glass text-tropical font-semibold hover:bg-white/80 hover:scale-105 transition-all shadow-lg"
+              className="flex w-full min-w-0 items-center justify-center gap-2 px-8 py-4 text-center text-base font-semibold transition-all hover:scale-105 sm:w-auto sm:shrink-0 rounded-full glass text-tropical shadow-lg hover:bg-white/80"
             >
-              <Users className="w-5 h-5" />
+              <Users className="h-5 w-5 shrink-0" />
               Join Our Community
             </a>
             <a
               href="#mission"
-              className="flex items-center gap-2 px-8 py-4 rounded-full border-2 border-primary-200 text-tropical font-semibold hover:bg-primary-50 hover:scale-105 transition-all"
+              className="flex w-full min-w-0 items-center justify-center gap-2 px-8 py-4 text-center text-base font-semibold transition-all hover:scale-105 sm:w-auto sm:shrink-0 rounded-full border-2 border-primary-200 text-tropical hover:bg-primary-50"
             >
-              <Compass className="w-5 h-5" />
+              <Compass className="h-5 w-5 shrink-0" />
               See Our Impact
             </a>
           </motion.div>
 
           {/* Stats row */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.9 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 pt-10 border-t border-primary-100/60"
-          >
-            {[
-              { icon: <Heart className="w-5 h-5 text-primary-300" />, value: '2,400+', label: 'Children Cared For' },
-              { icon: <Globe className="w-5 h-5 text-sky-300" />, value: '18', label: 'Countries United' },
-              { icon: <BookOpen className="w-5 h-5 text-warm-300" />, value: '45', label: 'Active Programs' },
-              { icon: <Users className="w-5 h-5 text-ocean" />, value: '890+', label: 'Hearts Joined' },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.1 + i * 0.1 }}
-                className="flex flex-col"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  {stat.icon}
-                  <span className="font-sora font-bold text-xl md:text-2xl text-tropical">{stat.value}</span>
-                </div>
-                <span className="text-xs md:text-sm text-dark/50">{stat.label}</span>
-              </motion.div>
-            ))}
-          </motion.div>
+          <div className="mt-16 border-t border-primary-300/40 pt-8">
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.9 }}
+              className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6"
+            >
+              {heroStats.map((stat) => (
+                <HeroStatCell
+                  key={stat.after}
+                  icon={stat.icon}
+                  end={stat.end}
+                  suffix={stat.suffix}
+                  after={stat.after}
+                  durationMs={stat.durationMs}
+                />
+              ))}
+            </motion.div>
+          </div>
         </div>
       </div>
 

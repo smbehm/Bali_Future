@@ -1,20 +1,23 @@
 import { motion } from 'framer-motion';
-import { Heart, Utensils, Users, TreePine, Building, BookOpen } from 'lucide-react';
+import { Heart, Utensils, Users, TreePine, Building2, BookOpen } from 'lucide-react';
 import AnimatedCounter from '../components/AnimatedCounter';
 
-const stats = [
-  { end: 2400, suffix: '+', label: 'Children in Our Care', icon: <Heart className="w-6 h-6 text-primary-300" /> },
-  { end: 185000, suffix: '+', label: 'Meals Served', icon: <Utensils className="w-6 h-6 text-warm-400" /> },
-  { end: 890, suffix: '+', label: 'Volunteers United', icon: <Users className="w-6 h-6 text-sky-300" /> },
-  { end: 12500, suffix: '+', label: 'Trees Planted', icon: <TreePine className="w-6 h-6 text-primary-400" /> },
-  { end: 67, label: 'Community Projects', icon: <Building className="w-6 h-6 text-ocean" /> },
-  { end: 45, label: 'Learning Programs', icon: <BookOpen className="w-6 h-6 text-warm-300" /> },
+const impactStats = [
+  { end: 40, label: 'Children in Our Care', icon: <Heart className="h-7 w-7 text-primary-500" strokeWidth={1.5} /> },
+  { end: 4380, suffix: '+', label: 'Meals Served', icon: <Utensils className="h-7 w-7 text-warm-500" strokeWidth={1.5} /> },
+  { end: 25, suffix: '+', label: 'Volunteers United', icon: <Users className="h-7 w-7 text-sky-400" strokeWidth={1.5} /> },
+  { end: 6, label: 'Homes We Support', icon: <TreePine className="h-7 w-7 text-primary-600" strokeWidth={1.5} /> },
+  {
+    end: 100,
+    suffix: '%',
+    label: 'Donations Go to Children',
+    icon: <Building2 className="h-7 w-7 text-ocean" strokeWidth={1.5} />,
+  },
+  { end: 3, label: 'Learning Programs', icon: <BookOpen className="h-7 w-7 text-warm-400" strokeWidth={1.5} /> },
 ];
 
 const timeline = [
-  { year: '2018', title: 'A Dream Takes Root', desc: 'Bali Future was founded by a small group who refused to look away from children in need.' },
-  { year: '2019', title: 'First Learning Center', desc: 'We opened our doors in rural Ubud -- 32 children walked in on the first day.' },
-  { year: '2020', title: 'Adapting with Resilience', desc: 'When the world shut down, we delivered meals, learning kits, and hope to isolated families.' },
+  { year: '2021', title: 'A Dream Takes Root', desc: 'Bali Future was founded after visiting the Bali Life Foundation shelter — home to 100+ children aged 3-18 who had been orphaned, abandoned, or abused. We saw their potential and knew we had to act.' },
   { year: '2022', title: 'Growing Together', desc: 'Launched sustainability programs, planting trees alongside the children who will inherit them.' },
   { year: '2024', title: 'A Global Family', desc: 'Supporters from 18 countries joined our mission -- proving compassion knows no borders.' },
   { year: '2026', title: 'The Future Is Theirs', desc: 'Every day, more children discover they are worthy of love, capable of greatness.' },
@@ -44,9 +47,8 @@ export default function Impact() {
           </p>
         </motion.div>
 
-        {/* Counters */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-24">
-          {stats.map((stat) => (
+        <div className="mb-24 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-6 lg:gap-8">
+          {impactStats.map((stat) => (
             <AnimatedCounter key={stat.label} {...stat} />
           ))}
         </div>

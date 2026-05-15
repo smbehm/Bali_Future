@@ -25,9 +25,15 @@ export default function Donate() {
   const [anonymous, setAnonymous] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const finalAmount = customAmount ? parseFloat(customAmount) : amount;
+  const parsedCustom = parseFloat(customAmount.replace(/,/g, '').trim());
+  const finalAmount =
+    customAmount.trim() !== '' && Number.isFinite(parsedCustom) && parsedCustom > 0
+      ? Math.round(parsedCustom * 100) / 100
+      : amount;
 
   const handleSubmit = async () => {
+    if (!Number.isFinite(finalAmount) || finalAmount <= 0) return;
+
     await supabase.from('donations').insert({
       donor_name: anonymous ? 'Anonymous' : name,
       donor_email: email,
@@ -49,10 +55,14 @@ export default function Donate() {
     setSubmitted(true);
   };
 
-  if (submitted) {
-    return (
-      <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
-        <div className="max-w-2xl mx-auto text-center">
+  return (
+    <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55">
+      {!submitted && (
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary-50/40 blur-[100px]" />
+      )}
+
+      {submitted ? (
+        <div className="max-w-2xl mx-auto text-center relative">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -88,14 +98,7 @@ export default function Donate() {
             Make Another Donation
           </motion.button>
         </div>
-      </section>
-    );
-  }
-
-  return (
-    <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary-50/40 blur-[100px]" />
-
+      ) : (
       <div className="max-w-4xl mx-auto relative">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -273,10 +276,10 @@ export default function Donate() {
                   </label>
                 </div>
 
-                <div className="flex gap-3 mt-8">
+                <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row">
                   <button
                     onClick={() => setStep(1)}
-                    className="flex items-center gap-2 px-6 py-4 rounded-xl glass text-tropical font-semibold hover:bg-white/80 transition-colors"
+                    className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl glass text-tropical font-semibold hover:bg-white/80 transition-colors sm:justify-start"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back
@@ -284,7 +287,7 @@ export default function Donate() {
                   <button
                     onClick={() => setStep(3)}
                     disabled={!name || !email}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex flex-1 items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Review Donation
                     <ArrowRight className="w-4 h-4" />
@@ -323,17 +326,17 @@ export default function Donate() {
                   )}
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col-reverse gap-3 sm:flex-row">
                   <button
                     onClick={() => setStep(2)}
-                    className="flex items-center gap-2 px-6 py-4 rounded-xl glass text-tropical font-semibold hover:bg-white/80 transition-colors"
+                    className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl glass text-tropical font-semibold hover:bg-white/80 transition-colors sm:justify-start"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back
                   </button>
                   <button
                     onClick={handleSubmit}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all"
+                    className="flex flex-1 items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all"
                   >
                     <Heart className="w-5 h-5" />
                     Complete Donation
@@ -344,6 +347,7 @@ export default function Donate() {
           </AnimatePresence>
         </div>
       </div>
+      )}
     </section>
   );
 }

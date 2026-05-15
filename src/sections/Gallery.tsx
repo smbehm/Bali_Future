@@ -1,21 +1,137 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, ZoomIn } from 'lucide-react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
-const images = [
-  { src: 'https://images.pexels.com/photos/2901209/pexels-photo-2901209.jpeg?auto=compress&cs=tinysrgb&w=800', caption: 'Volunteers restoring our coastline' },
-  { src: 'https://images.pexels.com/photos/8535214/pexels-photo-8535214.jpeg?auto=compress&cs=tinysrgb&w=800', caption: 'Creativity unlocked in every child' },
-  { src: 'https://images.pexels.com/photos/2132171/pexels-photo-2132171.jpeg?auto=compress&cs=tinysrgb&w=800', caption: 'Growing food, growing futures' },
-  { src: 'https://images.pexels.com/photos/2166553/pexels-photo-2166553.jpeg?auto=compress&cs=tinysrgb&w=800', caption: 'The island we are protecting' },
-  { src: 'https://images.pexels.com/photos/2474661/pexels-photo-2474661.jpeg?auto=compress&cs=tinysrgb&w=800', caption: 'Nature that inspires our work' },
-  { src: 'https://images.pexels.com/photos/1032650/pexels-photo-1032650.jpeg?auto=compress&cs=tinysrgb&w=800', caption: 'The beauty worth preserving' },
-  { src: 'https://images.pexels.com/photos/3184398/pexels-photo-3184398.jpeg?auto=compress&cs=tinysrgb&w=800', caption: 'Planning the next chapter together' },
-  { src: 'https://images.pexels.com/photos/1416736/pexels-photo-1416736.jpeg?auto=compress&cs=tinysrgb&w=800', caption: 'The joy of learning side by side' },
-  { src: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=800', caption: 'Planting hope, one tree at a time' },
-];
+type VideoStat = {
+  src: string;
+  end: number;
+  prefix?: string;
+  suffix?: string;
+  staticValue?: string;
+  label: string;
+};
+
+const VISIBILITY_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i * 0.05);
+
+type VideoStatCardProps = {
+  stat: VideoStat;
+  index: number;
+  activeSrc: string | null;
+  onRatio: (src: string, ratio: number) => void;
+};
+
+const VideoStatCard = memo(function VideoStatCard({
+  stat,
+  index,
+  activeSrc,
+  onRatio,
+}: VideoStatCardProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const root = containerRef.current;
+    if (!root) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.target === root) {
+            onRatio(stat.src, entry.intersectionRatio);
+          }
+        }
+      },
+      { threshold: VISIBILITY_THRESHOLDS },
+    );
+
+    io.observe(root);
+    return () => io.disconnect();
+  }, [stat.src, onRatio]);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (activeSrc === stat.src) {
+      void el.play().catch(() => {});
+    } else {
+      el.pause();
+    }
+  }, [activeSrc, stat.src]);
+
+  const displayValue =
+    stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
+
+  return (
+    <motion.div
+      ref={containerRef}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.06, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -6 }}
+      className="group relative overflow-hidden rounded-2xl shadow-lg shadow-primary-900/[0.10] ring-1 ring-white/20 bg-black"
+    >
+      <video
+        ref={videoRef}
+        src={stat.src}
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.05]"
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-hidden
+      />
+
+      {/* Bottom readability gradient */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+
+      {/* Soft glow on hover */}
+      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100">
+        <div className="absolute -bottom-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-primary-300/25 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 flex min-h-[280px] items-end p-6">
+        <div className="w-full">
+          <div className="font-sora text-4xl font-bold tracking-tight text-white drop-shadow-sm md:text-5xl">
+            {displayValue}
+          </div>
+          <div className="mt-2 text-sm font-medium text-white/85 md:text-base">{stat.label}</div>
+          <div className="mt-4 h-[2px] w-full bg-gradient-to-r from-transparent via-warm-300/80 to-transparent" />
+        </div>
+      </div>
+    </motion.div>
+  );
+});
 
 export default function Gallery() {
-  const [selected, setSelected] = useState<number | null>(null);
+  const videos: VideoStat[] = useMemo(
+    () => [
+      { src: '/shelter/C0779%20(2).mp4', end: 100, suffix: '+', label: 'Children in Our Care' },
+      { src: '/shelter/C0780%20(1).mp4', end: 6, label: 'Homes we support' },
+      { src: '/shelter/C0785%20(1).mp4', end: 100, suffix: '%', label: 'Goes to the children' },
+      { src: '/shelter/IMG_5495%20(1).mp4', end: 0, staticValue: 'Unknown', label: 'Lives Changed' },
+    ],
+    [],
+  );
+
+  const ratiosRef = useRef<Record<string, number>>({});
+  const [activeSrc, setActiveSrc] = useState<string | null>(null);
+
+  const onRatio = useCallback((src: string, ratio: number) => {
+    if (ratio < 0.5) {
+      delete ratiosRef.current[src];
+    } else {
+      ratiosRef.current[src] = ratio;
+    }
+
+    const candidates = Object.entries(ratiosRef.current).filter(([, r]) => r >= 0.5);
+    if (candidates.length === 0) {
+      setActiveSrc(null);
+      return;
+    }
+    candidates.sort((a, b) => b[1] - a[1]);
+    const next = candidates[0]![0];
+    setActiveSrc((cur) => (cur === next ? cur : next));
+  }, []);
 
   return (
     <section id="gallery" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
@@ -38,61 +154,19 @@ export default function Gallery() {
           </p>
         </motion.div>
 
-        {/* Masonry grid */}
-        <div className="columns-2 md:columns-3 gap-4 space-y-4">
-          {images.map((img, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="break-inside-avoid group relative rounded-2xl overflow-hidden cursor-pointer"
-              onClick={() => setSelected(i)}
-            >
-              <img
-                src={img.src}
-                alt={img.caption}
-                className="w-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-tropical/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
-                  <span className="text-white text-sm font-medium">{img.caption}</span>
-                  <ZoomIn className="w-5 h-5 text-white/80" />
-                </div>
-              </div>
-            </motion.div>
+        {/* Video stats grid */}
+        <div className="grid gap-5 md:gap-6 md:grid-cols-2">
+          {videos.map((stat, i) => (
+            <VideoStatCard
+              key={stat.src}
+              stat={stat}
+              index={i}
+              activeSrc={activeSrc}
+              onRatio={onRatio}
+            />
           ))}
         </div>
       </div>
-
-      {/* Lightbox */}
-      <AnimatePresence>
-        {selected !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-tropical/90 backdrop-blur-xl"
-            onClick={() => setSelected(null)}
-          >
-            <button className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
-              <X className="w-6 h-6" />
-            </button>
-            <motion.img
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              src={images[selected].src}
-              alt={images[selected].caption}
-              className="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain"
-            />
-            <div className="absolute bottom-8 text-center">
-              <span className="text-white/80 font-medium">{images[selected].caption}</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }

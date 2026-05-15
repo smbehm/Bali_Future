@@ -65,8 +65,10 @@ export default function FAQ() {
                   open === i ? 'bg-white shadow-lg shadow-primary-100/50' : 'glass hover:bg-white/80'
                 }`}
               >
-                <div className="flex items-center justify-between gap-4">
-                  <span className="font-sora font-semibold text-tropical">{faq.q}</span>
+                <div className="flex items-start justify-between gap-4">
+                  <span className="min-w-0 flex-1 text-left font-sora font-semibold text-tropical leading-snug pr-2">
+                    {faq.q}
+                  </span>
                   <ChevronDown
                     className={`w-5 h-5 text-primary-300 flex-shrink-0 transition-transform ${
                       open === i ? 'rotate-180' : ''
@@ -82,7 +84,7 @@ export default function FAQ() {
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
                 >
-                  <p className="text-dark/60 leading-relaxed mt-4 text-sm">
+                  <p className="mt-4 text-sm leading-relaxed text-dark/60 text-pretty md:text-base">
                     {faq.a}
                   </p>
                 </motion.div>

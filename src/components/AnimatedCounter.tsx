@@ -10,6 +10,10 @@ interface Props {
   icon: React.ReactNode;
 }
 
+function easeOutCubic(t: number): number {
+  return 1 - (1 - t) ** 3;
+}
+
 export default function AnimatedCounter({ end, duration = 2, prefix = '', suffix = '', label, icon }: Props) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
@@ -18,19 +22,21 @@ export default function AnimatedCounter({ end, duration = 2, prefix = '', suffix
   useEffect(() => {
     if (!isInView) return;
 
-    let start = 0;
-    const increment = end / (duration * 60);
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 1000 / 60);
+    setCount(0);
+    const durationMs = duration * 1000;
+    let start: number | null = null;
+    let rafId = 0;
 
-    return () => clearInterval(timer);
+    const tick = (now: number) => {
+      if (start === null) start = now;
+      const t = Math.min((now - start) / durationMs, 1);
+      const eased = easeOutCubic(t);
+      setCount(Math.round(eased * end));
+      if (t < 1) rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
   }, [isInView, end, duration]);
 
   return (
@@ -40,15 +46,17 @@ export default function AnimatedCounter({ end, duration = 2, prefix = '', suffix
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="flex flex-col items-center text-center"
+      className="flex flex-col items-center text-center w-full min-w-0"
     >
-      <div className="w-16 h-16 rounded-2xl glass flex items-center justify-center mb-4 shadow-lg">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md ring-1 ring-black/[0.06]">
         {icon}
       </div>
-      <div className="font-sora font-bold text-3xl md:text-4xl text-tropical">
-        {prefix}{count.toLocaleString()}{suffix}
+      <div className="bg-transparent font-sora text-3xl font-bold text-tropical md:text-4xl tabular-nums">
+        {prefix}
+        {count.toLocaleString()}
+        {suffix}
       </div>
-      <div className="text-sm text-dark/60 mt-2 font-medium">{label}</div>
+      <div className="mt-2 max-w-[14rem] text-xs font-medium text-dark/50 md:text-sm break-words">{label}</div>
     </motion.div>
   );
 }
