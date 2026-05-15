@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
 import FloatingLeaves from './components/FloatingLeaves';
 import Hero from './sections/Hero';

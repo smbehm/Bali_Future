@@ -1,4 +1,4 @@
-﻿import { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { YouTubeCardMedia } from '../components/youtube/YouTubeCardMedia';
 import { useCardVideoActivation } from '../hooks/useCardVideoActivation';

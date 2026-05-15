@@ -1,4 +1,4 @@
-﻿import { supabaseAnonKey, supabaseUrl } from './supabase';
+import { supabaseAnonKey, supabaseUrl } from './supabase';
 
 /** Escape text for safe inclusion in HTML email bodies. */
 export function escapeForEmailHtml(s: string): string {
