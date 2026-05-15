@@ -1,11 +1,10 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { SHELTER_YOUTUBE, youtubeEmbedUrl, youtubeThumbnail } from '../lib/youtube';
+import { Volume2, VolumeX } from 'lucide-react';
 
 type VideoStat = {
   id: string;
-  src?: string;
-  youtubeId?: string;
+  src: string;
   end: number;
   prefix?: string;
   suffix?: string;
@@ -13,25 +12,26 @@ type VideoStat = {
   label: string;
 };
 
+const VIDEOS: VideoStat[] = [
+  { id: 'children', src: '/shelter/C0779%20(2).mp4', end: 100, suffix: '+', label: 'Children in Our Care' },
+  { id: 'homes', src: '/shelter/C0780%20(1).mp4', end: 6, label: 'Homes We Support' },
+  { id: 'impact', src: '/shelter/C0785%20(1).mp4', end: 100, suffix: '%', label: '100% Goes to Children' },
+  { id: 'lives', src: '/shelter/IMG_5495%20(1).mp4', end: 0, staticValue: 'Countless', label: 'Lives Changed' },
+];
+
 const VISIBILITY_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i * 0.05);
 
 type VideoStatCardProps = {
   stat: VideoStat;
   index: number;
-  activeId: string | null;
+  isPlaying: boolean;
   onRatio: (id: string, ratio: number) => void;
 };
 
-const VideoStatCard = memo(function VideoStatCard({
-  stat,
-  index,
-  activeId,
-  onRatio,
-}: VideoStatCardProps) {
+const VideoStatCard = memo(function VideoStatCard({ stat, index, isPlaying, onRatio }: VideoStatCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const isActive = activeId === stat.id;
-  const usesYoutube = Boolean(stat.youtubeId);
+  const [muted, setMuted] = useState(true);
 
   useLayoutEffect(() => {
     const el = videoRef.current;
@@ -60,26 +60,25 @@ const VideoStatCard = memo(function VideoStatCard({
   }, [stat.id, onRatio]);
 
   useEffect(() => {
-    if (usesYoutube) return;
     const el = videoRef.current;
     if (!el) return;
-    if (isActive) {
+    if (isPlaying) {
       void el.play().catch(() => {});
     } else {
       el.pause();
+      el.currentTime = 0;
+      setMuted(true);
     }
-  }, [isActive, stat.src, usesYoutube]);
+  }, [isPlaying]);
 
-  useEffect(() => {
-    if (usesYoutube) return;
-    const el = videoRef.current;
-    if (!el) return;
-    const onReady = () => {
-      if (isActive) void el.play().catch(() => {});
-    };
-    el.addEventListener('canplay', onReady);
-    return () => el.removeEventListener('canplay', onReady);
-  }, [isActive, stat.src, usesYoutube]);
+  const toggleMute = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    setMuted((m) => {
+      v.muted = !m;
+      return !m;
+    });
+  };
 
   const displayValue =
     stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
@@ -94,37 +93,17 @@ const VideoStatCard = memo(function VideoStatCard({
       whileHover={{ y: -6 }}
       className="group relative overflow-hidden rounded-2xl shadow-lg shadow-primary-900/[0.10] ring-1 ring-white/20 bg-black"
     >
-      {usesYoutube ? (
-        isActive ? (
-          <iframe
-            title={stat.label}
-            src={youtubeEmbedUrl(stat.youtubeId!, { autoplay: true, muted: true, loop: true })}
-            className="pointer-events-none absolute inset-0 h-full w-full scale-[1.35]"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            loading="lazy"
-          />
-        ) : (
-          <img
-            src={youtubeThumbnail(stat.youtubeId!)}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.05]"
-            loading="lazy"
-            decoding="async"
-          />
-        )
-      ) : (
-        <video
-          ref={videoRef}
-          src={stat.src}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.05]"
-          muted
-          loop
-          playsInline
-          preload={isActive ? 'auto' : 'metadata'}
-          disableRemotePlayback
-          aria-hidden
-        />
-      )}
+      <video
+        ref={videoRef}
+        src={stat.src}
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.05]"
+        muted={muted}
+        loop
+        playsInline
+        preload="metadata"
+        disableRemotePlayback
+        aria-hidden
+      />
 
       {/* Bottom readability gradient */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
@@ -132,6 +111,18 @@ const VideoStatCard = memo(function VideoStatCard({
       {/* Soft glow on hover */}
       <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100">
         <div className="absolute -bottom-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-primary-300/25 blur-3xl" />
+      </div>
+
+      {/* Mute/Unmute button */}
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
+        <button
+          type="button"
+          onClick={toggleMute}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
+          aria-label={muted ? 'Unmute video' : 'Mute video'}
+        >
+          {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+        </button>
       </div>
 
       <div className="relative z-10 flex min-h-[280px] items-end p-6">
@@ -148,16 +139,6 @@ const VideoStatCard = memo(function VideoStatCard({
 });
 
 export default function Gallery() {
-  const videos: VideoStat[] = useMemo(
-    () => [
-      { id: 'children', youtubeId: SHELTER_YOUTUBE.hopeHome, end: 100, suffix: '+', label: 'Children in Our Care' },
-      { id: 'homes', youtubeId: SHELTER_YOUTUBE.education, end: 6, label: 'Homes we support' },
-      { id: 'impact', src: '/shelter/C0785%20(1).mp4', end: 100, suffix: '%', label: 'Goes to the children' },
-      { id: 'lives', src: '/shelter/IMG_5495%20(1).mp4', end: 0, staticValue: 'Unknown', label: 'Lives Changed' },
-    ],
-    [],
-  );
-
   const ratiosRef = useRef<Record<string, number>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -201,12 +182,12 @@ export default function Gallery() {
 
         {/* Video stats grid */}
         <div className="grid gap-5 md:gap-6 md:grid-cols-2">
-          {videos.map((stat, i) => (
+          {VIDEOS.map((stat, i) => (
             <VideoStatCard
               key={stat.id}
               stat={stat}
               index={i}
-              activeId={activeId}
+              isPlaying={activeId === stat.id}
               onRatio={onRatio}
             />
           ))}

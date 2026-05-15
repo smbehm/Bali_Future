@@ -1,6 +1,8 @@
 import {
   memo,
+  useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -16,109 +18,113 @@ import {
 } from 'lucide-react';
 import { formatPostgrestError, supabase } from '../lib/supabase';
 import { linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
-import { useManagedVideo } from '../contexts/VideoFocusContext';
-import { SHELTER_YOUTUBE, youtubeEmbedUrl, youtubeThumbnail } from '../lib/youtube';
 
-/** One showcase item — local mp4 and/or YouTube (large files are hosted on YouTube for Vercel). */
-export type ShelterShowcaseEvent = {
+type ActivityEvent = {
   id: string;
   title: string;
-  description: string;
-  /** Local mp4 under 50MB deploy limit */
-  video?: string;
-  /** YouTube embed when mp4 exceeds Vercel static limit */
-  youtubeId?: string;
+  tagline: string;
+  video: string;
   icon: string;
-  poster?: string;
 };
 
-/**
- * STRICT asset map — each file is unique; paths are defined exactly once here.
- * Order: Football → Computer Day → Basketball → Painting → Singing → Dancing
- */
-const EVENTS: ShelterShowcaseEvent[] = [
+const EVENTS: ActivityEvent[] = [
   {
     id: 'football',
     title: 'Football',
-    description: 'Teamwork, discipline, and pure fun.',
+    tagline: 'Teamwork, discipline, and pure fun.',
     video: '/shelter/football.mp4',
-    icon: '⚽',
+    icon: '\u26BD',
   },
   {
     id: 'computer-day',
     title: 'Computer Day',
-    description: 'Teaching Photoshop, design, and digital skills.',
-    youtubeId: SHELTER_YOUTUBE.education,
-    poster: youtubeThumbnail(SHELTER_YOUTUBE.education),
-    icon: '💻',
+    tagline: 'Teaching Photoshop, design, and digital skills.',
+    video: '/shelter/computer.mp4',
+    icon: '\uD83D\uDCBB',
   },
   {
     id: 'basketball',
     title: 'Basketball',
-    description: 'Building confidence one shot at a time.',
-    youtubeId: SHELTER_YOUTUBE.volunteers,
-    poster: youtubeThumbnail(SHELTER_YOUTUBE.volunteers),
-    icon: '🏀',
+    tagline: 'Building confidence one shot at a time.',
+    video: '/shelter/basketball.mp4',
+    icon: '\uD83C\uDFC0',
   },
   {
     id: 'painting',
     title: 'Painting & Coloring',
-    description: 'Where little hands create big dreams.',
-    youtubeId: SHELTER_YOUTUBE.hopeHome,
-    poster: youtubeThumbnail(SHELTER_YOUTUBE.hopeHome),
-    icon: '🎨',
+    tagline: 'Where little hands create big dreams.',
+    video: '/shelter/painting.mp4',
+    icon: '\uD83C\uDFA8',
   },
   {
     id: 'singing',
     title: 'Singing & Music',
-    description: 'Every voice deserves to be heard.',
-    video: '/shelter/singing.mp4',
-    icon: '🎵',
+    tagline: 'Every voice deserves to be heard.',
+    video: '/shelter/IMG_3254.mp4',
+    icon: '\uD83C\uDFB5',
   },
   {
     id: 'dancing',
     title: 'Dancing',
-    description: 'Joy in every move, culture in every step.',
-    video: '/shelter/dancing.mp4',
-    icon: '💃',
+    tagline: 'Joy in every move, culture in every step.',
+    video: '/shelter/img-3257.mp4',
+    icon: '\uD83D\uDC83',
   },
 ];
 
 type EventCardProps = {
-  event: ShelterShowcaseEvent;
+  event: ActivityEvent;
   index: number;
+  isPlaying: boolean;
+  onVisible: (id: string) => void;
+  onHidden: (id: string) => void;
 };
 
-const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
-  const rootRef = useRef<HTMLElement | null>(null);
-  const inView = useInView(rootRef, { amount: 0.2, margin: '0px 0px -10% 0px' });
-  const usesYoutube = Boolean(event.youtubeId);
-  const { videoRef, muted, toggleMute, abandonAudioIfOwner } = useManagedVideo(
-    usesYoutube ? `events-yt-${event.id}` : `events-${event.id}`,
-  );
-  const [ytMuted, setYtMuted] = useState(true);
+const EventCard = memo(function EventCard({ event, index, isPlaying, onVisible, onHidden }: EventCardProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+  const inView = useInView(containerRef, { amount: 0.6 });
 
   useEffect(() => {
-    if (usesYoutube) return;
+    if (inView) {
+      onVisible(event.id);
+    } else {
+      onHidden(event.id);
+    }
+  }, [inView, event.id, onVisible, onHidden]);
+
+  useLayoutEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', '');
-    if (inView) {
+  }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isPlaying) {
       void v.play().catch(() => {});
     } else {
-      abandonAudioIfOwner();
       v.pause();
+      v.currentTime = 0;
+      setMuted(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally omit videoRef
-  }, [inView, event.id, abandonAudioIfOwner, usesYoutube]);
+  }, [isPlaying]);
 
-  const showYoutube = usesYoutube && inView;
-  const isMuted = usesYoutube ? ytMuted : muted;
+  const toggleMute = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    setMuted((m) => {
+      v.muted = !m;
+      return !m;
+    });
+  };
 
   return (
-    <motion.article
-      ref={rootRef}
+    <motion.div
+      ref={containerRef}
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
@@ -126,84 +132,38 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
       whileHover={{ y: -8 }}
       className="group relative flex flex-col overflow-hidden rounded-[1.75rem] bg-white/90 shadow-[0_20px_50px_-20px_rgba(47,93,80,0.25)] ring-1 ring-primary-100/70 backdrop-blur-sm transition-shadow duration-500 ease-out hover:shadow-[0_28px_60px_-18px_rgba(47,93,80,0.35)]"
     >
-      {/* Ambient rim glow on hover — GPU-friendly opacity */}
-      <div
-        className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-0 ring-2 ring-primary-300/0 transition-opacity duration-500 group-hover:opacity-100 group-hover:ring-primary-300/35"
-        aria-hidden
-      />
+      <div className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-0 ring-2 ring-primary-300/0 transition-opacity duration-500 group-hover:opacity-100 group-hover:ring-primary-300/35" aria-hidden />
 
+      {/* Video area - 70% */}
       <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-neutral-950">
-        {usesYoutube ? (
-          <>
-            {!showYoutube && (
-              <img
-                src={event.poster ?? youtubeThumbnail(event.youtubeId!)}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-            )}
-            {showYoutube && (
-              <iframe
-                key={`${event.youtubeId}-${isMuted ? 'm' : 'u'}`}
-                title={event.title}
-                src={youtubeEmbedUrl(event.youtubeId!, { autoplay: true, muted: isMuted, loop: true })}
-                className="pointer-events-none absolute inset-0 h-full w-full scale-[1.35]"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                loading="lazy"
-              />
-            )}
-          </>
-        ) : (
-          <video
-            ref={videoRef}
-            className="absolute inset-0 h-full w-full object-cover will-change-transform transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-            src={event.video}
-            poster={event.poster}
-            autoPlay
-            muted={muted}
-            loop
-            playsInline
-            preload={inView ? 'auto' : 'metadata'}
-            controls={false}
-            disableRemotePlayback
-          />
-        )}
-
-        <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/5"
-          aria-hidden
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+          src={event.video}
+          muted={muted}
+          loop
+          playsInline
+          preload="metadata"
+          controls={false}
+          disableRemotePlayback
         />
 
-        {/* Floating controls — glass, minimal; fade in on hover (always visible on touch) */}
-        <div className="pointer-events-none absolute inset-0 flex items-end justify-end p-3 sm:p-4">
-          <div className="pointer-events-auto flex translate-y-1 opacity-90 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:opacity-100">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (usesYoutube) {
-                  setYtMuted((m) => !m);
-                  return;
-                }
-                const v = videoRef.current;
-                toggleMute();
-                if (!v) return;
-                const kick = () => void v.play().catch(() => {});
-                kick();
-                requestAnimationFrame(kick);
-                queueMicrotask(kick);
-              }}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
-              aria-label={isMuted ? 'Unmute video' : 'Mute video'}
-            >
-              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-            </button>
-          </div>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/5" aria-hidden />
+
+        {/* Mute/Unmute button */}
+        <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-10">
+          <button
+            type="button"
+            onClick={toggleMute}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
+            aria-label={muted ? 'Unmute video' : 'Mute video'}
+          >
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
         </div>
       </div>
 
+      {/* Title & tagline - 30% */}
       <div className="relative flex flex-1 flex-col justify-center border-t border-white/60 bg-gradient-to-b from-white via-primary-50/30 to-primary-50/50 px-6 py-5 md:px-7 md:py-6">
         <div className="flex items-start gap-4">
           <span className="select-none text-2xl leading-none md:text-3xl" aria-hidden>
@@ -214,12 +174,12 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
               {event.title}
             </h3>
             <p className="mt-1.5 text-sm leading-relaxed text-dark/60 md:text-[15px]">
-              {event.description}
+              {event.tagline}
             </p>
           </div>
         </div>
       </div>
-    </motion.article>
+    </motion.div>
   );
 });
 
@@ -227,8 +187,24 @@ export default function Events() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [newsletterError, setNewsletterError] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const visibleSet = useRef(new Set<string>());
 
   const events = useMemo(() => EVENTS, []);
+
+  const onVisible = useCallback((id: string) => {
+    visibleSet.current.add(id);
+    setActiveId((cur) => cur ?? id);
+  }, []);
+
+  const onHidden = useCallback((id: string) => {
+    visibleSet.current.delete(id);
+    setActiveId((cur) => {
+      if (cur !== id) return cur;
+      const remaining = Array.from(visibleSet.current);
+      return remaining.length > 0 ? remaining[0] : null;
+    });
+  }, []);
 
   const handleNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -251,7 +227,7 @@ export default function Events() {
     try {
       await sendEmailNotification({
         organization: {
-          subject: `New newsletter subscriber — ${em}`,
+          subject: `New newsletter subscriber \u2014 ${em}`,
           html: linesToEmailHtml([`Email: ${em}`]),
         },
         donor: {
@@ -308,7 +284,14 @@ export default function Events() {
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
           {events.map((event, i) => (
-            <EventCard key={event.id} event={event} index={i} />
+            <EventCard
+              key={event.id}
+              event={event}
+              index={i}
+              isPlaying={activeId === event.id}
+              onVisible={onVisible}
+              onHidden={onHidden}
+            />
           ))}
         </div>
 

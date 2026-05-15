@@ -27,17 +27,19 @@ export type SendEmailRequestBody = {
   } | null;
 };
 
-/**
- * Dev: POST /api/send-email (Vite middleware). Production: add a matching host route if needed.
- */
 export async function sendEmailNotification(payload: SendEmailRequestBody): Promise<void> {
-  console.log('Sending email notification...', payload);
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const url = `${supabaseUrl}/functions/v1/send-email`;
 
   let res: Response;
   try {
-    res = await fetch('/api/send-email', {
+    res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      },
       body: JSON.stringify(payload),
     });
   } catch (e) {
@@ -45,7 +47,8 @@ export async function sendEmailNotification(payload: SendEmailRequestBody): Prom
     return;
   }
 
-  const bodyText = await res.text();
-  console.log('[sendEmailNotification] fetch response status:', res.status);
-  console.log('[sendEmailNotification] fetch response body:', bodyText);
+  if (!res.ok) {
+    const bodyText = await res.text();
+    console.error('[sendEmailNotification] error:', res.status, bodyText);
+  }
 }

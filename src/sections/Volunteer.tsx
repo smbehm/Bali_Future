@@ -73,7 +73,7 @@ export default function Volunteer() {
     const waText = `New volunteer application from ${formData.full_name} email: ${formData.email} country: ${formData.country}`;
     window.setTimeout(() => {
       window.open(`https://wa.me/14157170016?text=${encodeURIComponent(waText)}`, '_blank');
-    }, 2000);
+    }, 3000);
   };
 
   useEffect(() => {
