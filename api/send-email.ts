@@ -38,15 +38,37 @@ async function postResend(
   subject: string,
   html: string,
 ): Promise<{ ok: boolean; status: number; body: string }> {
-  const resendRes = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ from, to: [recipient], subject, html }),
-  });
+  const payload = { from, to: [recipient], subject, html };
+
+  let resendRes: Response;
+  try {
+    resendRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error('[api/send-email] fetch to Resend threw', msg);
+    return { ok: false, status: 0, body: msg };
+  }
+
   const body = await resendRes.text();
+
+  if (!resendRes.ok) {
+    console.error('[api/send-email] Resend API error', {
+      status: resendRes.status,
+      body: body.slice(0, 500),
+      to: recipient,
+      from,
+      keyPrefix: apiKey.slice(0, 6),
+      keyLength: apiKey.length,
+    });
+  }
+
   return { ok: resendRes.ok, status: resendRes.status, body };
 }
 
@@ -73,13 +95,36 @@ export default async function handler(request: Request): Promise<Response> {
     return jsonResponse(request, { error: 'Method Not Allowed' }, 405);
   }
 
-  const key = (process.env.RESEND_API_KEY ?? '').trim();
-  const orgTo = (process.env.INTAKE_EMAIL_TO ?? '').trim();
-  const from = normalizeFromAddress(process.env.RESEND_FROM_EMAIL ?? '');
+  const rawKey = process.env.RESEND_API_KEY ?? '';
+  const key = rawKey.trim().replace(/^["']|["']$/g, '');
+  const orgTo = (process.env.INTAKE_EMAIL_TO ?? '').trim().replace(/^["']|["']$/g, '');
+  const from = normalizeFromAddress((process.env.RESEND_FROM_EMAIL ?? '').trim().replace(/^["']|["']$/g, ''));
+
+  console.log('[api/send-email] env diagnostics', {
+    RESEND_API_KEY_exists: Boolean(rawKey),
+    RESEND_API_KEY_length: rawKey.length,
+    RESEND_API_KEY_trimmed_length: key.length,
+    RESEND_API_KEY_prefix: key.slice(0, 6),
+    RESEND_API_KEY_has_whitespace: rawKey !== rawKey.trim(),
+    RESEND_API_KEY_has_quotes: /^["']/.test(rawKey) || /["']$/.test(rawKey),
+    RESEND_API_KEY_has_newlines: rawKey.includes('\n') || rawKey.includes('\r'),
+    INTAKE_EMAIL_TO: orgTo || '(not set)',
+    RESEND_FROM_EMAIL: from,
+    NODE_ENV: process.env.NODE_ENV ?? '(not set)',
+    VERCEL_ENV: process.env.VERCEL_ENV ?? '(not set)',
+  });
 
   if (!key) {
-    console.error('[api/send-email] RESEND_API_KEY is not set');
+    console.error('[api/send-email] RESEND_API_KEY is not set or empty after trimming');
     return jsonResponse(request, { skipped: true, reason: 'RESEND_API_KEY not set' }, 503);
+  }
+
+  if (!key.startsWith('re_')) {
+    console.error('[api/send-email] RESEND_API_KEY does not start with "re_" — likely malformed', {
+      prefix: key.slice(0, 10),
+      length: key.length,
+    });
+    return jsonResponse(request, { error: 'RESEND_API_KEY appears malformed (expected re_ prefix)' }, 500);
   }
 
   if (!orgTo) {
@@ -140,6 +185,13 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   const allOk = results.length > 0 && results.every((x) => x.ok);
+  const anyAuth = results.some((x) => x.status === 401);
   const status = allOk ? 200 : results.some((x) => x.ok) ? 207 : 502;
-  return jsonResponse(request, { results }, status);
+
+  const response: Record<string, unknown> = { results };
+  if (anyAuth) {
+    response.hint = 'Resend returned 401. Verify the RESEND_API_KEY in Vercel environment variables is a valid production key (starts with re_), has no extra whitespace/quotes, and the key has not been revoked in the Resend dashboard.';
+  }
+
+  return jsonResponse(request, response, status);
 }
