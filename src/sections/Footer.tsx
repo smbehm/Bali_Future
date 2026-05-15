@@ -120,7 +120,7 @@ export default function Footer() {
             >
               <MessageCircle className="w-4 h-4 shrink-0" /> +1 (415) 717-0016
             </a>
-            <span className="flex items-start gap-2 sm:items-center">
+            <span className="flex items-start gap-2 break-words sm:items-center">
               <MapPin className="w-4 h-4 shrink-0 mt-0.5 sm:mt-0" />
               Jl. Panji I no.7, Br. Kwanji, Dalung, Kec. Kuta Utara, Kabupaten Badung, Bali 80361, Indonesia
             </span>

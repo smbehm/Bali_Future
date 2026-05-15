@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, MapPin, Calendar, Globe, Heart, Send, Check } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { formatPostgrestError, supabase } from '../lib/supabase';
+import { linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 
 const journeySteps = [
   { icon: <Globe className="w-5 h-5" />, title: 'Share Your Heart', desc: 'Tell us what moves you to serve' },
@@ -15,18 +16,83 @@ export default function Volunteer() {
     full_name: '', email: '', phone: '', country: '', skills: '', availability: '', message: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await supabase.from('volunteers').insert(formData);
+    setSubmitError(null);
+
+    const { error } = await supabase.from('volunteers').insert(formData);
+
+    if (error) {
+      console.error('[volunteers]', error);
+      setSubmitError(formatPostgrestError(error));
+      return;
+    }
+
+    const displayName = formData.full_name.trim() || 'Applicant';
+    const orgSubject = `New Volunteer Application — ${displayName}`;
+    const orgHtml = linesToEmailHtml([
+      `Name: ${displayName}`,
+      `Email: ${formData.email.trim()}`,
+      `Phone: ${formData.phone.trim() || '—'}`,
+      `Country: ${formData.country.trim() || '—'}`,
+      `Skills: ${formData.skills.trim() || '—'}`,
+      `Availability: ${formData.availability.trim() || '—'}`,
+      `Message: ${formData.message.trim() || '—'}`,
+    ]);
+
+    const volunteerEmailTrim = formData.email.trim();
+    const donorConfirmation =
+      volunteerEmailTrim.includes('@')
+        ? {
+            to: volunteerEmailTrim,
+            subject: "We've received your volunteer application — Bali Future",
+            html: linesToEmailHtml([
+              'Thank you for offering your time and heart to the children we serve.',
+              '',
+              'Here is a copy of what you submitted:',
+              `Name: ${displayName}`,
+              `Email: ${volunteerEmailTrim}`,
+              `Phone: ${formData.phone.trim() || '—'}`,
+              `Country: ${formData.country.trim() || '—'}`,
+              `Skills: ${formData.skills.trim() || '—'}`,
+              `Availability: ${formData.availability.trim() || '—'}`,
+              `Message: ${formData.message.trim() || '—'}`,
+            ]),
+          }
+        : null;
+
+    try {
+      await sendEmailNotification({
+        organization: { subject: orgSubject, html: orgHtml },
+        donor: donorConfirmation,
+      });
+    } catch {
+      /* logged inside sendEmailNotification */
+    }
+
+    const waText = `New volunteer application from ${formData.full_name} email: ${formData.email} country: ${formData.country}`;
+    window.open(`https://wa.me/14157170016?text=${encodeURIComponent(waText)}`, '_blank');
+
     setSubmitted(true);
   };
 
+  useEffect(() => {
+    if (!submitted) return;
+    const t = window.setTimeout(() => {
+      setSubmitted(false);
+      setSubmitError(null);
+      setFormData({ full_name: '', email: '', phone: '', country: '', skills: '', availability: '', message: '' });
+    }, 5000);
+    return () => window.clearTimeout(t);
+  }, [submitted]);
+
   return (
     <section id="volunteer" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-sky-50/30 to-cream">
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-sky-50/50 blur-[80px]" />
+      <div className="decorative-blur absolute bottom-0 right-0 h-[min(500px,100vh)] w-[min(500px,100vw)] rounded-full bg-sky-50/50 blur-[80px]" />
 
-      <div className="max-w-7xl mx-auto relative">
+      <div className="section-container relative">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -85,6 +151,11 @@ export default function Volunteer() {
           ) : (
             <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-xl shadow-sky-100/50 p-8 md:p-10">
               <h3 className="font-sora font-bold text-xl text-tropical mb-6">Volunteer Application</h3>
+              {submitError ? (
+                <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                  {submitError}
+                </p>
+              ) : null}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-dark/70 mb-1 block">Full Name</label>

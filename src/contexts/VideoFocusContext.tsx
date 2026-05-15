@@ -32,8 +32,10 @@ function applyRegistryPolicy(map: Map<string, HTMLVideoElement>, owner: string |
       el.volume = 1;
       void el.play().catch(() => {});
     } else {
+      /* Keep non-owner clips playing muted so visible cards still autoplay; visibility handlers may pause. */
       el.muted = true;
-      el.pause();
+      el.volume = 1;
+      void el.play().catch(() => {});
     }
   });
 }

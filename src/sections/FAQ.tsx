@@ -34,7 +34,7 @@ export default function FAQ() {
 
   return (
     <section id="faq" className="section-padding relative overflow-hidden">
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto w-full min-w-0 max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -67,7 +67,9 @@ function VideoModal({ videoId, onClose }: { videoId: string; onClose: () => void
       </motion.div>
 
       <button
+        type="button"
         onClick={onClose}
+        aria-label="Close video"
         className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/25 transition-all duration-200"
       >
         <X className="w-5 h-5" />
@@ -124,7 +126,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
 
         {/* Bottom title on thumbnail */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          <h3 className="font-sora font-bold text-xl md:text-2xl text-white leading-tight drop-shadow-lg">
+          <h3 className="font-sora font-bold text-xl md:text-2xl text-white leading-tight drop-shadow-lg break-words">
             {story.title}
           </h3>
         </div>
@@ -165,10 +167,10 @@ export default function OrphanageHomes() {
 
   return (
     <section id="stories" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55">
-      <div className="absolute top-[5%] left-0 w-[500px] h-[500px] rounded-full bg-sky-50/40 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[10%] right-0 w-[400px] h-[400px] rounded-full bg-primary-50/30 blur-[80px] pointer-events-none" />
+      <div className="decorative-blur absolute top-[5%] left-0 h-[min(500px,100vw)] w-[min(500px,100vw)] rounded-full bg-sky-50/40 blur-[100px] pointer-events-none" />
+      <div className="decorative-blur absolute bottom-[10%] right-0 h-[min(400px,90vw)] w-[min(400px,90vw)] rounded-full bg-primary-50/30 blur-[80px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto relative">
+      <div className="section-container relative">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}

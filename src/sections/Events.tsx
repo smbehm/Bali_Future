@@ -14,7 +14,8 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { formatPostgrestError, supabase } from '../lib/supabase';
+import { linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 import { useManagedVideo } from '../contexts/VideoFocusContext';
 
 /** One showcase item — `video` is the ONLY source of the media URL (no JSX path literals). */
@@ -91,6 +92,8 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
     if (inView) {
       void v.play().catch(() => {});
     } else {
@@ -127,8 +130,9 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
           muted={muted}
           loop
           playsInline
-          preload="metadata"
+          preload={inView ? 'auto' : 'metadata'}
           controls={false}
+          disableRemotePlayback
         />
 
         <div
@@ -143,7 +147,13 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                const v = videoRef.current;
                 toggleMute();
+                if (!v) return;
+                const kick = () => void v.play().catch(() => {});
+                kick();
+                requestAnimationFrame(kick);
+                queueMicrotask(kick);
               }}
               className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
               aria-label={muted ? 'Unmute video' : 'Mute video'}
@@ -176,26 +186,69 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
 export default function Events() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [newsletterError, setNewsletterError] = useState<string | null>(null);
 
   const events = useMemo(() => EVENTS, []);
 
   const handleNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newsletterEmail) return;
-    await supabase.from('newsletter_subscribers').insert({ email: newsletterEmail });
+    setNewsletterError(null);
+
+    const { error } = await supabase.from('newsletter_subscribers').insert({ email: newsletterEmail });
+
+    if (error) {
+      console.error('[newsletter]', error);
+      setNewsletterError(
+        error.code === '23505'
+          ? 'You are already subscribed! Thank you for your support.'
+          : formatPostgrestError(error),
+      );
+      return;
+    }
+
+    const em = newsletterEmail.trim();
+    try {
+      await sendEmailNotification({
+        organization: {
+          subject: `New newsletter subscriber — ${em}`,
+          html: linesToEmailHtml([`Email: ${em}`]),
+        },
+        donor: {
+          to: em,
+          subject: 'Welcome to the Bali Future Community!',
+          html: linesToEmailHtml([
+            'Thank you for subscribing! You will receive stories from the field, event invitations, and updates on the children whose lives you are helping change. Together we can make a difference.',
+          ]),
+        },
+      });
+    } catch {
+      /* logged inside sendEmailNotification */
+    }
+
     setSubscribed(true);
   };
+
+  useEffect(() => {
+    if (!subscribed) return;
+    const t = window.setTimeout(() => {
+      setSubscribed(false);
+      setNewsletterEmail('');
+      setNewsletterError(null);
+    }, 5000);
+    return () => window.clearTimeout(t);
+  }, [subscribed]);
 
   return (
     <section
       id="events"
       className="section-padding relative overflow-hidden bg-gradient-to-b from-primary-50/95 via-cream to-primary-100/45"
     >
-      <div className="pointer-events-none absolute -left-24 top-1/4 h-[440px] w-[440px] rounded-full bg-primary-200/20 blur-[100px]" />
-      <div className="pointer-events-none absolute -right-20 bottom-[12%] h-[380px] w-[380px] rounded-full bg-primary-300/12 blur-[90px]" />
+      <div className="decorative-blur pointer-events-none absolute -left-24 top-1/4 h-[min(440px,90vw)] w-[min(440px,90vw)] rounded-full bg-primary-200/20 blur-[100px]" />
+      <div className="decorative-blur pointer-events-none absolute -right-20 bottom-[12%] h-[min(380px,80vw)] w-[min(380px,80vw)] rounded-full bg-primary-300/12 blur-[90px]" />
       <div className="pointer-events-none absolute left-1/2 top-0 h-px w-[min(90%,48rem)] -translate-x-1/2 bg-gradient-to-r from-transparent via-primary-200/50 to-transparent" />
 
-      <div className="relative mx-auto max-w-7xl">
+      <div className="section-container relative">
         <motion.div
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -244,7 +297,10 @@ export default function Events() {
                   <input
                     type="email"
                     value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    onChange={(e) => {
+                      setNewsletterEmail(e.target.value);
+                      setNewsletterError(null);
+                    }}
                     placeholder="your@email.com"
                     required
                     className="flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-white outline-none placeholder:text-white/40 focus:border-white/50"
@@ -258,6 +314,9 @@ export default function Events() {
                   </button>
                 </form>
               )}
+              {newsletterError && !subscribed ? (
+                <p className="mt-3 text-sm text-amber-100/95">{newsletterError}</p>
+              ) : null}
             </div>
           </div>
         </motion.div>

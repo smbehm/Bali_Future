@@ -26,9 +26,9 @@ const timeline = [
 export default function Impact() {
   return (
     <section id="impact" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/30 to-cream">
-      <div className="absolute top-1/2 left-0 w-[600px] h-[600px] rounded-full bg-sky-50/50 blur-[100px] -translate-x-1/2" />
+      <div className="decorative-blur absolute top-1/2 left-0 h-[min(600px,100vw)] w-[min(600px,100vw)] rounded-full bg-sky-50/50 blur-[100px] -translate-x-1/2" />
 
-      <div className="max-w-7xl mx-auto relative">
+      <div className="section-container relative">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -77,7 +77,7 @@ export default function Impact() {
                 className={`md:flex items-center ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} mb-8`}
               >
                 <div className={`flex-1 ${i % 2 === 0 ? 'md:text-right md:pr-12' : 'md:text-left md:pl-12'}`}>
-                  <div className="p-6 rounded-2xl glass hover-lift inline-block max-w-sm">
+                  <div className="w-full max-w-sm p-6 rounded-2xl glass hover-lift md:inline-block">
                     <span className="font-sora font-bold text-primary-300 text-lg">{item.year}</span>
                     <h4 className="font-sora font-bold text-tropical mt-1">{item.title}</h4>
                     <p className="text-dark/60 text-sm mt-2">{item.desc}</p>

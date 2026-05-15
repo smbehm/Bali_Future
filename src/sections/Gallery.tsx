@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 type VideoStat = {
@@ -27,6 +27,13 @@ const VideoStatCard = memo(function VideoStatCard({
 }: VideoStatCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useLayoutEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.setAttribute('playsinline', '');
+    el.setAttribute('webkit-playsinline', '');
+  }, [stat.src]);
 
   useEffect(() => {
     const root = containerRef.current;
@@ -57,6 +64,16 @@ const VideoStatCard = memo(function VideoStatCard({
     }
   }, [activeSrc, stat.src]);
 
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    const onReady = () => {
+      if (activeSrc === stat.src) void el.play().catch(() => {});
+    };
+    el.addEventListener('canplay', onReady);
+    return () => el.removeEventListener('canplay', onReady);
+  }, [activeSrc, stat.src]);
+
   const displayValue =
     stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
 
@@ -77,7 +94,8 @@ const VideoStatCard = memo(function VideoStatCard({
         muted
         loop
         playsInline
-        preload="metadata"
+        preload={activeSrc === stat.src ? 'auto' : 'metadata'}
+        disableRemotePlayback
         aria-hidden
       />
 
@@ -135,7 +153,7 @@ export default function Gallery() {
 
   return (
     <section id="gallery" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
-      <div className="max-w-7xl mx-auto">
+      <div className="section-container">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

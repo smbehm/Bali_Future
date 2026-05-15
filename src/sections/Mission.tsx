@@ -68,10 +68,10 @@ function MissionVisual() {
 export default function Mission() {
   return (
     <section id="mission" className="section-padding relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-primary-50/50 blur-[80px]" />
-      <div className="absolute bottom-[10%] left-[5%] w-[300px] h-[300px] rounded-full bg-sky-50/30 blur-[60px]" />
+      <div className="decorative-blur absolute top-0 right-0 h-[min(500px,100vw)] w-[min(500px,100vw)] rounded-full bg-primary-50/50 blur-[80px]" />
+      <div className="decorative-blur absolute bottom-[10%] left-[5%] h-[min(300px,80vw)] w-[min(300px,80vw)] rounded-full bg-sky-50/30 blur-[60px]" />
 
-      <div className="max-w-7xl mx-auto relative">
+      <div className="section-container relative">
         <MissionVisual />
 
         <motion.div

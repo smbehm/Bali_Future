@@ -46,11 +46,11 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 pt-[env(safe-area-inset-top,0px)]">
           <div className="flex items-center justify-between h-20">
-            <a href="#top" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl gradient-green flex items-center justify-center shadow-lg shadow-primary-300/30 group-hover:scale-110 transition-transform">
+            <a href="#top" className="flex min-w-0 max-w-[min(100%,14rem)] items-center gap-3 group sm:max-w-none">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-green shadow-lg shadow-primary-300/30 transition-transform group-hover:scale-110">
                 <TreePine className="w-5 h-5 text-white" />
               </div>
-              <span className="font-sora font-bold text-xl text-tropical">
+              <span className="font-sora font-bold text-xl text-tropical truncate">
                 Bali Future
               </span>
             </a>
@@ -79,7 +79,9 @@ export default function Navbar() {
             </div>
 
             <button
+              type="button"
               onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
               className="lg:hidden p-2 text-tropical"
             >
               <Menu className="w-6 h-6" />
@@ -96,7 +98,7 @@ export default function Navbar() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] bg-cream/95 backdrop-blur-xl lg:hidden"
           >
-            <div className="flex flex-col h-full p-6">
+            <div className="flex h-full flex-col p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
               <div className="flex items-center justify-between">
                 <a
                   href="#top"

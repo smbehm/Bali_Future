@@ -387,11 +387,11 @@ export default function Hero() {
     <section id="top" className="relative min-h-screen min-h-[100dvh] flex items-center overflow-hidden">
       {/* Soft atmosphere — tinted glow orbs only, no opaque cream layer so the
          3D tree background shows through */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[900px] h-[900px] rounded-full bg-warm-100/20 blur-[120px] -translate-y-1/3 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[700px] h-[700px] rounded-full bg-primary-100/20 blur-[100px] translate-y-1/4 -translate-x-1/4" />
-        <div className="absolute top-[20%] left-[40%] w-[500px] h-[500px] rounded-full bg-warm-200/15 blur-[80px]" />
-        <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] rounded-full bg-primary-200/12 blur-[60px] animate-pulse-soft" />
+      <div className="decorative-blur absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 right-0 h-[min(900px,120vh)] w-[min(900px,120vw)] rounded-full bg-warm-100/20 blur-[120px] -translate-y-1/3 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 h-[min(700px,100vh)] w-[min(700px,100vw)] rounded-full bg-primary-100/20 blur-[100px] translate-y-1/4 -translate-x-1/4" />
+        <div className="absolute top-[20%] left-[40%] h-[min(500px,80vh)] w-[min(500px,90vw)] rounded-full bg-warm-200/15 blur-[80px]" />
+        <div className="absolute top-[10%] right-[20%] h-[min(300px,50vh)] w-[min(300px,60vw)] rounded-full bg-primary-200/12 blur-[60px] animate-pulse-soft" />
       </div>
 
       {/* Sunlight rays */}
@@ -419,14 +419,14 @@ export default function Hero() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass shadow-sm mb-8"
           >
             <Sparkles className="w-4 h-4 text-warm-300" />
-            <span className="text-sm font-medium text-tropical">Because No Child Should Stand Alone</span>
+            <span className="text-sm font-medium text-tropical text-pretty">Because No Child Should Stand Alone</span>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-sora font-bold text-4xl md:text-6xl lg:text-7xl leading-tight text-tropical mb-8"
+            className="font-sora font-bold text-4xl md:text-6xl lg:text-7xl leading-tight text-tropical mb-8 text-balance"
           >
             Give Hope to the{' '}
             <span className="gradient-text">Children of Bali</span>

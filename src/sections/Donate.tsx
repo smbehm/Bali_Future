@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, GraduationCap, Utensils, Stethoscope, TreePine, Gift, Check, ArrowRight, ArrowLeft } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { formatPostgrestError, supabase } from '../lib/supabase';
+import { linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 
 const categories = [
   { id: 'education', icon: <GraduationCap className="w-5 h-5" />, label: 'Education', desc: 'Give a child the gift of learning' },
@@ -24,6 +25,7 @@ export default function Donate() {
   const [message, setMessage] = useState('');
   const [anonymous, setAnonymous] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const parsedCustom = parseFloat(customAmount.replace(/,/g, '').trim());
   const finalAmount =
@@ -34,7 +36,9 @@ export default function Donate() {
   const handleSubmit = async () => {
     if (!Number.isFinite(finalAmount) || finalAmount <= 0) return;
 
-    await supabase.from('donations').insert({
+    setSubmitError(null);
+
+    const { error } = await supabase.from('donations').insert({
       donor_name: anonymous ? 'Anonymous' : name,
       donor_email: email,
       amount: finalAmount,
@@ -44,21 +48,85 @@ export default function Donate() {
       is_anonymous: anonymous,
     });
 
+    if (error) {
+      console.error('[donations]', error);
+      setSubmitError(formatPostgrestError(error));
+      return;
+    }
+
     if (message && category === 'tree') {
-      await supabase.from('tree_leaves').insert({
+      const { error: leafError } = await supabase.from('tree_leaves').insert({
         donor_name: anonymous ? 'Anonymous' : name,
         message,
         amount: finalAmount,
       });
+      if (leafError) console.error('[tree_leaves]', leafError);
     }
+
+    const categoryLabel = categories.find((c) => c.id === category)?.label ?? category;
+    const donorDisplay = anonymous ? 'Anonymous' : (name.trim() || 'Donor');
+    const typeLabel = type === 'monthly' ? 'Monthly' : 'One-time';
+    const orgSubject = `New Donation — $${finalAmount} from ${donorDisplay}`;
+    const orgHtml = linesToEmailHtml([
+      `Amount: $${finalAmount}`,
+      `Category: ${categoryLabel}`,
+      `Type: ${typeLabel}`,
+      `Donor name: ${donorDisplay}`,
+      `Email: ${email.trim()}`,
+      `Message: ${message.trim() ? message.trim() : '—'}`,
+    ]);
+
+    const donorEmailTrim = email.trim();
+    const donorConfirmation =
+      donorEmailTrim.includes('@')
+        ? {
+            to: donorEmailTrim,
+            subject: 'Thank you — Bali Future received your gift',
+            html: linesToEmailHtml(
+              [
+                'Thank you for standing with the children of Bali.',
+                '',
+                `Amount: $${finalAmount}`,
+                `Designation: ${categoryLabel}`,
+                `Frequency: ${typeLabel}`,
+                anonymous
+                  ? 'You chose to give anonymously — we are grateful.'
+                  : `Name on record: ${name.trim() || '—'}`,
+                message.trim() ? `Your message to the children: ${message.trim()}` : '',
+              ].filter((line) => line !== ''),
+            ),
+          }
+        : null;
+
+    try {
+      await sendEmailNotification({
+        organization: { subject: orgSubject, html: orgHtml },
+        donor: donorConfirmation,
+      });
+    } catch {
+      /* logged inside sendEmailNotification */
+    }
+
+    const waText = `New donation received: $${finalAmount} from ${anonymous ? 'Anonymous' : name} category: ${category}`;
+    window.open(`https://wa.me/14157170016?text=${encodeURIComponent(waText)}`, '_blank');
 
     setSubmitted(true);
   };
 
+  useEffect(() => {
+    if (!submitted) return;
+    const t = window.setTimeout(() => {
+      setSubmitted(false);
+      setStep(1);
+      setSubmitError(null);
+    }, 5000);
+    return () => window.clearTimeout(t);
+  }, [submitted]);
+
   return (
     <section id="donate" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55">
       {!submitted && (
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary-50/40 blur-[100px]" />
+        <div className="decorative-blur absolute top-0 right-0 h-[min(600px,100vh)] w-[min(600px,100vw)] rounded-full bg-primary-50/40 blur-[100px]" />
       )}
 
       {submitted ? (
@@ -99,7 +167,7 @@ export default function Donate() {
           </motion.button>
         </div>
       ) : (
-      <div className="max-w-4xl mx-auto relative">
+      <div className="mx-auto w-full min-w-0 max-w-4xl relative">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -134,7 +202,7 @@ export default function Donate() {
         </div>
 
         {/* Steps */}
-        <div className="bg-white rounded-3xl shadow-xl shadow-primary-100/50 p-8 md:p-12">
+        <div className="bg-white rounded-3xl shadow-xl shadow-primary-100/50 p-6 sm:p-8 md:p-12">
           <AnimatePresence mode="wait">
             {step === 1 && (
               <motion.div
@@ -326,15 +394,26 @@ export default function Donate() {
                   )}
                 </div>
 
+                {submitError ? (
+                  <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                    {submitError}
+                  </p>
+                ) : null}
+
                 <div className="flex flex-col-reverse gap-3 sm:flex-row">
                   <button
-                    onClick={() => setStep(2)}
+                    type="button"
+                    onClick={() => {
+                      setSubmitError(null);
+                      setStep(2);
+                    }}
                     className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl glass text-tropical font-semibold hover:bg-white/80 transition-colors sm:justify-start"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back
                   </button>
                   <button
+                    type="button"
                     onClick={handleSubmit}
                     className="flex flex-1 items-center justify-center gap-2 py-4 rounded-xl gradient-green text-white font-semibold shadow-lg shadow-primary-300/30 hover:shadow-xl transition-all"
                   >

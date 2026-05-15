@@ -4,7 +4,7 @@ import { Sparkles } from 'lucide-react';
 export default function TreeOfFuture() {
   return (
     <section id="tree-of-future" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-tropical/5 to-cream/55">
-      <div className="max-w-7xl mx-auto relative">
+      <div className="section-container relative">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
