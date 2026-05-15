@@ -17,15 +17,17 @@ import {
 import { formatPostgrestError, supabase } from '../lib/supabase';
 import { linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 import { useManagedVideo } from '../contexts/VideoFocusContext';
+import { SHELTER_YOUTUBE, youtubeEmbedUrl, youtubeThumbnail } from '../lib/youtube';
 
-/** One showcase item — `video` is the ONLY source of the media URL (no JSX path literals). */
+/** One showcase item — local mp4 and/or YouTube (large files are hosted on YouTube for Vercel). */
 export type ShelterShowcaseEvent = {
-  /** Stable unique id for keys and refs isolation */
   id: string;
   title: string;
   description: string;
-  /** Absolute public path to mp4 */
-  video: string;
+  /** Local mp4 under 50MB deploy limit */
+  video?: string;
+  /** YouTube embed when mp4 exceeds Vercel static limit */
+  youtubeId?: string;
   icon: string;
   poster?: string;
 };
@@ -46,21 +48,24 @@ const EVENTS: ShelterShowcaseEvent[] = [
     id: 'computer-day',
     title: 'Computer Day',
     description: 'Teaching Photoshop, design, and digital skills.',
-    video: '/shelter/computer.mp4',
+    youtubeId: SHELTER_YOUTUBE.education,
+    poster: youtubeThumbnail(SHELTER_YOUTUBE.education),
     icon: '💻',
   },
   {
     id: 'basketball',
     title: 'Basketball',
     description: 'Building confidence one shot at a time.',
-    video: '/shelter/basketball.mp4',
+    youtubeId: SHELTER_YOUTUBE.volunteers,
+    poster: youtubeThumbnail(SHELTER_YOUTUBE.volunteers),
     icon: '🏀',
   },
   {
     id: 'painting',
     title: 'Painting & Coloring',
     description: 'Where little hands create big dreams.',
-    video: '/shelter/painting.mp4',
+    youtubeId: SHELTER_YOUTUBE.hopeHome,
+    poster: youtubeThumbnail(SHELTER_YOUTUBE.hopeHome),
     icon: '🎨',
   },
   {
@@ -86,10 +91,15 @@ type EventCardProps = {
 
 const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
   const rootRef = useRef<HTMLElement | null>(null);
-  const { videoRef, muted, toggleMute, abandonAudioIfOwner } = useManagedVideo(`events-${event.id}`);
   const inView = useInView(rootRef, { amount: 0.2, margin: '0px 0px -10% 0px' });
+  const usesYoutube = Boolean(event.youtubeId);
+  const { videoRef, muted, toggleMute, abandonAudioIfOwner } = useManagedVideo(
+    usesYoutube ? `events-yt-${event.id}` : `events-${event.id}`,
+  );
+  const [ytMuted, setYtMuted] = useState(true);
 
   useEffect(() => {
+    if (usesYoutube) return;
     const v = videoRef.current;
     if (!v) return;
     v.setAttribute('playsinline', '');
@@ -100,9 +110,11 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
       abandonAudioIfOwner();
       v.pause();
     }
-    // `videoRef` is a stable ref object; we only want to react to scroll visibility and card identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally omit videoRef
-  }, [inView, event.id, abandonAudioIfOwner]);
+  }, [inView, event.id, abandonAudioIfOwner, usesYoutube]);
+
+  const showYoutube = usesYoutube && inView;
+  const isMuted = usesYoutube ? ytMuted : muted;
 
   return (
     <motion.article
@@ -121,19 +133,43 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
       />
 
       <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-neutral-950">
-        <video
-          ref={videoRef}
-          className="absolute inset-0 h-full w-full object-cover will-change-transform transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-          src={event.video}
-          poster={event.poster}
-          autoPlay
-          muted={muted}
-          loop
-          playsInline
-          preload={inView ? 'auto' : 'metadata'}
-          controls={false}
-          disableRemotePlayback
-        />
+        {usesYoutube ? (
+          <>
+            {!showYoutube && (
+              <img
+                src={event.poster ?? youtubeThumbnail(event.youtubeId!)}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+            {showYoutube && (
+              <iframe
+                key={`${event.youtubeId}-${isMuted ? 'm' : 'u'}`}
+                title={event.title}
+                src={youtubeEmbedUrl(event.youtubeId!, { autoplay: true, muted: isMuted, loop: true })}
+                className="pointer-events-none absolute inset-0 h-full w-full scale-[1.35]"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                loading="lazy"
+              />
+            )}
+          </>
+        ) : (
+          <video
+            ref={videoRef}
+            className="absolute inset-0 h-full w-full object-cover will-change-transform transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            src={event.video}
+            poster={event.poster}
+            autoPlay
+            muted={muted}
+            loop
+            playsInline
+            preload={inView ? 'auto' : 'metadata'}
+            controls={false}
+            disableRemotePlayback
+          />
+        )}
 
         <div
           className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/5"
@@ -147,6 +183,10 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                if (usesYoutube) {
+                  setYtMuted((m) => !m);
+                  return;
+                }
                 const v = videoRef.current;
                 toggleMute();
                 if (!v) return;
@@ -156,9 +196,9 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
                 queueMicrotask(kick);
               }}
               className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white shadow-lg ring-1 ring-white/15 backdrop-blur-md transition-transform duration-300 hover:scale-105 active:scale-95 touch-manipulation"
-              aria-label={muted ? 'Unmute video' : 'Mute video'}
+              aria-label={isMuted ? 'Unmute video' : 'Mute video'}
             >
-              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
             </button>
           </div>
         </div>

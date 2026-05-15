@@ -98,19 +98,17 @@ export default function Donate() {
           }
         : null;
 
-    try {
-      await sendEmailNotification({
-        organization: { subject: orgSubject, html: orgHtml },
-        donor: donorConfirmation,
-      });
-    } catch {
-      /* logged inside sendEmailNotification */
-    }
+    setSubmitted(true);
+
+    void sendEmailNotification({
+      organization: { subject: orgSubject, html: orgHtml },
+      donor: donorConfirmation,
+    }).catch(() => {});
 
     const waText = `New donation received: $${finalAmount} from ${anonymous ? 'Anonymous' : name} category: ${category}`;
-    window.open(`https://wa.me/14157170016?text=${encodeURIComponent(waText)}`, '_blank');
-
-    setSubmitted(true);
+    window.setTimeout(() => {
+      window.open(`https://wa.me/14157170016?text=${encodeURIComponent(waText)}`, '_blank');
+    }, 2000);
   };
 
   useEffect(() => {

@@ -1,0 +1,6 @@
+# Exclude shelter MP4s over Vercel's ~50MB static file limit (site uses YouTube embeds instead)
+public/shelter/C0780 (1).mp4
+public/shelter/basketball.mp4
+public/shelter/computer.mp4
+public/shelter/painting.mp4
+public/shelter/C0779 (2).mp4

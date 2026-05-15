@@ -1,8 +1,11 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { SHELTER_YOUTUBE, youtubeEmbedUrl, youtubeThumbnail } from '../lib/youtube';
 
 type VideoStat = {
-  src: string;
+  id: string;
+  src?: string;
+  youtubeId?: string;
   end: number;
   prefix?: string;
   suffix?: string;
@@ -15,18 +18,20 @@ const VISIBILITY_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i * 0.05);
 type VideoStatCardProps = {
   stat: VideoStat;
   index: number;
-  activeSrc: string | null;
-  onRatio: (src: string, ratio: number) => void;
+  activeId: string | null;
+  onRatio: (id: string, ratio: number) => void;
 };
 
 const VideoStatCard = memo(function VideoStatCard({
   stat,
   index,
-  activeSrc,
+  activeId,
   onRatio,
 }: VideoStatCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const isActive = activeId === stat.id;
+  const usesYoutube = Boolean(stat.youtubeId);
 
   useLayoutEffect(() => {
     const el = videoRef.current;
@@ -43,7 +48,7 @@ const VideoStatCard = memo(function VideoStatCard({
       (entries) => {
         for (const entry of entries) {
           if (entry.target === root) {
-            onRatio(stat.src, entry.intersectionRatio);
+            onRatio(stat.id, entry.intersectionRatio);
           }
         }
       },
@@ -52,27 +57,29 @@ const VideoStatCard = memo(function VideoStatCard({
 
     io.observe(root);
     return () => io.disconnect();
-  }, [stat.src, onRatio]);
+  }, [stat.id, onRatio]);
 
   useEffect(() => {
+    if (usesYoutube) return;
     const el = videoRef.current;
     if (!el) return;
-    if (activeSrc === stat.src) {
+    if (isActive) {
       void el.play().catch(() => {});
     } else {
       el.pause();
     }
-  }, [activeSrc, stat.src]);
+  }, [isActive, stat.src, usesYoutube]);
 
   useEffect(() => {
+    if (usesYoutube) return;
     const el = videoRef.current;
     if (!el) return;
     const onReady = () => {
-      if (activeSrc === stat.src) void el.play().catch(() => {});
+      if (isActive) void el.play().catch(() => {});
     };
     el.addEventListener('canplay', onReady);
     return () => el.removeEventListener('canplay', onReady);
-  }, [activeSrc, stat.src]);
+  }, [isActive, stat.src, usesYoutube]);
 
   const displayValue =
     stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
@@ -87,17 +94,37 @@ const VideoStatCard = memo(function VideoStatCard({
       whileHover={{ y: -6 }}
       className="group relative overflow-hidden rounded-2xl shadow-lg shadow-primary-900/[0.10] ring-1 ring-white/20 bg-black"
     >
-      <video
-        ref={videoRef}
-        src={stat.src}
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.05]"
-        muted
-        loop
-        playsInline
-        preload={activeSrc === stat.src ? 'auto' : 'metadata'}
-        disableRemotePlayback
-        aria-hidden
-      />
+      {usesYoutube ? (
+        isActive ? (
+          <iframe
+            title={stat.label}
+            src={youtubeEmbedUrl(stat.youtubeId!, { autoplay: true, muted: true, loop: true })}
+            className="pointer-events-none absolute inset-0 h-full w-full scale-[1.35]"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            loading="lazy"
+          />
+        ) : (
+          <img
+            src={youtubeThumbnail(stat.youtubeId!)}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.05]"
+            loading="lazy"
+            decoding="async"
+          />
+        )
+      ) : (
+        <video
+          ref={videoRef}
+          src={stat.src}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-[400ms] ease-out group-hover:scale-[1.05]"
+          muted
+          loop
+          playsInline
+          preload={isActive ? 'auto' : 'metadata'}
+          disableRemotePlayback
+          aria-hidden
+        />
+      )}
 
       {/* Bottom readability gradient */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
@@ -123,32 +150,32 @@ const VideoStatCard = memo(function VideoStatCard({
 export default function Gallery() {
   const videos: VideoStat[] = useMemo(
     () => [
-      { src: '/shelter/C0779%20(2).mp4', end: 100, suffix: '+', label: 'Children in Our Care' },
-      { src: '/shelter/C0780%20(1).mp4', end: 6, label: 'Homes we support' },
-      { src: '/shelter/C0785%20(1).mp4', end: 100, suffix: '%', label: 'Goes to the children' },
-      { src: '/shelter/IMG_5495%20(1).mp4', end: 0, staticValue: 'Unknown', label: 'Lives Changed' },
+      { id: 'children', youtubeId: SHELTER_YOUTUBE.hopeHome, end: 100, suffix: '+', label: 'Children in Our Care' },
+      { id: 'homes', youtubeId: SHELTER_YOUTUBE.education, end: 6, label: 'Homes we support' },
+      { id: 'impact', src: '/shelter/C0785%20(1).mp4', end: 100, suffix: '%', label: 'Goes to the children' },
+      { id: 'lives', src: '/shelter/IMG_5495%20(1).mp4', end: 0, staticValue: 'Unknown', label: 'Lives Changed' },
     ],
     [],
   );
 
   const ratiosRef = useRef<Record<string, number>>({});
-  const [activeSrc, setActiveSrc] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const onRatio = useCallback((src: string, ratio: number) => {
+  const onRatio = useCallback((id: string, ratio: number) => {
     if (ratio < 0.5) {
-      delete ratiosRef.current[src];
+      delete ratiosRef.current[id];
     } else {
-      ratiosRef.current[src] = ratio;
+      ratiosRef.current[id] = ratio;
     }
 
     const candidates = Object.entries(ratiosRef.current).filter(([, r]) => r >= 0.5);
     if (candidates.length === 0) {
-      setActiveSrc(null);
+      setActiveId(null);
       return;
     }
     candidates.sort((a, b) => b[1] - a[1]);
     const next = candidates[0]![0];
-    setActiveSrc((cur) => (cur === next ? cur : next));
+    setActiveId((cur) => (cur === next ? cur : next));
   }, []);
 
   return (
@@ -176,10 +203,10 @@ export default function Gallery() {
         <div className="grid gap-5 md:gap-6 md:grid-cols-2">
           {videos.map((stat, i) => (
             <VideoStatCard
-              key={stat.src}
+              key={stat.id}
               stat={stat}
               index={i}
-              activeSrc={activeSrc}
+              activeId={activeId}
               onRatio={onRatio}
             />
           ))}

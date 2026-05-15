@@ -63,19 +63,17 @@ export default function Volunteer() {
           }
         : null;
 
-    try {
-      await sendEmailNotification({
-        organization: { subject: orgSubject, html: orgHtml },
-        donor: donorConfirmation,
-      });
-    } catch {
-      /* logged inside sendEmailNotification */
-    }
+    setSubmitted(true);
+
+    void sendEmailNotification({
+      organization: { subject: orgSubject, html: orgHtml },
+      donor: donorConfirmation,
+    }).catch(() => {});
 
     const waText = `New volunteer application from ${formData.full_name} email: ${formData.email} country: ${formData.country}`;
-    window.open(`https://wa.me/14157170016?text=${encodeURIComponent(waText)}`, '_blank');
-
-    setSubmitted(true);
+    window.setTimeout(() => {
+      window.open(`https://wa.me/14157170016?text=${encodeURIComponent(waText)}`, '_blank');
+    }, 2000);
   };
 
   useEffect(() => {

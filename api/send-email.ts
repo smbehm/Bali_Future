@@ -15,6 +15,13 @@ function isNewEmailPayload(obj: unknown): obj is {
   return typeof org.subject === 'string' && typeof org.html === 'string';
 }
 
+function normalizeFromAddress(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return 'Bali Future <onboarding@resend.dev>';
+  if (trimmed.includes('<')) return trimmed;
+  return `Bali Future <${trimmed}>`;
+}
+
 async function postResend(
   apiKey: string,
   from: string,
@@ -34,6 +41,16 @@ async function postResend(
   return { ok: resendRes.ok, status: resendRes.status, body };
 }
 
+function jsonResponse(data: unknown, status: number): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+    },
+  });
+}
+
 export default async function handler(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
@@ -46,46 +63,52 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   if (request.method !== 'POST') {
-    return Response.json({ error: 'Method Not Allowed' }, { status: 405 });
+    return jsonResponse({ error: 'Method Not Allowed' }, 405);
   }
 
   const key = (process.env.RESEND_API_KEY ?? '').trim();
   const orgTo = (process.env.INTAKE_EMAIL_TO ?? '').trim();
-  const from = (process.env.RESEND_FROM_EMAIL ?? '').trim() || 'Bali Future <onboarding@resend.dev>';
+  const from = normalizeFromAddress(process.env.RESEND_FROM_EMAIL ?? '');
 
   if (!key) {
-    return Response.json(
-      { skipped: true, reason: 'RESEND_API_KEY not set' },
-      { status: 200 },
-    );
+    return jsonResponse({ skipped: true, reason: 'RESEND_API_KEY not set' }, 200);
   }
 
   if (!orgTo) {
-    return Response.json({ error: 'INTAKE_EMAIL_TO not set in env' }, { status: 500 });
+    return jsonResponse({ error: 'INTAKE_EMAIL_TO not set in env' }, 500);
   }
 
   let clientPayload: unknown;
   try {
     clientPayload = await request.json();
   } catch {
-    return Response.json({ error: 'Invalid JSON' }, { status: 400 });
+    return jsonResponse({ error: 'Invalid JSON' }, 400);
   }
 
-  const results: Array<{ target: string; status: number; ok: boolean }> = [];
+  const results: Array<{ target: string; status: number; ok: boolean; detail?: string }> = [];
 
   if (isNewEmailPayload(clientPayload)) {
     const org = clientPayload.organization;
     const r0 = await postResend(key, from, orgTo, org.subject, org.html);
-    results.push({ target: 'organization', status: r0.status, ok: r0.ok });
+    results.push({
+      target: 'organization',
+      status: r0.status,
+      ok: r0.ok,
+      detail: r0.ok ? undefined : r0.body,
+    });
 
     const donor = clientPayload.donor;
     if (donor && typeof donor.to === 'string' && donor.to.includes('@')) {
       const r1 = await postResend(key, from, donor.to.trim(), donor.subject, donor.html);
-      results.push({ target: 'donor', status: r1.status, ok: r1.ok });
+      results.push({
+        target: 'donor',
+        status: r1.status,
+        ok: r1.ok,
+        detail: r1.ok ? undefined : r1.body,
+      });
     }
   } else {
-    const pl = clientPayload as { form?: string; data?: Record<string, unknown> };
-    const payloadStr = JSON.stringify(pl, null, 2);
+    const payloadStr = JSON.stringify(clientPayload, null, 2);
     const r0 = await postResend(
       key,
       from,
@@ -93,10 +116,15 @@ export default async function handler(request: Request): Promise<Response> {
       '[Bali Future] Form notification',
       `<pre>${escapeHtml(payloadStr)}</pre>`,
     );
-    results.push({ target: 'organization', status: r0.status, ok: r0.ok });
+    results.push({
+      target: 'organization',
+      status: r0.status,
+      ok: r0.ok,
+      detail: r0.ok ? undefined : r0.body,
+    });
   }
 
   const allOk = results.length > 0 && results.every((x) => x.ok);
   const status = allOk ? 200 : results.some((x) => x.ok) ? 207 : 502;
-  return Response.json({ results }, { status });
+  return jsonResponse({ results }, status);
 }
