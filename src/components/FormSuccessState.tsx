@@ -1,9 +1,7 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Check, MessageCircle } from 'lucide-react';
 import { buildWhatsAppUrl } from '../lib/whatsapp';
-
-const WHATSAPP_AUTO_OPEN_MS = 2000;
 
 type FormSuccessStateProps = {
   title: string;
@@ -37,26 +35,6 @@ export default function FormSuccessState({
 }: FormSuccessStateProps) {
   const styles = accentClasses[accent];
   const whatsappHref = whatsappMessage ? buildWhatsAppUrl(whatsappMessage) : null;
-  const [whatsappReady, setWhatsappReady] = useState(false);
-
-  useEffect(() => {
-    if (!whatsappMessage) {
-      setWhatsappReady(false);
-      return;
-    }
-    setWhatsappReady(false);
-    const url = buildWhatsAppUrl(whatsappMessage);
-    let cancelled = false;
-    const t = window.setTimeout(() => {
-      if (cancelled) return;
-      window.open(url, '_blank', 'noopener,noreferrer');
-      setWhatsappReady(true);
-    }, WHATSAPP_AUTO_OPEN_MS);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(t);
-    };
-  }, [whatsappMessage]);
 
   return (
     <motion.div
@@ -65,17 +43,22 @@ export default function FormSuccessState({
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="mx-auto w-full max-w-lg px-3 py-6 sm:px-4 sm:py-8"
     >
-      <div className="flex flex-col items-center text-center">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.25 }}
+        className="flex flex-col items-center text-center"
+      >
         <div
           className={`mb-5 flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-lg sm:mb-6 sm:h-20 sm:w-20 ${styles.icon}`}
         >
           <Check className="h-8 w-8 text-white sm:h-9 sm:w-9" aria-hidden />
         </div>
 
-        <h3 className="font-sora text-xl font-bold text-tropical sm:text-2xl md:text-3xl leading-snug">
+        <h3 className="font-sora text-xl font-bold leading-snug text-tropical sm:text-2xl md:text-3xl">
           {title}
         </h3>
-        <p className="mt-3 max-w-md text-base leading-relaxed text-dark/60 px-1">{message}</p>
+        <p className="mt-3 max-w-md px-1 text-base leading-relaxed text-dark/60">{message}</p>
 
         {warning ? (
           <p className="mt-4 w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-sm text-amber-900">
@@ -84,28 +67,25 @@ export default function FormSuccessState({
         ) : null}
 
         {whatsappHref ? (
-          <div className="mt-6 w-full max-w-sm space-y-3">
-            {!whatsappReady ? (
-              <p className="text-sm text-dark/50" aria-live="polite">
-                Opening WhatsApp in a moment…
-              </p>
-            ) : (
-              <>
-                <a
-                  href={whatsappHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-opacity hover:opacity-95 min-h-[48px] ${styles.whatsapp}`}
-                >
-                  <MessageCircle className="h-5 w-5 shrink-0" aria-hidden />
-                  Open WhatsApp
-                </a>
-                <p className="text-xs text-dark/45">
-                  If WhatsApp did not open, tap the button above (some browsers block automatic pop-ups).
-                </p>
-              </>
-            )}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, duration: 0.3 }}
+            className="mt-6 w-full max-w-sm"
+          >
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex w-full min-h-[48px] items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-opacity hover:opacity-95 ${styles.whatsapp}`}
+            >
+              <MessageCircle className="h-5 w-5 shrink-0" aria-hidden />
+              Open WhatsApp
+            </a>
+            <p className="mt-2 text-xs text-dark/45">
+              Optional — tap to continue the conversation on WhatsApp.
+            </p>
+          </motion.div>
         ) : null}
 
         {onReset ? (
@@ -117,7 +97,7 @@ export default function FormSuccessState({
             {resetLabel}
           </button>
         ) : null}
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

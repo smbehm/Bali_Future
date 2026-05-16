@@ -70,12 +70,13 @@ export function formatEmailWarning(result: EmailNotificationResult): string {
   const all401 = failed.length > 0 && failed.every((r) => r.status === 401);
 
   if (all401) {
+    console.error(
+      '[sendEmailNotification] Resend HTTP 401 — set RESEND_API_KEY in Vercel (Production + Preview): ' +
+        'https://resend.com/api-keys — key must start with re_, no quotes/spaces, then redeploy.',
+    );
     return (
-      'Your submission was saved successfully. We could not send the confirmation emails because the email service ' +
-      'rejected the server configuration (HTTP 401). This is usually a Resend API key issue: in Vercel open ' +
-      'Settings → Environment Variables, set RESEND_API_KEY to a valid key from https://resend.com/api-keys ' +
-      '(must start with re_), remove any extra quotes or spaces, enable the variable for Production and Preview, ' +
-      'then redeploy. If the key was rotated, create a new one in Resend and update Vercel.'
+      'Your submission was saved successfully. We could not send a confirmation email right now, ' +
+      'but our team has your details and will follow up with you soon.'
     );
   }
 

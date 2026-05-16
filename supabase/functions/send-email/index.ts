@@ -6,9 +6,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "Bali Future <onboarding@resend.dev>";
-const ORG_EMAIL = Deno.env.get("INTAKE_EMAIL_TO")?.trim() || "donate@balifuture.com";
+function normalizeResendApiKey(raw: string | undefined): string {
+  if (!raw) return "";
+  let s = raw.trim().replace(/^\uFEFF/, "");
+  for (let i = 0; i < 2; i++) {
+    s = s.replace(/^["']+|["']+$/g, "");
+  }
+  if (s.toLowerCase().startsWith("bearer ")) s = s.slice(7).trim();
+  s = s.replace(/\s+/g, "");
+  s = s.replace(/^resend_api_key=/i, "");
+  return s;
+}
+
+const RESEND_API_KEY = normalizeResendApiKey(Deno.env.get("RESEND_API_KEY") ?? "");
+const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL")?.trim() || "Bali Future <onboarding@resend.dev>";
+const ORG_EMAIL = Deno.env.get("INTAKE_EMAIL_TO")?.trim().replace(/\s+/g, "") || "donate@balifuture.com";
 
 function isValidPayload(obj: unknown): obj is {
   organization: { subject: string; html: string };

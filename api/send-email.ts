@@ -18,11 +18,14 @@ function isNewEmailPayload(obj: unknown): obj is {
 }
 
 function normalizeFromAddress(raw: string): string {
-  const trimmed = raw.trim();
+  const trimmed = raw.trim().replace(/^["']|["']$/g, '');
   if (!trimmed) return 'Bali Future <onboarding@resend.dev>';
   if (trimmed.includes('<')) return trimmed;
   return `Bali Future <${trimmed}>`;
 }
+
+/** Resend sandbox sender — works without a verified domain (avoids send failures during setup). */
+const RESEND_SANDBOX_FROM = 'Bali Future <onboarding@resend.dev>';
 
 function corsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get('Origin');
@@ -72,6 +75,21 @@ async function postResend(
   }
 
   return { ok: resendRes.ok, status: resendRes.status, body };
+}
+
+async function postResendSafe(
+  apiKey: string,
+  from: string,
+  recipient: string,
+  subject: string,
+  html: string,
+): Promise<{ ok: boolean; status: number; body: string }> {
+  let result = await postResend(apiKey, from, recipient, subject, html);
+  if (!result.ok && result.status === 403 && from !== RESEND_SANDBOX_FROM) {
+    console.warn('[api/send-email] From address rejected (403); retrying with onboarding@resend.dev');
+    result = await postResend(apiKey, RESEND_SANDBOX_FROM, recipient, subject, html);
+  }
+  return result;
 }
 
 function jsonResponse(request: Request, data: unknown, status: number): Response {
@@ -145,7 +163,7 @@ export default async function handler(request: Request): Promise<Response> {
 
   if (isNewEmailPayload(clientPayload)) {
     const org = clientPayload.organization;
-    const r0 = await postResend(key, from, orgTo, org.subject, org.html);
+    const r0 = await postResendSafe(key, from, orgTo, org.subject, org.html);
     if (!r0.ok) {
       console.error('[api/send-email] Resend organization failed', r0.status, r0.body);
     }
@@ -158,7 +176,7 @@ export default async function handler(request: Request): Promise<Response> {
 
     const donor = clientPayload.donor;
     if (donor && typeof donor.to === 'string' && donor.to.includes('@')) {
-      const r1 = await postResend(key, from, donor.to.trim(), donor.subject, donor.html);
+      const r1 = await postResendSafe(key, from, donor.to.trim(), donor.subject, donor.html);
       if (!r1.ok) {
         console.error('[api/send-email] Resend donor failed', r1.status, r1.body);
       }
@@ -171,7 +189,7 @@ export default async function handler(request: Request): Promise<Response> {
     }
   } else {
     const payloadStr = JSON.stringify(clientPayload, null, 2);
-    const r0 = await postResend(
+    const r0 = await postResendSafe(
       key,
       from,
       orgTo,
