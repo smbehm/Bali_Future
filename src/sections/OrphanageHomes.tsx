@@ -102,16 +102,12 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
 
-        {/* Cinematic overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-        {/* Play button */}
+        {/* Play button — no dark overlays on thumbnails */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-white/20 blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative h-[72px] w-[72px] rounded-full bg-white/15 border border-white/30 flex items-center justify-center shadow-2xl shadow-black/30 transition-all duration-400 group-hover:scale-110 [-webkit-backdrop-filter:blur(12px)] [backdrop-filter:blur(12px)] group-hover:bg-white/25 group-hover:border-white/50">
-              <Play className="w-8 h-8 text-white fill-white ml-1 drop-shadow-lg" />
+            <div className="absolute inset-0 rounded-full bg-primary-200/30 blur-xl scale-150 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            <div className="relative flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 border-primary-200/80 bg-white/95 shadow-lg shadow-primary-900/15 transition-transform duration-400 group-hover:scale-110">
+              <Play className="ml-1 h-8 w-8 fill-tropical text-tropical" />
             </div>
           </div>
         </div>
@@ -126,7 +122,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
 
         {/* Bottom title on thumbnail */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          <h3 className="font-sora font-bold text-xl md:text-2xl text-white leading-tight drop-shadow-lg break-words">
+          <h3 className="break-words font-sora text-xl font-bold leading-tight text-tropical md:text-2xl">
             {story.title}
           </h3>
         </div>

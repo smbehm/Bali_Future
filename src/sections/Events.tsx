@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from 'react';
+﻿import { memo, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
@@ -10,7 +10,6 @@ import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_E
 import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
 import { YouTubeCardMedia } from '../components/youtube/YouTubeCardMedia';
-import { useCardVideoActivation } from '../hooks/useCardVideoActivation';
 import { CLOUDINARY_EVENTS, cloudinaryPosterFromMp4 } from '../lib/cloudinary';
 
 export type ShelterShowcaseEvent = {
@@ -73,8 +72,6 @@ type EventCardProps = {
 };
 
 const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
-  const cardId = `events-${event.id}`;
-  const { isActive, handlers, tabIndex } = useCardVideoActivation(cardId);
   const poster = event.poster ?? cloudinaryPosterFromMp4(event.mp4Src);
 
   return (
@@ -83,20 +80,14 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.55, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
-      className="group yt-premium-card"
-      data-active={isActive ? 'true' : 'false'}
-      tabIndex={tabIndex}
-      role={tabIndex === 0 ? 'button' : undefined}
-      aria-pressed={tabIndex === 0 ? isActive : undefined}
-      {...handlers}
+      className="yt-premium-card group"
     >
       <div
-        className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-0 ring-2 ring-primary-300/0 transition-opacity duration-500 group-hover:opacity-100 group-hover:ring-primary-300/35 group-data-[active=true]:opacity-100 group-data-[active=true]:ring-primary-300/35"
+        className="pointer-events-none absolute inset-0 rounded-[1.75rem] opacity-0 ring-2 ring-primary-300/0 transition-opacity duration-500 group-hover:opacity-100 group-hover:ring-primary-300/35"
         aria-hidden
       />
 
       <YouTubeCardMedia
-        cardId={cardId}
         mp4Src={event.mp4Src}
         title={event.title}
         poster={poster}
@@ -186,7 +177,7 @@ export default function Events() {
       setSubscribed(false);
       setNewsletterEmail('');
       setNewsletterError(null);
-    }, 5000);
+    }, 12000);
     return () => window.clearTimeout(t);
   }, [subscribed]);
 
@@ -240,9 +231,9 @@ export default function Events() {
               </p>
               {subscribed ? (
                 <div>
-                  <div className="flex items-center justify-center gap-2 font-semibold text-primary-100">
-                    <CheckCircle2 className="h-5 w-5" />
-                    Thank you for subscribing!
+                  <div className="flex flex-col items-center justify-center gap-2 font-semibold text-primary-100 px-2 text-center">
+                    <CheckCircle2 className="h-6 w-6 shrink-0" aria-hidden />
+                    <span className="text-lg sm:text-xl leading-snug">You are subscribed!</span>
                   </div>
                   {newsletterError ? (
                     <p className="mt-3 text-sm text-amber-100/95">{newsletterError}</p>

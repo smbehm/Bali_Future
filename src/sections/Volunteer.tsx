@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, MapPin, Calendar, Globe, Heart, Send } from 'lucide-react';
 import FormSuccessState from '../components/FormSuccessState';
@@ -100,17 +100,11 @@ export default function Volunteer() {
     }
 
     setWhatsappMessage(
-      `New volunteer application from ${formData.full_name} email: ${formData.email} country: ${formData.country}`,
+      `New volunteer application from ${formData.full_name.trim()} email: ${formData.email.trim()} country: ${formData.country.trim()}`,
     );
     setSubmitted(true);
     setIsSubmitting(false);
   };
-
-  useEffect(() => {
-    if (!submitted) return;
-    const t = window.setTimeout(resetSuccess, 12000);
-    return () => window.clearTimeout(t);
-  }, [submitted, resetSuccess]);
 
   return (
     <section id="volunteer" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-sky-50/30 to-cream">
@@ -167,8 +161,8 @@ export default function Volunteer() {
           {submitted ? (
             <div className="rounded-3xl bg-white p-4 shadow-xl shadow-sky-100/50 sm:p-6">
               <FormSuccessState
-                title="Welcome to the Family"
-                message="Your application is in our hands. We will be in touch within 48 hours to start your journey together."
+                title="Thank you! Your volunteer application was received"
+                message="Our team will review your details and be in touch within 48 hours."
                 warning={submitWarning}
                 whatsappMessage={whatsappMessage}
                 accent="sky"

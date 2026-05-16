@@ -61,8 +61,9 @@ export default function TreeBackground() {
       (window.matchMedia('(max-width: 820px)').matches ||
         window.matchMedia('(pointer: coarse)').matches);
 
-    const DPR_CAP        = isMobile ? 1.4 : 2;
-    const PARTICLE_COUNT = isMobile ? 90  : 260;
+    const DPR_CAP        = isMobile ? 1 : 2;
+    const PARTICLE_COUNT = isMobile ? 48 : 260;
+    const maxTreeDepth   = isMobile ? 5 : MAX_DEPTH;
 
     // ── Renderer ──────────────────────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({
@@ -81,7 +82,7 @@ export default function TreeBackground() {
     // Warm cream sky — matches body cream (#fffdf7)
     scene.background = new THREE.Color(0xFFFDF7);
     // Soft warm haze so distant branches fade gently into the cream backdrop
-    scene.fog = new THREE.FogExp2(0xFAF1DC, 0.022);
+    scene.fog = new THREE.FogExp2(0xFAF1DC, 0.015);
 
     // ── Camera ────────────────────────────────────────────────────────────────
     const camera = new THREE.PerspectiveCamera(
@@ -131,10 +132,10 @@ export default function TreeBackground() {
 
     // Sage / olive leaves — light, slightly translucent so they blend into cream sky
     const leafMat = new THREE.MeshLambertMaterial({
-      color:    0x9CB07A,
-      emissive: 0x1F2A14,
+      color:    0x7a9458,
+      emissive: 0x1a2510,
       transparent: true,
-      opacity:  0.78,
+      opacity:  0.9,
     });
 
     const barkAt = (d: number) => barkMats[Math.min(d, barkMats.length - 1)];
@@ -151,9 +152,9 @@ export default function TreeBackground() {
       rotY:   number,
       queue:  TreeNode[]
     ): void {
-      if (depth > MAX_DEPTH) return;
+      if (depth > maxTreeDepth) return;
 
-      const isLeaf = depth === MAX_DEPTH;
+      const isLeaf = depth === maxTreeDepth;
 
       // Pivot anchored at parent tip; rotation tilts branch outward
       const pivot = new THREE.Object3D();
@@ -189,7 +190,7 @@ export default function TreeBackground() {
         windPhase:  Math.random() * Math.PI * 2,
         windFreq:   0.35 + Math.random() * 1.0,
         // deeper branches sway more; all zero at reveal
-        windAmp:    (0.012 + (depth / MAX_DEPTH) * 0.055) * (0.7 + Math.random() * 0.6),
+        windAmp:    (0.012 + (depth / maxTreeDepth) * 0.055) * (0.7 + Math.random() * 0.6),
       };
 
       queue.push(node);

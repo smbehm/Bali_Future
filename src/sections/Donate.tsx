@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, GraduationCap, Utensils, Stethoscope, TreePine, Gift, Check, ArrowRight, ArrowLeft } from 'lucide-react';
 import FormSuccessState from '../components/FormSuccessState';
@@ -143,17 +143,11 @@ export default function Donate() {
     }
 
     setWhatsappMessage(
-      `New donation received: $${finalAmount} from ${anonymous ? 'Anonymous' : name} category: ${category}`,
+      `New donation received: $${finalAmount} from ${anonymous ? 'Anonymous' : name.trim() || 'Anonymous'} category: ${categoryLabel}`,
     );
     setSubmitted(true);
     setIsSubmitting(false);
   };
-
-  useEffect(() => {
-    if (!submitted) return;
-    const t = window.setTimeout(resetSuccess, 12000);
-    return () => window.clearTimeout(t);
-  }, [submitted, resetSuccess]);
 
   return (
     <section
@@ -169,13 +163,8 @@ export default function Donate() {
       {submitted ? (
         <div className="section-container relative">
           <FormSuccessState
-            title="You Just Changed a Life"
-            message={
-              <>
-                Your ${finalAmount} gift to {categories.find((c) => c.id === category)?.label} goes directly to
-                children in Bali who need it most. Because of you, a child will eat, learn, and dream tonight.
-              </>
-            }
+            title="Thank you! Your donation was received"
+            message="Your gift helps children in Bali with food, learning, and care. We are grateful for you."
             warning={submitWarning}
             whatsappMessage={whatsappMessage}
             accent="green"

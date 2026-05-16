@@ -40,17 +40,45 @@ export type EmailNotificationResult = {
   skipped?: boolean;
 };
 
+function resendDetailSnippet(detail: string | undefined): string {
+  if (!detail) return '';
+  try {
+    const j = JSON.parse(detail) as { message?: string };
+    if (typeof j.message === 'string' && j.message.length > 0) {
+      return j.message.length > 120 ? `${j.message.slice(0, 117)}…` : j.message;
+    }
+  } catch {
+    /* not JSON */
+  }
+  return detail.length > 120 ? `${detail.slice(0, 117)}…` : detail;
+}
+
 function formatEmailFailure(result: EmailNotificationResult): string {
   if (result.error) return result.error;
   const failed = result.results?.filter((r) => !r.ok) ?? [];
   if (failed.length > 0) {
-    return failed.map((r) => `${r.target}: HTTP ${r.status}${r.detail ? ` — ${r.detail}` : ''}`).join('; ');
+    return failed
+      .map((r) => `${r.target}: HTTP ${r.status}${r.detail ? ` — ${resendDetailSnippet(r.detail)}` : ''}`)
+      .join('; ');
   }
   return `Email service returned HTTP ${result.status}`;
 }
 
 /** User-visible message when email fails after DB insert succeeded. */
 export function formatEmailWarning(result: EmailNotificationResult): string {
+  const failed = result.results?.filter((r) => !r.ok) ?? [];
+  const all401 = failed.length > 0 && failed.every((r) => r.status === 401);
+
+  if (all401) {
+    return (
+      'Your submission was saved successfully. We could not send the confirmation emails because the email service ' +
+      'rejected the server configuration (HTTP 401). This is usually a Resend API key issue: in Vercel open ' +
+      'Settings → Environment Variables, set RESEND_API_KEY to a valid key from https://resend.com/api-keys ' +
+      '(must start with re_), remove any extra quotes or spaces, enable the variable for Production and Preview, ' +
+      'then redeploy. If the key was rotated, create a new one in Resend and update Vercel.'
+    );
+  }
+
   return `Your submission was saved, but we could not send email notification (${formatEmailFailure(result)}).`;
 }
 

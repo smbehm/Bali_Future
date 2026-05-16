@@ -1,11 +1,9 @@
 import { memo, useEffect, useRef, useState, type ReactNode } from 'react';
-import { useHoverVideo } from '../../contexts/HoverVideoContext';
-import { usePrefersHover } from '../../hooks/usePrefersHover';
 import { cloudinaryPosterFromMp4 } from '../../lib/cloudinary';
 
 export type YouTubeCardMediaProps = {
-  /** Unique id for one-at-a-time hover playback across Events + Gallery */
-  cardId: string;
+  /** @deprecated Autoplay uses viewport visibility; kept for API compatibility */
+  cardId?: string;
   title: string;
   mp4Src: string;
   poster?: string;
@@ -14,8 +12,10 @@ export type YouTubeCardMediaProps = {
   className?: string;
 };
 
+/** Play when visible; pause when off-screen — muted for iOS/Safari autoplay rules. */
+const IO_ROOT_MARGIN = '80px 0px';
+
 export const YouTubeCardMedia = memo(function YouTubeCardMedia({
-  cardId,
   title,
   mp4Src,
   poster,
@@ -23,25 +23,44 @@ export const YouTubeCardMedia = memo(function YouTubeCardMedia({
   overlay,
   className = '',
 }: YouTubeCardMediaProps) {
-  const { activeCardId } = useHoverVideo();
-  const prefersHover = usePrefersHover();
-  const isPlaying = activeCardId === cardId;
+  const rootRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [inView, setInView] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const posterSrc = poster ?? cloudinaryPosterFromMp4(mp4Src);
 
   useEffect(() => {
-    if (!isPlaying) setVideoPlaying(false);
-  }, [isPlaying]);
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = () => setReduceMotion(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(() => {
+    const rootEl = rootRef.current;
+    if (!rootEl || reduceMotion) return;
+
+    const obs = new IntersectionObserver(
+      (entries) => {
+        setInView(Boolean(entries[0]?.isIntersecting));
+      },
+      { threshold: 0.25, rootMargin: IO_ROOT_MARGIN },
+    );
+    obs.observe(rootEl);
+    return () => obs.disconnect();
+  }, [reduceMotion]);
 
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
 
-    if (!isPlaying) {
+    if (!inView || reduceMotion) {
       el.pause();
       el.currentTime = 0;
       el.muted = true;
+      setVideoPlaying(false);
       return;
     }
 
@@ -50,69 +69,54 @@ export const YouTubeCardMedia = memo(function YouTubeCardMedia({
     el.setAttribute('playsinline', '');
     el.setAttribute('webkit-playsinline', '');
 
-    const startPlayback = () => {
-      void el.play().then(() => {
-        setVideoPlaying(true);
-        if (prefersHover) {
-          el.muted = false;
-        }
-      }).catch(() => {
-        el.muted = true;
-        void el.play().then(() => setVideoPlaying(true)).catch(() => {});
-      });
+    const play = () => {
+      void el
+        .play()
+        .then(() => setVideoPlaying(true))
+        .catch(() => {
+          el.muted = true;
+          void el.play().then(() => setVideoPlaying(true)).catch(() => {});
+        });
     };
 
-    if (el.readyState >= 2) {
-      startPlayback();
-    } else {
+    if (el.readyState >= 2) play();
+    else {
       el.load();
-      el.addEventListener('loadeddata', startPlayback, { once: true });
-      return () => el.removeEventListener('loadeddata', startPlayback);
+      el.addEventListener('loadeddata', play, { once: true });
     }
-  }, [isPlaying, prefersHover]);
+  }, [inView, reduceMotion]);
 
-  /* Keep playing while active — iOS may pause when composited during scroll */
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!inView || reduceMotion) return;
     const el = videoRef.current;
     if (!el) return;
 
-    const resumeIfPaused = () => {
-      if (isPlaying && el.paused && document.visibilityState === 'visible') {
+    const resume = () => {
+      if (inView && el.paused && document.visibilityState === 'visible') {
         el.muted = true;
         void el.play().catch(() => {});
       }
     };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) resumeIfPaused();
-      },
-      { threshold: 0.05 },
-    );
-    observer.observe(el);
-
-    el.addEventListener('pause', resumeIfPaused);
-    document.addEventListener('visibilitychange', resumeIfPaused);
-
+    el.addEventListener('pause', resume);
+    document.addEventListener('visibilitychange', resume);
     return () => {
-      observer.disconnect();
-      el.removeEventListener('pause', resumeIfPaused);
-      document.removeEventListener('visibilitychange', resumeIfPaused);
+      el.removeEventListener('pause', resume);
+      document.removeEventListener('visibilitychange', resume);
     };
-  }, [isPlaying]);
+  }, [inView, reduceMotion]);
 
   return (
     <div
+      ref={rootRef}
       className={`yt-card-media ${aspectClass} ${className}`.trim()}
-      data-active={isPlaying ? 'true' : 'false'}
       data-playing={videoPlaying ? 'true' : 'false'}
-      data-touch={prefersHover ? 'false' : 'true'}
+      data-autoplay={!reduceMotion ? 'true' : 'false'}
     >
       <div className="yt-card-media__stage">
         <img src={posterSrc} alt="" className="yt-card-poster" loading="lazy" decoding="async" />
 
-        <div className="yt-card-player" aria-hidden={!isPlaying}>
+        <div className="yt-card-player" aria-hidden={!inView && !videoPlaying}>
           <video
             ref={videoRef}
             src={mp4Src}
@@ -120,7 +124,7 @@ export const YouTubeCardMedia = memo(function YouTubeCardMedia({
             muted
             loop
             playsInline
-            preload={isPlaying ? 'auto' : 'none'}
+            preload={inView ? 'auto' : 'none'}
             controls={false}
             disablePictureInPicture
             disableRemotePlayback
@@ -133,10 +137,6 @@ export const YouTubeCardMedia = memo(function YouTubeCardMedia({
           />
         </div>
       </div>
-
-      <div className="yt-card-cinematic" aria-hidden />
-      <div className="yt-card-vignette" aria-hidden />
-      <div className="yt-card-tint" aria-hidden />
 
       {overlay ? <div className="yt-card-overlay-slot">{overlay}</div> : null}
     </div>

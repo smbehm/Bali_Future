@@ -1,3 +1,5 @@
+import { normalizeResendApiKey } from './normalizeResendKey';
+
 export const config = { runtime: 'edge' };
 
 function escapeHtml(s: string) {
@@ -96,8 +98,9 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   const rawKey = process.env.RESEND_API_KEY ?? '';
-  const key = rawKey.trim().replace(/^["']|["']$/g, '');
-  const orgTo = (process.env.INTAKE_EMAIL_TO ?? '').trim().replace(/^["']|["']$/g, '');
+  const key = normalizeResendApiKey(rawKey);
+  const orgToRaw = (process.env.INTAKE_EMAIL_TO ?? '').trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
+  const orgTo = orgToRaw || 'donate@balifuture.com';
   const from = normalizeFromAddress((process.env.RESEND_FROM_EMAIL ?? '').trim().replace(/^["']|["']$/g, ''));
 
   console.log('[api/send-email] env diagnostics', {
@@ -127,9 +130,8 @@ export default async function handler(request: Request): Promise<Response> {
     return jsonResponse(request, { error: 'RESEND_API_KEY appears malformed (expected re_ prefix)' }, 500);
   }
 
-  if (!orgTo) {
-    console.error('[api/send-email] INTAKE_EMAIL_TO is not set');
-    return jsonResponse(request, { error: 'INTAKE_EMAIL_TO not set in env' }, 500);
+  if (!orgToRaw) {
+    console.warn('[api/send-email] INTAKE_EMAIL_TO not set; using default donate@balifuture.com');
   }
 
   let clientPayload: unknown;

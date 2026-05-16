@@ -19,6 +19,15 @@ function escapeHtml(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function normalizeResendApiKey(raw: string | undefined): string {
+  if (raw === undefined || raw === null) return '';
+  let s = String(raw).trim().replace(/^\uFEFF/, '');
+  s = s.replace(/^["']|["']$/g, '');
+  if (s.toLowerCase().startsWith('bearer ')) s = s.slice(7).trim();
+  s = s.replace(/\s+/g, '');
+  return s;
+}
+
 function isNewEmailPayload(obj: unknown): obj is {
   organization: { subject: string; html: string };
   donor?: { to: string; subject: string; html: string } | null;
@@ -94,7 +103,7 @@ function sendEmailDevApi(env: Record<string, string>): Plugin {
 
         console.log('Email endpoint hit');
 
-        const key = (env.RESEND_API_KEY ?? '').trim();
+        const key = normalizeResendApiKey(env.RESEND_API_KEY);
         const hasKey = Boolean(key);
         console.log('RESEND_API_KEY loaded:', hasKey ? 'true' : 'false');
 
@@ -124,15 +133,10 @@ function sendEmailDevApi(env: Record<string, string>): Plugin {
         }
 
         const from = env.RESEND_FROM_EMAIL?.trim() || 'Bali Future <onboarding@resend.dev>';
-        const orgTo = env.INTAKE_EMAIL_TO?.trim() || '';
-        if (!orgTo) {
-          const errBody = JSON.stringify({ error: 'INTAKE_EMAIL_TO not set in env' });
-          console.log('Resend API response status: (skipped — no recipient)');
-          console.log('Resend API response body:', errBody);
-          res.statusCode = 500;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(errBody);
-          return;
+        const orgToRaw = env.INTAKE_EMAIL_TO?.trim() || '';
+        const orgTo = orgToRaw || 'donate@balifuture.com';
+        if (!orgToRaw) {
+          console.warn('[send-email middleware] INTAKE_EMAIL_TO not set; using donate@balifuture.com');
         }
 
         const results: Array<{ target: string; status: number; body: string; ok: boolean }> = [];
