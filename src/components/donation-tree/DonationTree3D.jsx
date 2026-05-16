@@ -24,7 +24,7 @@ const FRAG_SHADER = `
     float fillNorm = clamp((uFillLevel - uMinY) / range, 0.0, 1.0);
     float height = clamp((vLocalY - uMinY) / range, 0.0, 1.0);
 
-    vec3 emptyColor = vec3(0.072, 0.055, 0.038);
+    vec3 emptyColor = vec3(0.055, 0.038, 0.022);
     vec3 deepGreen = vec3(0.04, 0.30, 0.09);
     vec3 emerald = vec3(0.12, 0.74, 0.28);
     vec3 brightTip = vec3(0.55, 1.0, 0.35);
@@ -80,22 +80,22 @@ export function DonationTree3D({ amount, target, campaignName }) {
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0c1812);
-    scene.fog = new THREE.FogExp2(0x0c1812, 0.048);
+    scene.background = new THREE.Color(0x040b06);
+    scene.fog = new THREE.FogExp2(0x040b06, 0.065);
 
     const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
     camera.position.set(0, 2.8, 6.8);
     camera.lookAt(0, 2.5, 0);
 
-    scene.add(new THREE.AmbientLight(0x1a2e22, 1.08));
+    scene.add(new THREE.AmbientLight(0x0c1e0c, 0.9));
 
-    const sun = new THREE.DirectionalLight(0xffe8a0, 1.92);
+    const sun = new THREE.DirectionalLight(0xffe8a0, 1.7);
     sun.position.set(4, 8, 5);
     sun.castShadow = true;
     sun.shadow.mapSize.set(1024, 1024);
     scene.add(sun);
 
-    const fillLight = new THREE.PointLight(0x44ff88, 1.22, 26);
+    const fillLight = new THREE.PointLight(0x44ff88, 1, 24);
     fillLight.position.set(-3, 4, 3);
     scene.add(fillLight);
 
@@ -106,7 +106,7 @@ export function DonationTree3D({ amount, target, campaignName }) {
     const treeGroup = new THREE.Group();
     scene.add(treeGroup);
 
-    const barkMaterial = new THREE.MeshStandardMaterial({ color: 0x3a2212, roughness: 0.92 });
+    const barkMaterial = new THREE.MeshStandardMaterial({ color: 0x271203, roughness: 0.97 });
     const randomBetween = (min, max) => min + Math.random() * (max - min);
 
     const trunkGeometry = new THREE.CylinderGeometry(0.11, 0.24, 4.65, 14, 7);

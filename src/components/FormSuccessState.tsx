@@ -41,24 +41,17 @@ export default function FormSuccessState({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="mx-auto w-full max-w-lg px-3 py-6 sm:px-4 sm:py-8"
+      className="mx-auto w-full max-w-lg px-2 py-6 sm:px-4 sm:py-8"
     >
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.25 }}
-        className="flex flex-col items-center text-center"
-      >
+      <div className="flex flex-col items-center text-center">
         <div
           className={`mb-5 flex h-16 w-16 shrink-0 items-center justify-center rounded-full shadow-lg sm:mb-6 sm:h-20 sm:w-20 ${styles.icon}`}
         >
           <Check className="h-8 w-8 text-white sm:h-9 sm:w-9" aria-hidden />
         </div>
 
-        <h3 className="font-sora text-xl font-bold leading-snug text-tropical sm:text-2xl md:text-3xl">
-          {title}
-        </h3>
-        <p className="mt-3 max-w-md px-1 text-base leading-relaxed text-dark/60">{message}</p>
+        <h3 className="font-sora text-2xl font-bold text-tropical sm:text-3xl">{title}</h3>
+        <p className="mt-3 max-w-md text-base leading-relaxed text-dark/60">{message}</p>
 
         {warning ? (
           <p className="mt-4 w-full rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-sm text-amber-900">
@@ -67,25 +60,15 @@ export default function FormSuccessState({
         ) : null}
 
         {whatsappHref ? (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.3 }}
-            className="mt-6 w-full max-w-sm"
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`mt-6 inline-flex w-full max-w-sm items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-opacity hover:opacity-95 sm:w-auto sm:min-w-[240px] ${styles.whatsapp}`}
           >
-            <a
-              href={whatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`inline-flex w-full min-h-[48px] items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-opacity hover:opacity-95 ${styles.whatsapp}`}
-            >
-              <MessageCircle className="h-5 w-5 shrink-0" aria-hidden />
-              Open WhatsApp
-            </a>
-            <p className="mt-2 text-xs text-dark/45">
-              Optional — tap to continue the conversation on WhatsApp.
-            </p>
-          </motion.div>
+            <MessageCircle className="h-5 w-5 shrink-0" />
+            Continue on WhatsApp
+          </a>
         ) : null}
 
         {onReset ? (
@@ -97,7 +80,7 @@ export default function FormSuccessState({
             {resetLabel}
           </button>
         ) : null}
-      </motion.div>
+      </div>
     </motion.div>
   );
 }

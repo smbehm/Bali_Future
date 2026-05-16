@@ -1,4 +1,4 @@
-﻿import { devLog, devWarn } from './devLog';
+import { devLog, devWarn } from './devLog';
 import { supabaseAnonKey, supabaseUrl } from './supabase';
 
 /** Escape text for safe inclusion in HTML email bodies. */
@@ -40,46 +40,17 @@ export type EmailNotificationResult = {
   skipped?: boolean;
 };
 
-function resendDetailSnippet(detail: string | undefined): string {
-  if (!detail) return '';
-  try {
-    const j = JSON.parse(detail) as { message?: string };
-    if (typeof j.message === 'string' && j.message.length > 0) {
-      return j.message.length > 120 ? `${j.message.slice(0, 117)}…` : j.message;
-    }
-  } catch {
-    /* not JSON */
-  }
-  return detail.length > 120 ? `${detail.slice(0, 117)}…` : detail;
-}
-
 function formatEmailFailure(result: EmailNotificationResult): string {
   if (result.error) return result.error;
   const failed = result.results?.filter((r) => !r.ok) ?? [];
   if (failed.length > 0) {
-    return failed
-      .map((r) => `${r.target}: HTTP ${r.status}${r.detail ? ` — ${resendDetailSnippet(r.detail)}` : ''}`)
-      .join('; ');
+    return failed.map((r) => `${r.target}: HTTP ${r.status}${r.detail ? ` — ${r.detail}` : ''}`).join('; ');
   }
   return `Email service returned HTTP ${result.status}`;
 }
 
 /** User-visible message when email fails after DB insert succeeded. */
 export function formatEmailWarning(result: EmailNotificationResult): string {
-  const failed = result.results?.filter((r) => !r.ok) ?? [];
-  const all401 = failed.length > 0 && failed.every((r) => r.status === 401);
-
-  if (all401) {
-    console.error(
-      '[sendEmailNotification] Resend HTTP 401 — set RESEND_API_KEY in Vercel (Production + Preview): ' +
-        'https://resend.com/api-keys — key must start with re_, no quotes/spaces, then redeploy.',
-    );
-    return (
-      'Your submission was saved successfully. We could not send a confirmation email right now, ' +
-      'but our team has your details and will follow up with you soon.'
-    );
-  }
-
   return `Your submission was saved, but we could not send email notification (${formatEmailFailure(result)}).`;
 }
 

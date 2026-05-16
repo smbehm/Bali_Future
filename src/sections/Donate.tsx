@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, GraduationCap, Utensils, Stethoscope, TreePine, Gift, Check, ArrowRight, ArrowLeft } from 'lucide-react';
-import FormSuccessScreen from '../components/FormSuccessScreen';
+import FormSuccessState from '../components/FormSuccessState';
 import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
 import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
@@ -143,11 +143,17 @@ export default function Donate() {
     }
 
     setWhatsappMessage(
-      `New donation received: $${finalAmount} from ${anonymous ? 'Anonymous' : name.trim() || 'Anonymous'} category: ${categoryLabel}`,
+      `New donation received: $${finalAmount} from ${anonymous ? 'Anonymous' : name} category: ${category}`,
     );
     setSubmitted(true);
     setIsSubmitting(false);
   };
+
+  useEffect(() => {
+    if (!submitted) return;
+    const t = window.setTimeout(resetSuccess, 12000);
+    return () => window.clearTimeout(t);
+  }, [submitted, resetSuccess]);
 
   return (
     <section
@@ -161,15 +167,22 @@ export default function Donate() {
       )}
 
       {submitted ? (
-        <FormSuccessScreen
-          title="Thank you! Your donation was received"
-          message="Your gift helps children in Bali with food, learning, and care. We are grateful for you."
-          warning={submitWarning}
-          whatsappMessage={whatsappMessage}
-          accent="green"
-          resetLabel="Make Another Donation"
-          onReset={resetSuccess}
-        />
+        <div className="section-container relative">
+          <FormSuccessState
+            title="You Just Changed a Life"
+            message={
+              <>
+                Your ${finalAmount} gift to {categories.find((c) => c.id === category)?.label} goes directly to
+                children in Bali who need it most. Because of you, a child will eat, learn, and dream tonight.
+              </>
+            }
+            warning={submitWarning}
+            whatsappMessage={whatsappMessage}
+            accent="green"
+            resetLabel="Make Another Donation"
+            onReset={resetSuccess}
+          />
+        </div>
       ) : (
       <div className="mx-auto w-full min-w-0 max-w-4xl relative">
         <motion.div

@@ -1,7 +1,7 @@
-﻿import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, MapPin, Calendar, Globe, Heart, Send, Loader2 } from 'lucide-react';
-import FormSuccessScreen from '../components/FormSuccessScreen';
+import { Users, MapPin, Calendar, Globe, Heart, Send } from 'lucide-react';
+import FormSuccessState from '../components/FormSuccessState';
 import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
 import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
@@ -15,7 +15,7 @@ const journeySteps = [
 
 export default function Volunteer() {
   const [formData, setFormData] = useState({
-    full_name: '', email: '', phone: '', country: '', skills: '', availability: '', message: '',
+    full_name: '', email: '', phone: '', country: '', skills: '', availability: '', message: ''
   });
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -100,194 +100,166 @@ export default function Volunteer() {
     }
 
     setWhatsappMessage(
-      `New volunteer application from ${formData.full_name.trim()} email: ${formData.email.trim()} country: ${formData.country.trim()}`,
+      `New volunteer application from ${formData.full_name} email: ${formData.email} country: ${formData.country}`,
     );
-    setIsSubmitting(false);
     setSubmitted(true);
+    setIsSubmitting(false);
   };
 
+  useEffect(() => {
+    if (!submitted) return;
+    const t = window.setTimeout(resetSuccess, 12000);
+    return () => window.clearTimeout(t);
+  }, [submitted, resetSuccess]);
+
   return (
-    <section
-      id="volunteer"
-      className={`section-padding relative ${
-        submitted
-          ? 'overflow-x-clip bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55'
-          : 'overflow-hidden bg-gradient-to-b from-cream via-sky-50/30 to-cream'
-      }`}
-    >
-      {!submitted && (
-        <div className="decorative-blur absolute bottom-0 right-0 h-[min(500px,100vh)] w-[min(500px,100vw)] rounded-full bg-sky-50/50 blur-[80px]" />
-      )}
+    <section id="volunteer" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-sky-50/30 to-cream">
+      <div className="decorative-blur absolute bottom-0 right-0 h-[min(500px,100vh)] w-[min(500px,100vw)] rounded-full bg-sky-50/50 blur-[80px]" />
 
-      {submitted ? (
-        <FormSuccessScreen
-          title="Thank you! Your volunteer application was received"
-          message="We appreciate your willingness to help children in Bali. Our team will review your application and get back to you soon."
-          warning={submitWarning}
-          whatsappMessage={whatsappMessage}
-          accent="green"
-          resetLabel="Submit Another Application"
-          onReset={resetSuccess}
-        />
-      ) : (
-        <div className="section-container relative">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mx-auto mb-16 max-w-3xl text-center"
-          >
-            <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-sky-50 px-4 py-1.5 text-sm font-semibold text-sky-600">
-              <Users className="h-4 w-4" />
-              Your Time Changes Everything
-            </span>
-            <h2 className="mb-6 font-sora text-3xl font-bold text-tropical md:text-5xl">
-              Be the Reason a Child Smiles
-            </h2>
-            <p className="text-lg text-dark/60">
-              Our volunteers don't just visit -- they become family. Whether you teach a child to read, build a
-              classroom, or simply show up with love, your presence leaves a lasting mark on young hearts that will
-              never forget you.
-            </p>
-          </motion.div>
+      <div className="section-container relative">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center max-w-3xl mx-auto mb-16"
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-50 text-sky-600 text-sm font-semibold mb-4">
+            <Users className="w-4 h-4" />
+            Your Time Changes Everything
+          </span>
+          <h2 className="font-sora font-bold text-3xl md:text-5xl text-tropical mb-6">
+            Be the Reason a Child Smiles
+          </h2>
+          <p className="text-dark/60 text-lg">
+            Our volunteers don't just visit -- they become family. Whether you teach a child to read,
+            build a classroom, or simply show up with love, your presence leaves a lasting mark
+            on young hearts that will never forget you.
+          </p>
+        </motion.div>
 
-          <div className="mb-16 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
-            {journeySteps.map((step, i) => (
-              <motion.div
-                key={step.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="text-center"
-              >
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl gradient-sky text-white shadow-lg shadow-sky-200/50">
-                  {step.icon}
-                </div>
-                <div className="font-sora text-sm font-bold text-tropical">{step.title}</div>
-                <div className="mt-1 text-xs text-dark/50">{step.desc}</div>
-              </motion.div>
-            ))}
-          </div>
+        {/* Journey timeline */}
+        <div className="grid grid-cols-1 gap-6 mb-16 sm:grid-cols-2 md:grid-cols-4">
+          {journeySteps.map((step, i) => (
+            <motion.div
+              key={step.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="text-center"
+            >
+              <div className="w-14 h-14 rounded-2xl gradient-sky flex items-center justify-center text-white mx-auto mb-4 shadow-lg shadow-sky-200/50">
+                {step.icon}
+              </div>
+              <div className="font-sora font-bold text-tropical text-sm">{step.title}</div>
+              <div className="text-xs text-dark/50 mt-1">{step.desc}</div>
+            </motion.div>
+          ))}
+        </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mx-auto max-w-2xl"
-          >
-            <div className="relative">
-              <form
-                onSubmit={handleSubmit}
-                className={`relative rounded-3xl bg-white p-8 shadow-xl shadow-sky-100/50 md:p-10 ${
-                  isSubmitting ? 'pointer-events-none' : ''
-                }`}
-                aria-busy={isSubmitting}
-              >
-                <h3 className="mb-6 font-sora text-xl font-bold text-tropical">Volunteer Application</h3>
-                {submitError ? (
-                  <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    {submitError}
-                  </p>
-                ) : null}
-                <div className={`grid gap-4 md:grid-cols-2 ${isSubmitting ? 'opacity-55' : ''}`}>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-dark/70">Full Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.full_name}
-                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                      className="form-field w-full rounded-xl border-2 border-sky-100 px-4 py-3 outline-none transition-colors focus:border-sky-300"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-dark/70">Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="form-field w-full rounded-xl border-2 border-sky-100 px-4 py-3 outline-none transition-colors focus:border-sky-300"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-dark/70">Country</label>
-                    <input
-                      type="text"
-                      value={formData.country}
-                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className="form-field w-full rounded-xl border-2 border-sky-100 px-4 py-3 outline-none transition-colors focus:border-sky-300"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-dark/70">Availability</label>
-                    <select
-                      value={formData.availability}
-                      onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
-                      className="form-field w-full rounded-xl border-2 border-sky-100 bg-white px-4 py-3 outline-none transition-colors focus:border-sky-300"
-                    >
-                      <option value="">Select duration</option>
-                      <option value="1-2 weeks">1-2 weeks</option>
-                      <option value="1 month">1 month</option>
-                      <option value="3 months">3 months</option>
-                      <option value="6+ months">6+ months</option>
-                    </select>
-                  </div>
-                </div>
-                <div className={`mt-4 ${isSubmitting ? 'opacity-55' : ''}`}>
-                  <label className="mb-1 block text-sm font-medium text-dark/70">Skills & Experience</label>
+        {/* Application form */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-2xl mx-auto"
+        >
+          {submitted ? (
+            <div className="rounded-3xl bg-white p-4 shadow-xl shadow-sky-100/50 sm:p-6">
+              <FormSuccessState
+                title="Welcome to the Family"
+                message="Your application is in our hands. We will be in touch within 48 hours to start your journey together."
+                warning={submitWarning}
+                whatsappMessage={whatsappMessage}
+                accent="sky"
+                resetLabel="Submit another application"
+                onReset={resetSuccess}
+              />
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="bg-white rounded-3xl shadow-xl shadow-sky-100/50 p-8 md:p-10">
+              <h3 className="font-sora font-bold text-xl text-tropical mb-6">Volunteer Application</h3>
+              {submitError ? (
+                <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                  {submitError}
+                </p>
+              ) : null}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-dark/70 mb-1 block">Full Name</label>
                   <input
                     type="text"
-                    value={formData.skills}
-                    onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                    placeholder="Teaching, construction, medical, tech..."
-                    className="form-field w-full rounded-xl border-2 border-sky-100 px-4 py-3 outline-none transition-colors focus:border-sky-300"
+                    required
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    className="form-field w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors"
                   />
                 </div>
-                <div className={`mt-4 ${isSubmitting ? 'opacity-55' : ''}`}>
-                  <label className="mb-1 block text-sm font-medium text-dark/70">Why do you want to volunteer?</label>
-                  <textarea
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    rows={3}
-                    className="form-field w-full resize-none rounded-xl border-2 border-sky-100 px-4 py-3 outline-none transition-colors focus:border-sky-300"
+                <div>
+                  <label className="text-sm font-medium text-dark/70 mb-1 block">Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="form-field w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors"
                   />
                 </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl gradient-sky py-4 font-semibold text-white shadow-lg shadow-sky-200/50 transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-5 w-5 shrink-0 animate-spin" aria-hidden />
-                      Sending your application…
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 shrink-0" aria-hidden />
-                      Submit Application
-                    </>
-                  )}
-                </button>
-              </form>
-
-              {isSubmitting ? (
-                <div
-                  className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-3xl bg-cream/88 px-6 backdrop-blur-sm"
-                  aria-live="polite"
-                  aria-label="Submitting application"
-                >
-                  <Loader2 className="h-11 w-11 shrink-0 animate-spin text-sky-600" aria-hidden />
-                  <p className="text-center text-sm font-semibold text-dark/75">Sending your application…</p>
-                  <p className="max-w-xs text-center text-xs text-dark/50">Please wait a moment.</p>
+                <div>
+                  <label className="text-sm font-medium text-dark/70 mb-1 block">Country</label>
+                  <input
+                    type="text"
+                    value={formData.country}
+                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                    className="form-field w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors"
+                  />
                 </div>
-              ) : null}
-            </div>
-          </motion.div>
-        </div>
-      )}
+                <div>
+                  <label className="text-sm font-medium text-dark/70 mb-1 block">Availability</label>
+                  <select
+                    value={formData.availability}
+                    onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
+                    className="form-field w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors bg-white"
+                  >
+                    <option value="">Select duration</option>
+                    <option value="1-2 weeks">1-2 weeks</option>
+                    <option value="1 month">1 month</option>
+                    <option value="3 months">3 months</option>
+                    <option value="6+ months">6+ months</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-4">
+                <label className="text-sm font-medium text-dark/70 mb-1 block">Skills & Experience</label>
+                <input
+                  type="text"
+                  value={formData.skills}
+                  onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                  placeholder="Teaching, construction, medical, tech..."
+                  className="form-field w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors"
+                />
+              </div>
+              <div className="mt-4">
+                <label className="text-sm font-medium text-dark/70 mb-1 block">Why do you want to volunteer?</label>
+                <textarea
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  rows={3}
+                  className="form-field w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors resize-none"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="mt-6 w-full flex items-center justify-center gap-2 py-4 rounded-xl gradient-sky text-white font-semibold shadow-lg shadow-sky-200/50 hover:shadow-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <Send className="w-4 h-4" />
+                Submit Application
+              </button>
+            </form>
+          )}
+        </motion.div>
+      </div>
     </section>
   );
 }

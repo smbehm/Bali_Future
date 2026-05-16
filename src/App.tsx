@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
 import FloatingLeaves from './components/FloatingLeaves';
 import Hero from './sections/Hero';
@@ -9,12 +9,13 @@ import TreeOfFuture from './sections/TreeOfFuture';
 import Donate from './sections/Donate';
 import Volunteer from './sections/Volunteer';
 import SectionErrorBoundary from './components/SectionErrorBoundary';
+import { HoverVideoProvider } from './contexts/HoverVideoContext';
+import Events from './sections/Events';
+import Gallery from './sections/Gallery';
 import FAQ from './sections/FAQ';
 import Footer from './sections/Footer';
 
 const TreeBackground = lazy(() => import('./components/TreeBackground'));
-const Events = lazy(() => import('./sections/Events'));
-const Gallery = lazy(() => import('./sections/Gallery'));
 
 function App() {
   return (
@@ -32,14 +33,14 @@ function App() {
         <TreeOfFuture />
         <Donate />
         <Volunteer />
-        <Suspense fallback={null}>
+        <HoverVideoProvider>
           <SectionErrorBoundary sectionName="Events">
             <Events />
           </SectionErrorBoundary>
           <SectionErrorBoundary sectionName="Gallery">
             <Gallery />
           </SectionErrorBoundary>
-        </Suspense>
+        </HoverVideoProvider>
         <FAQ />
         <Footer />
       </div>
