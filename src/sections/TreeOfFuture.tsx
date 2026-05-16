@@ -7,7 +7,7 @@ const DonationTreeExperience = lazy(() => import('../components/donation-tree/Do
 function TreeEmbedFallback() {
   return (
     <div
-      className="flex min-h-[300px] w-full items-center justify-center bg-[#040b06] text-sm text-primary-200/80 md:min-h-[620px]"
+      className="flex min-h-[300px] w-full items-center justify-center bg-[#0c1812] text-sm text-primary-200/80 md:min-h-[620px]"
       aria-hidden
     >
       Loading tree…

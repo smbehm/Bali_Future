@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, GraduationCap, Utensils, Stethoscope, TreePine, Gift, Check, ArrowRight, ArrowLeft } from 'lucide-react';
-import FormSuccessState from '../components/FormSuccessState';
+import FormSuccessScreen from '../components/FormSuccessScreen';
 import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
 import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
@@ -161,17 +161,15 @@ export default function Donate() {
       )}
 
       {submitted ? (
-        <div className="section-container relative">
-          <FormSuccessState
-            title="Thank you! Your donation was received"
-            message="Your gift helps children in Bali with food, learning, and care. We are grateful for you."
-            warning={submitWarning}
-            whatsappMessage={whatsappMessage}
-            accent="green"
-            resetLabel="Make Another Donation"
-            onReset={resetSuccess}
-          />
-        </div>
+        <FormSuccessScreen
+          title="Thank you! Your donation was received"
+          message="Your gift helps children in Bali with food, learning, and care. We are grateful for you."
+          warning={submitWarning}
+          whatsappMessage={whatsappMessage}
+          accent="green"
+          resetLabel="Make Another Donation"
+          onReset={resetSuccess}
+        />
       ) : (
       <div className="mx-auto w-full min-w-0 max-w-4xl relative">
         <motion.div
