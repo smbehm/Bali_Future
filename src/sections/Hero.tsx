@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+﻿import { useEffect, useRef, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Users, Compass, Sparkles, Home } from 'lucide-react';
 import { useCountUp } from '../hooks/useCountUp';
@@ -33,138 +33,6 @@ function SunlightRays() {
   );
 }
 
-function GlowingTree() {
-  return (
-    <div className="absolute right-0 top-0 bottom-0 w-full lg:w-[55%] pointer-events-none">
-      {/* Deep background glow */}
-      <div className="absolute top-[10%] right-[5%] w-[400px] h-[400px] rounded-full bg-primary-200/20 blur-[80px] animate-pulse-soft" />
-      <div className="absolute top-[25%] right-[15%] w-[250px] h-[250px] rounded-full bg-warm-200/15 blur-[60px]" />
-
-      <svg viewBox="0 0 500 750" className="h-full w-full" fill="none" preserveAspectRatio="xMidYMid slice">
-        {/* Canopy layers - atmospheric depth */}
-        <motion.ellipse
-          cx="250" cy="200" rx="180" ry="170"
-          fill="url(#canopyOuter)"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 2, delay: 0.8 }}
-        />
-        <motion.ellipse
-          cx="230" cy="220" rx="140" ry="130"
-          fill="url(#canopyMid)"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 2, delay: 1.1 }}
-        />
-        <motion.ellipse
-          cx="270" cy="190" rx="120" ry="110"
-          fill="url(#canopyInner)"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 2, delay: 1.4 }}
-        />
-        <motion.ellipse
-          cx="250" cy="210" rx="90" ry="85"
-          fill="url(#canopyCore)"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.8, delay: 1.7 }}
-        />
-
-        {/* Glowing leaves scattered in canopy */}
-        {[
-          { cx: 180, cy: 140, r: 6 }, { cx: 300, cy: 130, r: 5 },
-          { cx: 220, cy: 100, r: 7 }, { cx: 280, cy: 170, r: 5 },
-          { cx: 150, cy: 200, r: 6 }, { cx: 330, cy: 190, r: 5 },
-          { cx: 200, cy: 250, r: 7 }, { cx: 310, cy: 240, r: 6 },
-          { cx: 170, cy: 160, r: 4 }, { cx: 260, cy: 110, r: 5 },
-          { cx: 340, cy: 150, r: 4 }, { cx: 190, cy: 280, r: 5 },
-          { cx: 290, cy: 270, r: 4 }, { cx: 240, cy: 150, r: 6 },
-        ].map((leaf, i) => (
-          <motion.circle
-            key={i}
-            cx={leaf.cx}
-            cy={leaf.cy}
-            r={leaf.r}
-            fill="url(#leafGlow)"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{
-              opacity: [0.4, 0.9, 0.4],
-              scale: [0.8, 1.2, 0.8],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: 2 + i * 0.2,
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
-
-        {/* Roots */}
-        <motion.path
-          d="M250 720 C220 740 170 750 130 755"
-          stroke="#2f5d50"
-          strokeWidth="3"
-          strokeOpacity="0.3"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 2, delay: 2.5 }}
-        />
-        <motion.path
-          d="M250 720 C280 740 330 750 370 755"
-          stroke="#2f5d50"
-          strokeWidth="3"
-          strokeOpacity="0.3"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 2, delay: 2.7 }}
-        />
-        <motion.path
-          d="M248 715 C235 735 200 745 170 748"
-          stroke="#2f5d50"
-          strokeWidth="2"
-          strokeOpacity="0.2"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 1.8, delay: 2.9 }}
-        />
-
-        {/* Gradient definitions */}
-        <defs>
-          <radialGradient id="canopyOuter" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#7bc47f" stopOpacity="0.08" />
-            <stop offset="70%" stopColor="#7bc47f" stopOpacity="0.04" />
-            <stop offset="100%" stopColor="#7bc47f" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="canopyMid" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#2f5d50" stopOpacity="0.12" />
-            <stop offset="60%" stopColor="#2f5d50" stopOpacity="0.06" />
-            <stop offset="100%" stopColor="#2f5d50" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="canopyInner" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#6ec1e4" stopOpacity="0.08" />
-            <stop offset="70%" stopColor="#6ec1e4" stopOpacity="0.03" />
-            <stop offset="100%" stopColor="#6ec1e4" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="canopyCore" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#7bc47f" stopOpacity="0.15" />
-            <stop offset="50%" stopColor="#2f5d50" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#2f5d50" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="leafGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#a8e6a3" stopOpacity="0.9" />
-            <stop offset="60%" stopColor="#7bc47f" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#7bc47f" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-      </svg>
-    </div>
-  );
-}
 
 function FloatingHeroLeaves() {
   const leaves = [
@@ -342,7 +210,7 @@ const heroStats: Array<{
 export default function Hero() {
   return (
     <section id="top" className="relative min-h-screen min-h-[100dvh] flex items-center overflow-hidden">
-      {/* Soft atmosphere â€” tinted glow orbs only, no opaque cream layer so the
+      {/* Soft atmosphere — tinted glow orbs only, no opaque cream layer so the
          3D tree background shows through */}
       <div className="decorative-blur absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-0 h-[min(900px,120vh)] w-[min(900px,120vw)] rounded-full bg-warm-100/20 blur-[120px] -translate-y-1/3 translate-x-1/4" />
@@ -356,9 +224,6 @@ export default function Hero() {
 
       {/* Atmospheric particles */}
       <AtmosphericParticles />
-
-      {/* Artistic tree illustration */}
-      <GlowingTree />
 
       {/* Floating hero leaves */}
       <FloatingHeroLeaves />
