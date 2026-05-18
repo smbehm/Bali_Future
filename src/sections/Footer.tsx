@@ -7,7 +7,7 @@ const footerLinks: Record<string, { label: string; href: string }[]> = {
     { label: 'Impact', href: '#impact' },
   ],
   Programs: [
-    { label: 'Tree of Future', href: '#tree-of-future' },
+    { label: 'Donation Tree', href: '#tree-of-future' },
     { label: 'Orphanage Homes', href: '#stories' },
     { label: 'Gallery', href: '#gallery' },
   ],

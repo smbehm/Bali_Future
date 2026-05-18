@@ -135,7 +135,7 @@
     overflow: hidden;
     width: 100%;
     flex-shrink: 0;
-    background: #0a0a0a;
+    background: transparent;
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -150,7 +150,7 @@
     width: 100%;
     height: 100%;
     min-height: inherit;
-    background: #0a0a0a;
+    background: transparent;
   }
 
   .yt-card-poster {
@@ -186,17 +186,6 @@
     transform: translateZ(0);
   }
 
-  @media (hover: none) {
-    .yt-card-media[data-playing='true'] .yt-card-cinematic,
-    .yt-card-media[data-playing='true'] .yt-card-vignette {
-      opacity: 0.4;
-    }
-
-    .yt-card-media[data-playing='true'] .yt-card-tint {
-      opacity: 0.55;
-    }
-  }
-
   .yt-card-player {
     position: absolute;
     top: 0;
@@ -205,7 +194,7 @@
     height: 100%;
     z-index: 1;
     overflow: hidden;
-    background: #0a0a0a;
+    background: transparent;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -246,46 +235,11 @@
     pointer-events: auto;
   }
 
-  /* Full-bleed overlays above video */
+  /* Dark cinematic overlays disabled site-wide — full-brightness media */
   .yt-card-cinematic,
   .yt-card-vignette,
   .yt-card-tint {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 3;
-  }
-
-  .yt-card-cinematic {
-    background: linear-gradient(
-      165deg,
-      rgba(0, 0, 0, 0.35) 0%,
-      rgba(0, 0, 0, 0.5) 50%,
-      rgba(0, 0, 0, 0.62) 100%
-    );
-    transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .yt-card-vignette {
-    z-index: 4;
-    background: radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.45) 100%);
-  }
-
-  .yt-card-tint {
-    z-index: 5;
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.72) 0%,
-      rgba(0, 0, 0, 0.28) 45%,
-      rgba(0, 0, 0, 0.18) 100%
-    );
-  }
-
-  .yt-card-media[data-playing='true'] .yt-card-cinematic {
-    opacity: 0.75;
+    display: none !important;
   }
 
   .yt-card-overlay-slot {
@@ -300,6 +254,36 @@
     inset: 0;
     z-index: 20;
     pointer-events: none;
+  }
+
+  /* Legible overlay copy on video thumbnails — shadow only, no dimming box */
+  .video-thumb-text {
+    color: #ffffff;
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.95),
+      0 2px 6px rgba(0, 0, 0, 0.9),
+      0 4px 14px rgba(0, 0, 0, 0.75),
+      0 0 24px rgba(0, 0, 0, 0.45);
+  }
+
+  .yt-card-stat-value {
+    font-family: 'Sora', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    font-size: clamp(2rem, 5.5vw, 3.25rem);
+  }
+
+  .yt-card-stat-value--phrase {
+    font-size: clamp(1.25rem, 3.2vw, 2.15rem);
+    line-height: 1.15;
+  }
+
+  .yt-card-stat-label {
+    font-family: 'Sora', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    font-size: clamp(0.9rem, 2.2vw, 1.125rem);
+    line-height: 1.35;
   }
 
   .yt-card-shimmer {
@@ -337,7 +321,7 @@
   }
 
   .yt-premium-card--gallery {
-    @apply rounded-2xl shadow-lg shadow-primary-900/[0.10] ring-1 ring-white/20 bg-black;
+    @apply rounded-2xl shadow-lg shadow-primary-900/[0.10] ring-1 ring-primary-100/70 bg-transparent;
   }
 
   @media (hover: hover) {

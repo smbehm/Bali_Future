@@ -65,7 +65,7 @@ export default function Volunteer() {
       `Phone: ${formData.phone.trim() || dash}`,
       `Country: ${formData.country.trim() || dash}`,
       `Skills: ${formData.skills.trim() || dash}`,
-      `Availability: ${formData.availability.trim() || dash}`,
+      `Dates in Bali: ${formData.availability.trim() || dash}`,
       `Message: ${formData.message.trim() || dash}`,
     ]);
 
@@ -84,7 +84,7 @@ export default function Volunteer() {
               `Phone: ${formData.phone.trim() || dash}`,
               `Country: ${formData.country.trim() || dash}`,
               `Skills: ${formData.skills.trim() || dash}`,
-              `Availability: ${formData.availability.trim() || dash}`,
+              `Dates in Bali: ${formData.availability.trim() || dash}`,
               `Message: ${formData.message.trim() || dash}`,
             ]),
           }
@@ -215,13 +215,13 @@ export default function Volunteer() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-dark/70 mb-1 block">Availability</label>
+                  <label className="text-sm font-medium text-dark/70 mb-1 block">Dates in Bali</label>
                   <select
                     value={formData.availability}
                     onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
                     className="form-field w-full px-4 py-3 rounded-xl border-2 border-sky-100 focus:border-sky-300 outline-none transition-colors bg-white"
                   >
-                    <option value="">Select duration</option>
+                    <option value="">Dates in Bali</option>
                     <option value="1-2 weeks">1-2 weeks</option>
                     <option value="1 month">1 month</option>
                     <option value="3 months">3 months</option>
@@ -240,7 +240,7 @@ export default function Volunteer() {
                 />
               </div>
               <div className="mt-4">
-                <label className="text-sm font-medium text-dark/70 mb-1 block">Why do you want to volunteer?</label>
+                <label className="text-sm font-medium text-dark/70 mb-1 block">How would you like to volunteer?</label>
                 <textarea
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}

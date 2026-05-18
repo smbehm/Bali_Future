@@ -102,10 +102,6 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
 
-        {/* Cinematic overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
         {/* Play button */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
@@ -126,7 +122,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
 
         {/* Bottom title on thumbnail */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
-          <h3 className="font-sora font-bold text-xl md:text-2xl text-white leading-tight drop-shadow-lg break-words">
+          <h3 className="video-thumb-text font-sora text-xl font-bold leading-tight md:text-2xl break-words">
             {story.title}
           </h3>
         </div>
@@ -166,7 +162,7 @@ export default function OrphanageHomes() {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   return (
-    <section id="stories" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55">
+    <section id="stories" className="section-padding relative overflow-hidden">
       <div className="decorative-blur absolute top-[5%] left-0 h-[min(500px,100vw)] w-[min(500px,100vw)] rounded-full bg-sky-50/40 blur-[100px] pointer-events-none" />
       <div className="decorative-blur absolute bottom-[10%] right-0 h-[min(400px,90vw)] w-[min(400px,90vw)] rounded-full bg-primary-50/30 blur-[80px] pointer-events-none" />
 

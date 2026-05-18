@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { CircleDollarSign, HeartHandshake, Target } from 'lucide-react';
 import { DonationTree3D } from './DonationTree3D.jsx';
 import './donation-tree.css';
@@ -6,46 +6,50 @@ import './donation-tree.css';
 const CAMPAIGN_TARGET = 1000;
 const CAMPAIGN_NAME = 'Plumbing Repairs';
 
-function clamp(value: number, min: number, max: number) {
+function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function currency(value: number) {
+function currency(value) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(value);
 }
 
-export default function DonationTreeExperience() {
+export function App() {
   const [amount, setAmount] = useState(100);
   const progress = useMemo(() => clamp(amount / CAMPAIGN_TARGET, 0, 1), [amount]);
   const remaining = Math.max(CAMPAIGN_TARGET - amount, 0);
 
-  const handleAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleAmountChange = (event) => {
     const nextValue = Number(event.target.value);
     setAmount(Number.isFinite(nextValue) ? clamp(nextValue, 0, CAMPAIGN_TARGET) : 0);
   };
 
   return (
-    <div className="donation-tree-root donation-tree-root--embed">
-      <section className="donation-panel donation-panel--embed" aria-labelledby="campaign-title">
-        <div className="visual-panel visual-panel--embed">
-          <DonationTree3D amount={amount} target={CAMPAIGN_TARGET} campaignName={CAMPAIGN_NAME} />
-          <div className="progress-track progress-track--embed" aria-hidden="true">
+    <main className="page">
+      <section className="donation-panel" aria-labelledby="campaign-title">
+        <div className="visual-panel">
+          <DonationTree3D
+            amount={amount}
+            target={CAMPAIGN_TARGET}
+            campaignName={CAMPAIGN_NAME}
+          />
+          <div className="progress-track" aria-hidden="true">
             <span
               style={{
                 height: `${progress * 100}%`,
-                ['--progress-width' as string]: `${progress * 100}%`,
+                '--progress-width': `${progress * 100}%`
               }}
             />
           </div>
         </div>
 
-        <div className="campaign-details campaign-details--embed">
+        <div className="campaign-details">
           <p className="eyebrow">Live donation preview</p>
-          <h2 id="campaign-title">{CAMPAIGN_NAME}</h2>
+          <h1 id="campaign-title">{CAMPAIGN_NAME}</h1>
 
           <div className="amount-card">
             <label htmlFor="donation-amount">Donation amount</label>
@@ -54,21 +58,20 @@ export default function DonationTreeExperience() {
               <input
                 id="donation-amount"
                 type="number"
-                min={0}
+                min="0"
                 max={CAMPAIGN_TARGET}
-                step={10}
+                step="10"
                 value={amount}
                 onChange={handleAmountChange}
                 inputMode="decimal"
-                className="form-field"
               />
             </div>
             <input
               className="range"
               type="range"
-              min={0}
+              min="0"
               max={CAMPAIGN_TARGET}
-              step={10}
+              step="10"
               value={amount}
               aria-label="Donation amount slider"
               onChange={handleAmountChange}
@@ -94,6 +97,8 @@ export default function DonationTreeExperience() {
           </div>
         </div>
       </section>
-    </div>
+    </main>
   );
 }
+
+export default App;

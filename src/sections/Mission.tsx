@@ -85,7 +85,7 @@ export default function Mission() {
             Our Mission
           </span>
           <h2 className="font-sora font-bold text-3xl md:text-5xl text-tropical mb-6">
-            Bringing Hope Home to Every Child
+            Bringing Hope to Every Child
           </h2>
           <p className="text-dark/60 text-lg leading-relaxed">
             We believe in a world where children without families still grow up in supportive,

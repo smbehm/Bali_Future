@@ -271,14 +271,8 @@ export function DonationTree3D({ amount, target, campaignName }) {
 
     const resize = () => {
       const width = Math.max(mount.clientWidth, 320);
-      const height = Math.max(mount.clientHeight, 280);
+      const height = Math.max(mount.clientHeight, 420);
       camera.aspect = width / height;
-      if (width / height > 1.05) {
-        camera.position.set(0, 2.5, 8.4);
-      } else {
-        camera.position.set(0, 2.8, 6.8);
-      }
-      camera.lookAt(0, 2.5, 0);
       camera.updateProjectionMatrix();
       renderer.setSize(width, height, false);
     };

@@ -342,7 +342,7 @@ const heroStats: Array<{
 export default function Hero() {
   return (
     <section id="top" className="relative min-h-screen min-h-[100dvh] flex items-center overflow-hidden">
-      {/* Soft atmosphere — tinted glow orbs only, no opaque cream layer so the
+      {/* Soft atmosphere â€” tinted glow orbs only, no opaque cream layer so the
          3D tree background shows through */}
       <div className="decorative-blur absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-0 h-[min(900px,120vh)] w-[min(900px,120vw)] rounded-full bg-warm-100/20 blur-[120px] -translate-y-1/3 translate-x-1/4" />
@@ -450,16 +450,6 @@ export default function Hero() {
             </motion.div>
           </div>
         </div>
-      </div>
-
-      {/* Bottom wave with gradient */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 120" fill="none" className="w-full">
-          <path
-            d="M0 120L48 108C96 96 192 72 288 66C384 60 480 72 576 78C672 84 768 84 864 78C960 72 1056 60 1152 60C1248 60 1344 72 1392 78L1440 84V120H0Z"
-            fill="#fffdf7"
-          />
-        </svg>
       </div>
     </section>
   );

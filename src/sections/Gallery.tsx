@@ -22,6 +22,7 @@ type VideoStatCardProps = {
 const VideoStatCard = memo(function VideoStatCard({ stat, index }: VideoStatCardProps) {
   const cardId = `gallery-${stat.id}`;
   const { isActive, handlers, tabIndex } = useCardVideoActivation(cardId);
+  const isPhraseStat = Boolean(stat.staticValue);
   const displayValue =
     stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
 
@@ -52,10 +53,14 @@ const VideoStatCard = memo(function VideoStatCard({ stat, index }: VideoStatCard
 
             <div className="yt-card-gallery-stats pointer-events-none absolute inset-x-0 bottom-0 z-20 flex min-h-[260px] items-end p-5 sm:min-h-[300px] sm:p-6">
               <div className="w-full">
-                <div className="font-sora text-3xl font-bold tracking-tight text-white drop-shadow-sm sm:text-4xl md:text-5xl">
+                <p
+                  className={`video-thumb-text yt-card-stat-value ${isPhraseStat ? 'yt-card-stat-value--phrase' : ''}`}
+                >
                   {displayValue}
-                </div>
-                <div className="mt-2 text-sm font-medium text-white/85 md:text-base">{stat.label}</div>
+                </p>
+                {stat.label ? (
+                  <p className="video-thumb-text yt-card-stat-label mt-2">{stat.label}</p>
+                ) : null}
                 <div className="mt-4 h-[2px] w-full bg-gradient-to-r from-transparent via-warm-300/80 to-transparent" />
               </div>
             </div>
@@ -84,7 +89,13 @@ export default function Gallery() {
         suffix: '%',
         label: '100% Goes to Children',
       },
-      { id: 'lives', mp4Src: CLOUDINARY_GALLERY.lives, end: 0, staticValue: 'Unknown', label: 'Lives Changed' },
+      {
+        id: 'lives',
+        mp4Src: CLOUDINARY_GALLERY.lives,
+        end: 0,
+        staticValue: 'Endless Lives Changed',
+        label: '',
+      },
     ],
     [],
   );
