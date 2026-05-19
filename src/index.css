@@ -379,8 +379,14 @@
 
   @media (max-width: 639px) {
     .donation-tree-embed .page {
-      min-height: clamp(380px, 68svh, 560px);
-      max-height: min(80svh, 640px);
+      min-height: clamp(420px, 110vw, 540px);
+      max-height: min(78svh, 580px);
+    }
+
+    .donation-tree-embed .campaign-details {
+      width: min(172px, 38vw);
+      max-height: min(38%, 190px);
+      padding: 7px 8px;
     }
   }
 }
