@@ -138,7 +138,7 @@ export default function Volunteer() {
         </motion.div>
 
         {/* Journey timeline */}
-        <div className="grid grid-cols-1 gap-6 mb-16 sm:grid-cols-2 md:grid-cols-4">
+        <motion.div className="mb-16 grid grid-cols-3 gap-3 sm:grid-cols-2 sm:gap-6 md:grid-cols-4">
           {journeySteps.map((step, i) => (
             <motion.div
               key={step.title}
@@ -146,7 +146,7 @@ export default function Volunteer() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="text-center"
+              className={`text-center ${i === 3 ? 'col-span-3 mx-auto w-full max-w-[9rem] sm:col-span-1 sm:max-w-none' : ''}`}
             >
               <div className="w-14 h-14 rounded-2xl gradient-sky flex items-center justify-center text-white mx-auto mb-4 shadow-lg shadow-sky-200/50">
                 {step.icon}
@@ -155,7 +155,7 @@ export default function Volunteer() {
               <div className="text-xs text-dark/50 mt-1">{step.desc}</div>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Application form */}
         <motion.div

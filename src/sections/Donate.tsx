@@ -251,7 +251,7 @@ export default function Donate() {
                 </div>
 
                 {/* Categories */}
-                <div className="mb-8 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+                <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                   {categories.map((cat) => (
                     <button
                       key={cat.id}

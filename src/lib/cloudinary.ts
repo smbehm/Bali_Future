@@ -24,3 +24,18 @@ export const CLOUDINARY_GALLERY = {
   impact: 'https://res.cloudinary.com/dwpbrhpso/video/upload/v1778852043/C0829_wbomnq.mp4',
   lives: 'https://res.cloudinary.com/dwpbrhpso/video/upload/v1778852214/IMG_5495_1_kccfpw.mp4',
 } as const;
+
+/** Lighter stream for touch devices — keeps desktop URLs unchanged. */
+export function cloudinaryMobileMp4(mp4Url: string): string {
+  if (!mp4Url.includes('res.cloudinary.com') || !mp4Url.includes('/video/upload/')) {
+    return mp4Url;
+  }
+  const afterUpload = mp4Url.split('/video/upload/')[1] ?? '';
+  if (afterUpload.includes(',')) {
+    return mp4Url;
+  }
+  return mp4Url.replace(
+    '/video/upload/',
+    '/video/upload/q_auto:eco,w_720,c_limit,vc_h264/',
+  );
+}

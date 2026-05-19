@@ -21,7 +21,9 @@ type VideoStatCardProps = {
 
 const VideoStatCard = memo(function VideoStatCard({ stat, index }: VideoStatCardProps) {
   const cardId = `gallery-${stat.id}`;
-  const { isActive, handlers, tabIndex, ref } = useCardVideoActivation(cardId);
+  const { isActive, handlers, tabIndex, ref } = useCardVideoActivation(cardId, {
+    disableTouchAutoPlay: true,
+  });
   const isPhraseStat = Boolean(stat.staticValue);
   const displayValue =
     stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
@@ -45,6 +47,7 @@ const VideoStatCard = memo(function VideoStatCard({ stat, index }: VideoStatCard
         cardId={cardId}
         mp4Src={stat.mp4Src}
         title={stat.label}
+        deferVideoUntilActive
         aspectClass="absolute inset-0 h-full w-full"
         className="h-full min-h-[220px] sm:min-h-[260px] md:min-h-[300px]"
         overlay={

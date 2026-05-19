@@ -2,11 +2,16 @@ import { useCallback, useEffect, useMemo, useRef, type RefCallback } from 'react
 import { useHoverVideo } from '../contexts/HoverVideoContext';
 import { usePrefersHover } from './usePrefersHover';
 
+type CardVideoActivationOptions = {
+  /** Touch only: never auto-play when scrolled into view (tap to play). */
+  disableTouchAutoPlay?: boolean;
+};
+
 /**
  * Desktop: hover/focus activates card video.
- * Touch: tap toggles; in-view cards auto-activate while scrolled into view.
+ * Touch: tap toggles; optional in-view auto-activate unless disabled.
  */
-export function useCardVideoActivation(cardId: string) {
+export function useCardVideoActivation(cardId: string, options?: CardVideoActivationOptions) {
   const prefersHover = usePrefersHover();
   const { activeCardId, setActiveCard } = useHoverVideo();
   const isActive = activeCardId === cardId;
@@ -24,7 +29,7 @@ export function useCardVideoActivation(cardId: string) {
   }, [activeCardId, cardId, setActiveCard]);
 
   useEffect(() => {
-    if (prefersHover) return;
+    if (prefersHover || options?.disableTouchAutoPlay) return;
 
     const el = cardRef.current;
     if (!el) return;
@@ -44,7 +49,7 @@ export function useCardVideoActivation(cardId: string) {
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [prefersHover, cardId, setActiveCard]);
+  }, [prefersHover, cardId, setActiveCard, options?.disableTouchAutoPlay]);
 
   const handlers = useMemo(
     () =>
