@@ -113,7 +113,7 @@ export default function Volunteer() {
   }, [submitted, resetSuccess]);
 
   return (
-    <section id="volunteer" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-sky-50/30 to-cream">
+    <section id="volunteer" className="section-padding relative overflow-hidden">
       <div className="decorative-blur absolute bottom-0 right-0 h-[min(500px,100vh)] w-[min(500px,100vw)] rounded-full bg-sky-50/50 blur-[80px]" />
 
       <div className="section-container relative">

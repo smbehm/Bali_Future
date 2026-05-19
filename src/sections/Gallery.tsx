@@ -101,7 +101,7 @@ export default function Gallery() {
   );
 
   return (
-    <section id="gallery" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/20 to-cream">
+    <section id="gallery" className="section-padding relative overflow-hidden">
       <div className="section-container">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

@@ -25,7 +25,7 @@ const timeline = [
 
 export default function Impact() {
   return (
-    <section id="impact" className="section-padding relative overflow-hidden bg-gradient-to-b from-cream via-primary-50/30 to-cream">
+    <section id="impact" className="section-padding relative overflow-hidden">
       <div className="decorative-blur absolute top-1/2 left-0 h-[min(600px,100vw)] w-[min(600px,100vw)] rounded-full bg-sky-50/50 blur-[100px] -translate-x-1/2" />
 
       <div className="section-container relative">

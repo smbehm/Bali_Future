@@ -193,7 +193,7 @@ export default function Events() {
   return (
     <section
       id="events"
-      className="section-padding relative overflow-hidden bg-gradient-to-b from-primary-50/95 via-cream to-primary-100/45"
+      className="section-padding relative overflow-hidden"
     >
       <div className="decorative-blur pointer-events-none absolute -left-24 top-1/4 h-[min(440px,90vw)] w-[min(440px,90vw)] rounded-full bg-primary-200/20 blur-[100px]" />
       <div className="decorative-blur pointer-events-none absolute -right-20 bottom-[12%] h-[min(380px,80vw)] w-[min(380px,80vw)] rounded-full bg-primary-300/12 blur-[90px]" />

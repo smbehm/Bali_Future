@@ -158,7 +158,7 @@ export default function Donate() {
   return (
     <section
       id="donate"
-      className={`section-padding relative bg-gradient-to-b from-cream/55 via-primary-50/15 to-cream/55 ${
+      className={`section-padding relative ${
         submitted ? 'overflow-x-clip' : 'overflow-hidden'
       }`}
     >

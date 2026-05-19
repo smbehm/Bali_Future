@@ -68,7 +68,7 @@ function MissionVisual() {
 export default function Mission() {
   return (
     <section id="mission" className="section-padding relative overflow-hidden">
-      <div className="decorative-blur absolute top-0 right-0 h-[min(500px,100vw)] w-[min(500px,100vw)] rounded-full bg-primary-50/50 blur-[80px]" />
+      <div className="decorative-blur absolute top-0 right-0 h-[min(500px,100vw)] w-[min(500px,100vw)] rounded-full bg-primary-50/20 blur-[80px]" />
       <div className="decorative-blur absolute bottom-[10%] left-[5%] h-[min(300px,80vw)] w-[min(300px,80vw)] rounded-full bg-sky-50/30 blur-[60px]" />
 
       <div className="section-container relative">
@@ -93,7 +93,7 @@ export default function Mission() {
             Our mission is physical, spiritual, and emotional guidance alongside education, with the
             goal of empowering children to become independent, responsible citizens. Through the
             Inspire The Youth initiative, we teach kids CAD design, Adobe Photoshop, and other creative
-            tools. By meeting their most basic needs — food, shelter, and unconditional care — we help
+            tools. By meeting their most basic needs â€” food, shelter, and unconditional care â€” we help
             them discover their potential and pursue their dreams.
           </p>
         </motion.div>
