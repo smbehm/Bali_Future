@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
 import FloatingLeaves from './components/FloatingLeaves';
-import { useIsTouchDevice } from './hooks/useIsTouchDevice';
 import Hero from './sections/Hero';
 import Mission from './sections/Mission';
 import OrphanageHomes from './sections/OrphanageHomes';
@@ -19,17 +18,13 @@ import Footer from './sections/Footer';
 const TreeBackground = lazy(() => import('./components/TreeBackground'));
 
 function App() {
-  const isTouchDevice = useIsTouchDevice();
-
   return (
     <>
-      {!isTouchDevice ? (
-        <Suspense fallback={null}>
-          <TreeBackground />
-        </Suspense>
-      ) : null}
+      <Suspense fallback={null}>
+        <TreeBackground />
+      </Suspense>
       <div className="relative z-10 min-h-screen min-h-[100dvh] min-w-0">
-        {!isTouchDevice ? <FloatingLeaves /> : null}
+        <FloatingLeaves />
         <Navbar />
         <Hero />
         <Mission />

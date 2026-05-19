@@ -61,20 +61,25 @@ export default function TreeBackground() {
       (window.matchMedia('(max-width: 820px)').matches ||
         window.matchMedia('(pointer: coarse)').matches);
 
-    /* One WebGL context on mobile (Donation Tree section only) — skip fullscreen background. */
-    if (isMobile) {
-      return;
-    }
-
-    const DPR_CAP        = 2;
+    const DPR_CAP        = isMobile ? 1.5 : 2;
     const PARTICLE_COUNT = isMobile ? 90  : 260;
 
     // ── Renderer ──────────────────────────────────────────────────────────────
-    const renderer = new THREE.WebGLRenderer({
-      antialias:        !isMobile, // MSAA is expensive on phone GPUs
-      alpha:            false,
-      powerPreference:  'high-performance',
-    });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias:                 !isMobile,
+        alpha:                     false,
+        powerPreference:           isMobile ? 'low-power' : 'high-performance',
+        failIfMajorPerformanceCaveat: false,
+      });
+    } catch {
+      return;
+    }
+    if (!renderer.getContext()) {
+      renderer.dispose();
+      return;
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, DPR_CAP));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping       = THREE.ACESFilmicToneMapping;
@@ -311,6 +316,32 @@ export default function TreeBackground() {
     };
     document.addEventListener('visibilitychange', onVisibility);
 
+    // On mobile, pause when hero is off-screen or Donation Tree owns the viewport.
+    let heroInView = true;
+    let donationTreeInView = false;
+    const heroSection = document.getElementById('top');
+    const donationTreeSection = document.getElementById('tree-of-future');
+    const heroObserver =
+      isMobile && heroSection
+        ? new IntersectionObserver(
+            (entries) => {
+              heroInView = Boolean(entries[0]?.isIntersecting);
+            },
+            { threshold: 0.08 },
+          )
+        : null;
+    const donationTreeObserver =
+      isMobile && donationTreeSection
+        ? new IntersectionObserver(
+            (entries) => {
+              donationTreeInView = Boolean(entries[0]?.isIntersecting);
+            },
+            { threshold: 0.12 },
+          )
+        : null;
+    heroObserver?.observe(heroSection!);
+    donationTreeObserver?.observe(donationTreeSection!);
+
     // ── Easing ────────────────────────────────────────────────────────────────
     const easeOutExpo = (t: number) =>
       t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
@@ -329,6 +360,7 @@ export default function TreeBackground() {
       // Skip rendering while the tab/app is backgrounded — saves battery on
       // mobile and prevents a frame-time spike on resume
       if (isHidden) return;
+      if (isMobile && (!heroInView || donationTreeInView)) return;
 
       const now     = performance.now();
       const elapsed = (now - t0) / 1000;
@@ -413,6 +445,8 @@ export default function TreeBackground() {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('orientationchange', onResize);
       document.removeEventListener('visibilitychange', onVisibility);
+      heroObserver?.disconnect();
+      donationTreeObserver?.disconnect();
 
       scene.traverse((obj: THREE.Object3D) => {
         if (obj instanceof THREE.Mesh) {
