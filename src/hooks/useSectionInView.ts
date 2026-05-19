@@ -24,7 +24,19 @@ export function useSectionInView(
       { threshold, rootMargin },
     );
     observer.observe(el);
-    return () => observer.disconnect();
+
+    // Some mobile browsers defer the first IO callback; sync once after layout.
+    const syncId = requestAnimationFrame(() => {
+      const records = observer.takeRecords();
+      if (records.length > 0) {
+        setInView(Boolean(records[0]?.isIntersecting));
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(syncId);
+      observer.disconnect();
+    };
   }, [sectionId, threshold, rootMargin]);
 
   return inView;

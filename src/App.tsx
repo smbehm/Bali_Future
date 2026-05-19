@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { useSectionInView } from './hooks/useSectionInView';
+import { useWebGLScene } from './contexts/WebGLSceneContext';
 import Navbar from './components/Navbar';
 import FloatingLeaves from './components/FloatingLeaves';
 import Hero from './sections/Hero';
@@ -19,13 +19,9 @@ import Footer from './sections/Footer';
 const TreeBackground = lazy(() => import('./components/TreeBackground'));
 
 function App() {
-  const heroInView = useSectionInView('top', { threshold: 0.08 });
-  const donationTreeInView = useSectionInView('tree-of-future', {
-    threshold: 0.1,
-    rootMargin: '80px 0px',
-  });
-  // Only one fullscreen WebGL scene at a time — avoids context loss on mobile/desktop.
-  const showHeroTree = heroInView && !donationTreeInView;
+  const { donationTreeActive } = useWebGLScene();
+  // Fullscreen hero tree on every section except while Donation Tree owns WebGL.
+  const showHeroTree = !donationTreeActive;
 
   return (
     <>

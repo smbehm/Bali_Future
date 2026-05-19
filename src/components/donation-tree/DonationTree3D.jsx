@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { useWebGLScene } from '../../contexts/WebGLSceneContext';
 
 const VINE_MIN_Y = 0;
 const VINE_MAX_Y = 4.65;
@@ -59,6 +60,7 @@ function roughenGeometry(geometry, amount, taper = 0.6) {
 }
 
 export function DonationTree3D({ amount, target, campaignName }) {
+  const { donationTreeActive } = useWebGLScene();
   const mountRef = useRef(null);
   const vineUniformsRef = useRef(null);
   const rafRef = useRef(0);
@@ -74,10 +76,19 @@ export function DonationTree3D({ amount, target, campaignName }) {
 
     const mount = mountRef.current;
     let disposed = false;
+    let sceneStarted = false;
     let teardown = () => {};
 
+    const stopScene = () => {
+      if (!sceneStarted) return;
+      sceneStarted = false;
+      teardown();
+      teardown = () => {};
+    };
+
     const startScene = () => {
-      if (disposed) return;
+      if (disposed || sceneStarted) return;
+      sceneStarted = true;
 
       const isMobile =
         window.matchMedia('(max-width: 820px)').matches ||
@@ -92,11 +103,13 @@ export function DonationTree3D({ amount, target, campaignName }) {
           failIfMajorPerformanceCaveat: false,
         });
       } catch {
+        sceneStarted = false;
         return;
       }
 
       if (!renderer.getContext()) {
         renderer.dispose();
+        sceneStarted = false;
         return;
       }
 
@@ -321,16 +334,7 @@ export function DonationTree3D({ amount, target, campaignName }) {
     observer.observe(mount);
 
     let tick = 0;
-    let isVisible = true;
     let isHidden = false;
-
-    const visibilityObserver = new IntersectionObserver(
-      (entries) => {
-        isVisible = Boolean(entries[0]?.isIntersecting);
-      },
-      { threshold: 0.05 },
-    );
-    visibilityObserver.observe(mount);
 
     const onVisibility = () => {
       isHidden = document.hidden;
@@ -339,7 +343,7 @@ export function DonationTree3D({ amount, target, campaignName }) {
 
     const animate = () => {
       rafRef.current = requestAnimationFrame(animate);
-      if (isHidden || !isVisible) return;
+      if (isHidden) return;
 
       tick += 0.007;
 
@@ -378,7 +382,6 @@ export function DonationTree3D({ amount, target, campaignName }) {
     };
 
       teardown = () => {
-        visibilityObserver.disconnect();
         document.removeEventListener('visibilitychange', onVisibility);
         observer.disconnect();
         cancelAnimationFrame(rafRef.current);
@@ -389,25 +392,17 @@ export function DonationTree3D({ amount, target, campaignName }) {
       };
     };
 
-    const bootObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          bootObserver.disconnect();
-          requestAnimationFrame(() => {
-            requestAnimationFrame(startScene);
-          });
-        }
-      },
-      { threshold: 0.05, rootMargin: '120px 0px' },
-    );
-    bootObserver.observe(mount);
+    if (donationTreeActive) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(startScene);
+      });
+    }
 
     return () => {
       disposed = true;
-      bootObserver.disconnect();
-      teardown();
+      stopScene();
     };
-  }, []);
+  }, [donationTreeActive]);
 
   return (
     <div className="tree-shell" aria-label={`${campaignName} donation tree`}>
