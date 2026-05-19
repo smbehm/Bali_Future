@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
+import SectionErrorBoundary from '../components/SectionErrorBoundary';
 
 const DonationTreeExperience = lazy(() => import('../components/donation-tree/DonationTreeExperience'));
 
@@ -30,9 +31,11 @@ export default function TreeOfFuture() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="donation-tree-embed w-full min-w-0"
         >
-          <Suspense fallback={null}>
-            <DonationTreeExperience />
-          </Suspense>
+          <SectionErrorBoundary sectionName="Donation Tree">
+            <Suspense fallback={null}>
+              <DonationTreeExperience />
+            </Suspense>
+          </SectionErrorBoundary>
         </motion.div>
       </motion.div>
     </section>

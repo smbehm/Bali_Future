@@ -380,8 +380,9 @@
   }
 
   .donation-tree-embed .donation-panel {
-    min-height: inherit;
-    height: 100%;
+    position: relative;
+    min-height: clamp(400px, 72svh, 680px);
+    height: clamp(400px, 72svh, 680px);
   }
 
   .donation-tree-embed .tree-shell,
@@ -394,6 +395,11 @@
     .donation-tree-embed .page {
       min-height: clamp(480px, 128vw, 600px);
       max-height: none;
+    }
+
+    .donation-tree-embed .donation-panel {
+      min-height: clamp(480px, 128vw, 600px);
+      height: clamp(480px, 128vw, 600px);
     }
 
     /* Tree in upper area; full card sits in reserved bottom band (no clipping) */

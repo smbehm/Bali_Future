@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { useSectionInView } from './hooks/useSectionInView';
 import Navbar from './components/Navbar';
 import FloatingLeaves from './components/FloatingLeaves';
 import Hero from './sections/Hero';
@@ -18,11 +19,21 @@ import Footer from './sections/Footer';
 const TreeBackground = lazy(() => import('./components/TreeBackground'));
 
 function App() {
+  const heroInView = useSectionInView('top', { threshold: 0.08 });
+  const donationTreeInView = useSectionInView('tree-of-future', {
+    threshold: 0.1,
+    rootMargin: '80px 0px',
+  });
+  // Only one fullscreen WebGL scene at a time — avoids context loss on mobile/desktop.
+  const showHeroTree = heroInView && !donationTreeInView;
+
   return (
     <>
-      <Suspense fallback={null}>
-        <TreeBackground />
-      </Suspense>
+      {showHeroTree ? (
+        <Suspense fallback={null}>
+          <TreeBackground />
+        </Suspense>
+      ) : null}
       <div className="relative z-10 min-h-screen min-h-[100dvh] min-w-0">
         <FloatingLeaves />
         <Navbar />

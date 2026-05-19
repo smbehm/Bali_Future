@@ -73,20 +73,39 @@ export function DonationTree3D({ amount, target, campaignName }) {
     if (!mountRef.current) return undefined;
 
     const mount = mountRef.current;
-    const isMobile =
-      window.matchMedia('(max-width: 820px)').matches ||
-      window.matchMedia('(pointer: coarse)').matches;
+    let disposed = false;
+    let teardown = () => {};
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: !isMobile,
-      powerPreference: 'high-performance',
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 2));
-    renderer.shadowMap.enabled = !isMobile;
-    if (!isMobile) {
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    }
-    mount.appendChild(renderer.domElement);
+    const startScene = () => {
+      if (disposed) return;
+
+      const isMobile =
+        window.matchMedia('(max-width: 820px)').matches ||
+        window.matchMedia('(pointer: coarse)').matches;
+
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({
+          antialias: !isMobile,
+          alpha: false,
+          powerPreference: isMobile ? 'low-power' : 'high-performance',
+          failIfMajorPerformanceCaveat: false,
+        });
+      } catch {
+        return;
+      }
+
+      if (!renderer.getContext()) {
+        renderer.dispose();
+        return;
+      }
+
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 2));
+      renderer.shadowMap.enabled = !isMobile;
+      if (!isMobile) {
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      }
+      mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
@@ -297,6 +316,7 @@ export function DonationTree3D({ amount, target, campaignName }) {
     };
 
     resize();
+    requestAnimationFrame(resize);
     const observer = new ResizeObserver(resize);
     observer.observe(mount);
 
@@ -357,15 +377,35 @@ export function DonationTree3D({ amount, target, campaignName }) {
       }
     };
 
+      teardown = () => {
+        visibilityObserver.disconnect();
+        document.removeEventListener('visibilitychange', onVisibility);
+        observer.disconnect();
+        cancelAnimationFrame(rafRef.current);
+        scene.traverse(disposeObject);
+        renderer.dispose();
+        vineUniformsRef.current = null;
+        if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+      };
+    };
+
+    const bootObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          bootObserver.disconnect();
+          requestAnimationFrame(() => {
+            requestAnimationFrame(startScene);
+          });
+        }
+      },
+      { threshold: 0.05, rootMargin: '120px 0px' },
+    );
+    bootObserver.observe(mount);
+
     return () => {
-      visibilityObserver.disconnect();
-      document.removeEventListener('visibilitychange', onVisibility);
-      observer.disconnect();
-      cancelAnimationFrame(rafRef.current);
-      scene.traverse(disposeObject);
-      renderer.dispose();
-      vineUniformsRef.current = null;
-      if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+      disposed = true;
+      bootObserver.disconnect();
+      teardown();
     };
   }, []);
 
