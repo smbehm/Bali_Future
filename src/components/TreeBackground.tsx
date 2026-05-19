@@ -61,7 +61,12 @@ export default function TreeBackground() {
       (window.matchMedia('(max-width: 820px)').matches ||
         window.matchMedia('(pointer: coarse)').matches);
 
-    const DPR_CAP        = isMobile ? 1.4 : 2;
+    /* One WebGL context on mobile (Donation Tree section only) — skip fullscreen background. */
+    if (isMobile) {
+      return;
+    }
+
+    const DPR_CAP        = 2;
     const PARTICLE_COUNT = isMobile ? 90  : 260;
 
     // ── Renderer ──────────────────────────────────────────────────────────────

@@ -93,7 +93,7 @@ export default function Mission() {
             Our mission is physical, spiritual, and emotional guidance alongside education, with the
             goal of empowering children to become independent, responsible citizens. Through the
             Inspire The Youth initiative, we teach kids CAD design, Adobe Photoshop, and other creative
-            tools. By meeting their most basic needs â€” food, shelter, and unconditional care â€” we help
+            tools. By meeting their most basic needs — food, shelter, and unconditional care — we help
             them discover their potential and pursue their dreams.
           </p>
         </motion.div>

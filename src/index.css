@@ -76,10 +76,23 @@
   }
 
   .gradient-text {
+    color: #2f5d50;
     background: linear-gradient(135deg, #2f5d50 0%, #7bc47f 50%, #6ec1e4 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    .gradient-text {
+      color: #2f5d50;
+    }
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
   }
 
   .gradient-warm {
@@ -126,7 +139,7 @@
 
   .decorative-blur {
     @apply pointer-events-none;
-    max-width: 100vw;
+    max-width: 100%;
   }
 
   /* YouTube card media — poster default, iframe on hover */
@@ -377,16 +390,25 @@
     height: 100%;
   }
 
-  @media (max-width: 639px) {
+  @media (max-width: 860px) {
     .donation-tree-embed .page {
-      min-height: clamp(420px, 110vw, 540px);
-      max-height: min(78svh, 580px);
+      min-height: clamp(480px, 128vw, 600px);
+      max-height: none;
+    }
+
+    /* Tree in upper area; full card sits in reserved bottom band (no clipping) */
+    .donation-tree-embed .visual-panel {
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 212px;
     }
 
     .donation-tree-embed .campaign-details {
-      width: min(172px, 38vw);
-      max-height: min(38%, 190px);
-      padding: 7px 8px;
+      width: min(196px, 44vw);
+      max-height: none;
+      overflow: visible;
+      padding: 8px 9px 10px;
     }
   }
 }
@@ -445,9 +467,10 @@
   }
 }
 
-/* Restore vertical scroll when tree embed styles load (tree-styles.css previously set body overflow) */
-html,
-body {
-  overflow-x: hidden;
-  overflow-y: auto !important;
+/* Safe-area padding for notched phones */
+@supports (padding: max(0px)) {
+  .section-padding {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
 }

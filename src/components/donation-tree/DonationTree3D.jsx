@@ -73,10 +73,19 @@ export function DonationTree3D({ amount, target, campaignName }) {
     if (!mountRef.current) return undefined;
 
     const mount = mountRef.current;
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    const isMobile =
+      window.matchMedia('(max-width: 820px)').matches ||
+      window.matchMedia('(pointer: coarse)').matches;
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: !isMobile,
+      powerPreference: 'high-performance',
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 2));
+    renderer.shadowMap.enabled = !isMobile;
+    if (!isMobile) {
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
@@ -245,7 +254,7 @@ export function DonationTree3D({ amount, target, campaignName }) {
       treeGroup.add(vine);
     });
 
-    const particleCount = 150;
+    const particleCount = isMobile ? 40 : 150;
     const particleGeometry = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
     const particleSpeeds = new Float32Array(particleCount);
@@ -292,8 +301,26 @@ export function DonationTree3D({ amount, target, campaignName }) {
     observer.observe(mount);
 
     let tick = 0;
+    let isVisible = true;
+    let isHidden = false;
+
+    const visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        isVisible = Boolean(entries[0]?.isIntersecting);
+      },
+      { threshold: 0.05 },
+    );
+    visibilityObserver.observe(mount);
+
+    const onVisibility = () => {
+      isHidden = document.hidden;
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
     const animate = () => {
       rafRef.current = requestAnimationFrame(animate);
+      if (isHidden || !isVisible) return;
+
       tick += 0.007;
 
       treeGroup.rotation.y = tick * 0.22;
@@ -331,6 +358,8 @@ export function DonationTree3D({ amount, target, campaignName }) {
     };
 
     return () => {
+      visibilityObserver.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
       observer.disconnect();
       cancelAnimationFrame(rafRef.current);
       scene.traverse(disposeObject);

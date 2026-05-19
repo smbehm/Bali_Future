@@ -37,7 +37,7 @@ export const YouTubeCardMedia = memo(function YouTubeCardMedia({
   const posterSrc = poster ?? cloudinaryPosterFromMp4(mp4Src);
 
   const lazyTouchVideo = deferVideoUntilActive && !prefersHover;
-  const mountVideo = !lazyTouchVideo || isPlaying;
+  const mountVideo = prefersHover ? true : lazyTouchVideo ? isPlaying : false;
   const playbackSrc = useMemo(
     () => (lazyTouchVideo ? cloudinaryMobileMp4(mp4Src) : mp4Src),
     [lazyTouchVideo, mp4Src],

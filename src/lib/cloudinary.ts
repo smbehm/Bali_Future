@@ -11,7 +11,8 @@ export function cloudinaryPosterFromMp4(mp4Url: string): string {
 
 export const CLOUDINARY_EVENTS = {
   football: 'https://res.cloudinary.com/dwpbrhpso/video/upload/v1778851909/IMG_3030_cz1goo.mp4',
-  computerDay: 'https://res.cloudinary.com/dwpbrhpso/video/upload/v1778855433/IMG_0074_exf4r1.mov',
+  computerDay:
+    'https://res.cloudinary.com/dwpbrhpso/video/upload/q_auto:eco,w_720,c_limit,vc_h264/v1778855433/IMG_0074_exf4r1.mp4',
   basketball: 'https://res.cloudinary.com/dwpbrhpso/video/upload/v1778850759/C0800_zbuvtp.mp4',
   painting: 'https://res.cloudinary.com/dwpbrhpso/video/upload/v1778852110/C0794_dkyvkd.mp4',
   singing: 'https://res.cloudinary.com/dwpbrhpso/video/upload/v1778852256/IMG_3254_t5xamw.mp4',

@@ -1,7 +1,9 @@
 import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { GalleryMobilePosterCard } from '../components/gallery/GalleryMobilePosterCard';
 import { YouTubeCardMedia } from '../components/youtube/YouTubeCardMedia';
 import { useCardVideoActivation } from '../hooks/useCardVideoActivation';
+import { useIsTouchDevice } from '../hooks/useIsTouchDevice';
 import { CLOUDINARY_GALLERY } from '../lib/cloudinary';
 
 type VideoStat = {
@@ -19,14 +21,40 @@ type VideoStatCardProps = {
   index: number;
 };
 
-const VideoStatCard = memo(function VideoStatCard({ stat, index }: VideoStatCardProps) {
+function galleryStatOverlay(stat: VideoStat) {
+  const isPhraseStat = Boolean(stat.staticValue);
+  const displayValue =
+    stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
+
+  return (
+    <>
+      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100 group-data-[active=true]:opacity-100">
+        <div className="absolute -bottom-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-primary-300/25 blur-3xl" aria-hidden />
+      </div>
+
+      <div className="yt-card-gallery-stats pointer-events-none absolute inset-x-0 bottom-0 z-20 flex min-h-[220px] items-end p-4 sm:min-h-[260px] sm:p-5 md:min-h-[300px] md:p-6">
+        <div className="w-full">
+          <p
+            className={`video-thumb-text yt-card-stat-value ${isPhraseStat ? 'yt-card-stat-value--phrase' : ''}`}
+          >
+            {displayValue}
+          </p>
+          {stat.label ? (
+            <p className="video-thumb-text yt-card-stat-label mt-2">{stat.label}</p>
+          ) : null}
+          <div className="mt-4 h-[2px] w-full bg-gradient-to-r from-transparent via-warm-300/80 to-transparent" />
+        </div>
+      </div>
+    </>
+  );
+}
+
+/** Desktop only — hover-to-play inline video via HoverVideoContext. */
+const GalleryDesktopCard = memo(function GalleryDesktopCard({ stat, index }: VideoStatCardProps) {
   const cardId = `gallery-${stat.id}`;
   const { isActive, handlers, tabIndex, ref } = useCardVideoActivation(cardId, {
     disableTouchAutoPlay: true,
   });
-  const isPhraseStat = Boolean(stat.staticValue);
-  const displayValue =
-    stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
 
   return (
     <motion.div
@@ -47,36 +75,17 @@ const VideoStatCard = memo(function VideoStatCard({ stat, index }: VideoStatCard
         cardId={cardId}
         mp4Src={stat.mp4Src}
         title={stat.label}
-        deferVideoUntilActive
         aspectClass="absolute inset-0 h-full w-full"
         className="h-full min-h-[220px] sm:min-h-[260px] md:min-h-[300px]"
-        overlay={
-          <>
-            <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100 group-data-[active=true]:opacity-100">
-              <div className="absolute -bottom-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-primary-300/25 blur-3xl" />
-            </div>
-
-            <div className="yt-card-gallery-stats pointer-events-none absolute inset-x-0 bottom-0 z-20 flex min-h-[220px] items-end p-4 sm:min-h-[260px] sm:p-5 md:min-h-[300px] md:p-6">
-              <div className="w-full">
-                <p
-                  className={`video-thumb-text yt-card-stat-value ${isPhraseStat ? 'yt-card-stat-value--phrase' : ''}`}
-                >
-                  {displayValue}
-                </p>
-                {stat.label ? (
-                  <p className="video-thumb-text yt-card-stat-label mt-2">{stat.label}</p>
-                ) : null}
-                <div className="mt-4 h-[2px] w-full bg-gradient-to-r from-transparent via-warm-300/80 to-transparent" />
-              </div>
-            </div>
-          </>
-        }
+        overlay={galleryStatOverlay(stat)}
       />
     </motion.div>
   );
 });
 
 export default function Gallery() {
+  const isTouchDevice = useIsTouchDevice();
+
   const videos: VideoStat[] = useMemo(
     () => [
       {
@@ -127,11 +136,21 @@ export default function Gallery() {
         </motion.div>
 
         <div className="grid gap-5 md:gap-6 md:grid-cols-2">
-          {videos.map((stat, i) => (
-            <VideoStatCard key={stat.id} stat={stat} index={i} />
-          ))}
+          {videos.map((stat, i) =>
+            isTouchDevice ? (
+              <GalleryMobilePosterCard
+                key={stat.id}
+                mp4Src={stat.mp4Src}
+                title={stat.label}
+                index={i}
+                overlay={galleryStatOverlay(stat)}
+              />
+            ) : (
+              <GalleryDesktopCard key={stat.id} stat={stat} index={i} />
+            ),
+          )}
         </div>
       </div>
     </section>
   );
-};
+}

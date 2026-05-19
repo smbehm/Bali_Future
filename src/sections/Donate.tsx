@@ -234,7 +234,7 @@ export default function Donate() {
                 <div className="flex gap-2 p-1 rounded-xl bg-primary-50 w-fit mb-8">
                   <button
                     onClick={() => setType('one_time')}
-                    className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                    className={`min-h-11 rounded-lg px-6 py-3 text-sm font-semibold transition-all touch-manipulation ${
                       type === 'one_time' ? 'bg-white text-tropical shadow-md' : 'text-dark/50'
                     }`}
                   >
@@ -242,7 +242,7 @@ export default function Donate() {
                   </button>
                   <button
                     onClick={() => setType('monthly')}
-                    className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                    className={`min-h-11 rounded-lg px-6 py-3 text-sm font-semibold transition-all touch-manipulation ${
                       type === 'monthly' ? 'bg-white text-tropical shadow-md' : 'text-dark/50'
                     }`}
                   >

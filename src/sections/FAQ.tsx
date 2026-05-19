@@ -75,19 +75,17 @@ export default function FAQ() {
                     }`}
                   />
                 </div>
-                <motion.div
-                  initial={false}
-                  animate={{
-                    height: open === i ? 'auto' : 0,
-                    opacity: open === i ? 1 : 0,
-                  }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
+                <div
+                  className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                    open === i ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                  }`}
                 >
-                  <p className="mt-4 text-sm leading-relaxed text-dark/60 text-pretty md:text-base">
-                    {faq.a}
-                  </p>
-                </motion.div>
+                  <div className="overflow-hidden">
+                    <p className="mt-4 text-sm leading-relaxed text-pretty text-dark/60 md:text-base">
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
               </button>
             </motion.div>
           ))}

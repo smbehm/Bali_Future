@@ -9,8 +9,10 @@ import {
 import { formatPostgrestError, isSupabaseConfigured, supabase, SUPABASE_CONFIG_ERROR } from '../lib/supabase';
 import { devLog } from '../lib/devLog';
 import { formatEmailWarning, linesToEmailHtml, sendEmailNotification } from '../lib/sendEmailNotification';
+import { EventsMobilePosterCard } from '../components/events/EventsMobilePosterCard';
 import { YouTubeCardMedia } from '../components/youtube/YouTubeCardMedia';
 import { useCardVideoActivation } from '../hooks/useCardVideoActivation';
+import { useIsTouchDevice } from '../hooks/useIsTouchDevice';
 import { CLOUDINARY_EVENTS, cloudinaryPosterFromMp4 } from '../lib/cloudinary';
 
 export type ShelterShowcaseEvent = {
@@ -72,9 +74,11 @@ type EventCardProps = {
   index: number;
 };
 
-const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
+const EventDesktopCard = memo(function EventDesktopCard({ event, index }: EventCardProps) {
   const cardId = `events-${event.id}`;
-  const { isActive, handlers, tabIndex, ref } = useCardVideoActivation(cardId);
+  const { isActive, handlers, tabIndex, ref } = useCardVideoActivation(cardId, {
+    disableTouchAutoPlay: true,
+  });
   const poster = event.poster ?? cloudinaryPosterFromMp4(event.mp4Src);
 
   return (
@@ -124,6 +128,7 @@ const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
 });
 
 export default function Events() {
+  const isTouchDevice = useIsTouchDevice();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [newsletterError, setNewsletterError] = useState<string | null>(null);
@@ -219,9 +224,13 @@ export default function Events() {
         </motion.div>
 
         <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 xl:grid-cols-3">
-          {events.map((event, i) => (
-            <EventCard key={event.id} event={event} index={i} />
-          ))}
+          {events.map((event, i) =>
+            isTouchDevice ? (
+              <EventsMobilePosterCard key={event.id} event={event} index={i} />
+            ) : (
+              <EventDesktopCard key={event.id} event={event} index={i} />
+            ),
+          )}
         </div>
 
         <motion.div

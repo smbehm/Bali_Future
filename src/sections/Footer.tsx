@@ -81,7 +81,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Bali Future on ${label}`}
-                  className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary-300/20 hover:border-primary-300/30 transition-colors"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 transition-colors hover:border-primary-300/30 hover:bg-primary-300/20 touch-manipulation"
                 >
                   <Icon className="w-4 h-4" />
                 </a>
@@ -127,7 +127,7 @@ export default function Footer() {
           </div>
           <a
             href="#donate"
-            className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary-300/20 border border-primary-300/30 text-primary-200 text-sm font-semibold hover:bg-primary-300/30 transition-colors"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-primary-300/30 bg-primary-300/20 px-6 py-3 text-sm font-semibold text-primary-200 transition-colors hover:bg-primary-300/30 touch-manipulation"
           >
             <Heart className="w-4 h-4" />
             Give Hope Today
