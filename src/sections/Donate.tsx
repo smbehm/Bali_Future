@@ -251,12 +251,12 @@ export default function Donate() {
                 </div>
 
                 {/* Categories */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
+                <div className="mb-8 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
                   {categories.map((cat) => (
                     <button
                       key={cat.id}
                       onClick={() => setCategory(cat.id)}
-                      className={`p-4 rounded-2xl border-2 text-center transition-all hover-lift ${
+                      className={`min-h-[88px] rounded-2xl border-2 p-4 text-center transition-all hover-lift touch-manipulation ${
                         category === cat.id
                           ? 'border-primary-300 bg-primary-50'
                           : 'border-transparent bg-gray-50 hover:border-primary-100'
@@ -273,12 +273,12 @@ export default function Donate() {
                 </div>
 
                 {/* Amounts */}
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
+                <div className="mb-6 grid grid-cols-2 gap-3 min-[380px]:grid-cols-3 sm:grid-cols-6">
                   {amounts.map((a) => (
                     <button
                       key={a}
                       onClick={() => { setAmount(a); setCustomAmount(''); }}
-                      className={`py-3 rounded-xl text-center font-bold transition-all ${
+                      className={`min-h-12 rounded-xl py-3 text-center font-bold transition-all touch-manipulation ${
                         amount === a && !customAmount
                           ? 'gradient-green text-white shadow-lg shadow-primary-300/30'
                           : 'bg-gray-50 text-dark/70 hover:bg-primary-50'

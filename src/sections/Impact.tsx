@@ -33,7 +33,7 @@ export default function Impact() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center max-w-3xl mx-auto mb-20"
+          className="mx-auto mb-12 max-w-3xl px-1 text-center md:mb-20"
         >
           <span className="inline-block px-4 py-1.5 rounded-full bg-sky-50 text-sky-600 text-sm font-semibold mb-4">
             Our Impact
@@ -41,13 +41,13 @@ export default function Impact() {
           <h2 className="font-sora font-bold text-3xl md:text-5xl text-tropical mb-6">
             Your Generosity, Their Transformation
           </h2>
-          <p className="text-dark/60 text-lg">
+          <p className="text-base text-pretty text-dark/60 sm:text-lg">
             Behind every number is a child who now eats three meals a day, a family that stays
             together, a community that believes in tomorrow.
           </p>
         </motion.div>
 
-        <div className="mb-24 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-6 lg:gap-8">
+        <div className="mb-16 grid grid-cols-2 gap-3 sm:mb-24 sm:grid-cols-3 sm:gap-6 lg:grid-cols-6 lg:gap-8">
           {impactStats.map((stat) => (
             <AnimatedCounter key={stat.label} {...stat} />
           ))}

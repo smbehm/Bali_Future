@@ -121,7 +121,7 @@ export default function Volunteer() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center max-w-3xl mx-auto mb-16"
+          className="mx-auto mb-10 max-w-3xl px-1 text-center md:mb-16"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sky-50 text-sky-600 text-sm font-semibold mb-4">
             <Users className="w-4 h-4" />
@@ -130,7 +130,7 @@ export default function Volunteer() {
           <h2 className="font-sora font-bold text-3xl md:text-5xl text-tropical mb-6">
             Be the Reason a Child Smiles
           </h2>
-          <p className="text-dark/60 text-lg">
+          <p className="text-base text-pretty text-dark/60 sm:text-lg">
             Our volunteers don't just visit -- they become family. Whether you teach a child to read,
             build a classroom, or simply show up with love, your presence leaves a lasting mark
             on young hearts that will never forget you.

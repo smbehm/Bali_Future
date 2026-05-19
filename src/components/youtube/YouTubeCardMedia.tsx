@@ -120,7 +120,8 @@ export const YouTubeCardMedia = memo(function YouTubeCardMedia({
             muted
             loop
             playsInline
-            preload={isPlaying ? 'auto' : 'none'}
+            autoPlay={false}
+            preload={isPlaying ? 'auto' : 'metadata'}
             controls={false}
             disablePictureInPicture
             disableRemotePlayback

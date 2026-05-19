@@ -87,7 +87,7 @@ export default function Mission() {
           <h2 className="font-sora font-bold text-3xl md:text-5xl text-tropical mb-6">
             Bringing Hope to Every Child
           </h2>
-          <p className="text-dark/60 text-lg leading-relaxed">
+          <p className="text-base leading-relaxed text-pretty text-dark/60 sm:text-lg">
             We believe in a world where children without families still grow up in supportive,
             loving environments. The shelter serves children aged 3-18 from across Bali and Indonesia.
             Our mission is physical, spiritual, and emotional guidance alongside education, with the
@@ -106,7 +106,7 @@ export default function Mission() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="group p-8 rounded-3xl glass hover-lift cursor-default relative overflow-hidden"
+              className="group relative cursor-default overflow-hidden rounded-3xl p-6 glass hover-lift sm:p-8"
             >
               {/* Subtle glow on hover */}
               <div className="absolute -top-12 -right-12 w-24 h-24 rounded-full bg-primary-200/0 group-hover:bg-primary-200/20 blur-2xl transition-all duration-500" />

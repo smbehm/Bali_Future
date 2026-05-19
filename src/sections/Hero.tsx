@@ -5,7 +5,7 @@ import { useCountUp } from '../hooks/useCountUp';
 
 function SunlightRays() {
   return (
-    <div className="absolute top-0 right-[15%] w-[min(500px,100vw)] h-[min(700px,100vh)] pointer-events-none overflow-hidden opacity-40">
+    <div className="absolute top-0 right-[15%] hidden h-[min(700px,100vh)] w-[min(500px,100vw)] overflow-hidden opacity-40 pointer-events-none sm:block">
       {[...Array(5)].map((_, i) => (
         <motion.div
           key={i}
@@ -46,7 +46,7 @@ function FloatingHeroLeaves() {
   ];
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className="absolute inset-0 pointer-events-none overflow-hidden hidden sm:block">
       {leaves.map((leaf, i) => (
         <motion.div
           key={i}
@@ -81,7 +81,7 @@ function FloatingHeroLeaves() {
 
 function ChildSilhouettes() {
   return (
-    <div className="absolute bottom-[8%] right-[10%] lg:right-[20%] pointer-events-none opacity-[0.07]">
+    <div className="absolute bottom-[8%] right-[10%] pointer-events-none opacity-[0.07] hidden md:block lg:right-[20%]">
       <motion.svg
         width="280"
         height="120"
@@ -188,7 +188,7 @@ function HeroStatCell({
             {n.toLocaleString()}
             {suffix}
           </strong>
-          <span className="text-[11px] leading-tight text-dark/60 sm:text-base sm:leading-snug">{after}</span>
+          <span className="text-xs leading-tight text-dark/60 break-words sm:text-base sm:leading-snug">{after}</span>
         </span>
       </div>
     </motion.div>
@@ -232,7 +232,7 @@ export default function Hero() {
       <ChildSilhouettes />
 
       {/* Content */}
-      <div className="relative z-20 max-w-7xl mx-auto px-6 md:px-12 pt-[max(8rem,calc(env(safe-area-inset-top,0px)+5.5rem))] pb-20">
+      <div className="relative z-20 mx-auto max-w-7xl px-4 pt-[max(8rem,calc(env(safe-area-inset-top,0px)+5.5rem))] pb-16 sm:px-6 md:px-12 md:pb-20">
         <div className="max-w-3xl min-w-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -273,21 +273,21 @@ export default function Hero() {
           >
             <a
               href="#donate"
-              className="flex w-full min-w-0 items-center justify-center gap-2 px-8 py-4 text-center text-base font-semibold transition-all hover:scale-105 sm:w-auto sm:shrink-0 rounded-full gradient-green text-white shadow-xl shadow-primary-300/30 hover:shadow-2xl hover:shadow-primary-300/40"
+              className="flex min-h-12 w-full min-w-0 items-center justify-center gap-2 rounded-full px-8 py-4 text-center text-base font-semibold transition-all hover:scale-105 sm:w-auto sm:shrink-0 gradient-green text-white shadow-xl shadow-primary-300/30 hover:shadow-2xl hover:shadow-primary-300/40"
             >
               <Heart className="h-5 w-5 shrink-0" />
               Change a Child's Life
             </a>
             <a
               href="#volunteer"
-              className="flex w-full min-w-0 items-center justify-center gap-2 px-8 py-4 text-center text-base font-semibold transition-all hover:scale-105 sm:w-auto sm:shrink-0 rounded-full glass text-tropical shadow-lg hover:bg-white/80"
+              className="flex min-h-12 w-full min-w-0 items-center justify-center gap-2 rounded-full px-8 py-4 text-center text-base font-semibold transition-all hover:scale-105 sm:w-auto sm:shrink-0 glass text-tropical shadow-lg hover:bg-white/80"
             >
               <Users className="h-5 w-5 shrink-0" />
               Join Our Community
             </a>
             <a
               href="#mission"
-              className="flex w-full min-w-0 items-center justify-center gap-2 px-8 py-4 text-center text-base font-semibold transition-all hover:scale-105 sm:w-auto sm:shrink-0 rounded-full border-2 border-primary-200 text-tropical hover:bg-primary-50"
+              className="flex min-h-12 w-full min-w-0 items-center justify-center gap-2 rounded-full border-2 border-primary-200 px-8 py-4 text-center text-base font-semibold text-tropical transition-all hover:scale-105 hover:bg-primary-50 sm:w-auto sm:shrink-0"
             >
               <Compass className="h-5 w-5 shrink-0" />
               See Our Impact
@@ -300,7 +300,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.9 }}
-              className="grid grid-cols-3 gap-2 sm:gap-6"
+              className="grid grid-cols-1 gap-4 min-[400px]:grid-cols-3 min-[400px]:gap-2 sm:gap-6"
             >
               {heroStats.map((stat) => (
                 <HeroStatCell

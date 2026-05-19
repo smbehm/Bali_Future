@@ -80,7 +80,7 @@ export function DonationTree3D({ amount, target, campaignName }) {
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x040b06);
+    scene.background = new THREE.Color(0xffffff);
     scene.fog = new THREE.FogExp2(0x040b06, 0.065);
 
     const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100);

@@ -21,22 +21,24 @@ type VideoStatCardProps = {
 
 const VideoStatCard = memo(function VideoStatCard({ stat, index }: VideoStatCardProps) {
   const cardId = `gallery-${stat.id}`;
-  const { isActive, handlers, tabIndex } = useCardVideoActivation(cardId);
+  const { isActive, handlers, tabIndex, ref } = useCardVideoActivation(cardId);
   const isPhraseStat = Boolean(stat.staticValue);
   const displayValue =
     stat.staticValue ?? `${stat.prefix ?? ''}${stat.end.toLocaleString()}${stat.suffix ?? ''}`;
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.06, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className="group yt-premium-card yt-premium-card--gallery relative min-h-[260px] overflow-hidden sm:min-h-[300px]"
+      className="group yt-premium-card yt-premium-card--gallery relative min-h-[220px] overflow-hidden sm:min-h-[260px] md:min-h-[300px]"
       data-active={isActive ? 'true' : 'false'}
       tabIndex={tabIndex}
       role={tabIndex === 0 ? 'button' : undefined}
       aria-pressed={tabIndex === 0 ? isActive : undefined}
+      aria-label={tabIndex === 0 ? `Play ${stat.label || 'gallery'} video` : undefined}
       {...handlers}
     >
       <YouTubeCardMedia
@@ -44,14 +46,14 @@ const VideoStatCard = memo(function VideoStatCard({ stat, index }: VideoStatCard
         mp4Src={stat.mp4Src}
         title={stat.label}
         aspectClass="absolute inset-0 h-full w-full"
-        className="h-full min-h-[260px] sm:min-h-[300px]"
+        className="h-full min-h-[220px] sm:min-h-[260px] md:min-h-[300px]"
         overlay={
           <>
             <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[400ms] ease-out group-hover:opacity-100 group-data-[active=true]:opacity-100">
               <div className="absolute -bottom-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-primary-300/25 blur-3xl" />
             </div>
 
-            <div className="yt-card-gallery-stats pointer-events-none absolute inset-x-0 bottom-0 z-20 flex min-h-[260px] items-end p-5 sm:min-h-[300px] sm:p-6">
+            <div className="yt-card-gallery-stats pointer-events-none absolute inset-x-0 bottom-0 z-20 flex min-h-[220px] items-end p-4 sm:min-h-[260px] sm:p-5 md:min-h-[300px] md:p-6">
               <div className="w-full">
                 <p
                   className={`video-thumb-text yt-card-stat-value ${isPhraseStat ? 'yt-card-stat-value--phrase' : ''}`}
@@ -107,7 +109,7 @@ export default function Gallery() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center max-w-3xl mx-auto mb-16"
+          className="text-center max-w-3xl mx-auto mb-10 md:mb-16 px-1"
         >
           <span className="inline-block px-4 py-1.5 rounded-full bg-primary-50 text-primary-600 text-sm font-semibold mb-4">
             Life on the Ground
@@ -115,7 +117,7 @@ export default function Gallery() {
           <h2 className="font-sora font-bold text-3xl md:text-5xl text-tropical mb-6">
             See the Difference You Make
           </h2>
-          <p className="text-dark/60 text-lg">
+          <p className="text-dark/60 text-base sm:text-lg leading-relaxed text-pretty">
             These are real moments from real days -- children learning, communities gathering,
             volunteers and families working side by side to build something lasting.
           </p>

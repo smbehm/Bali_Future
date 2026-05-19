@@ -74,11 +74,12 @@ type EventCardProps = {
 
 const EventCard = memo(function EventCard({ event, index }: EventCardProps) {
   const cardId = `events-${event.id}`;
-  const { isActive, handlers, tabIndex } = useCardVideoActivation(cardId);
+  const { isActive, handlers, tabIndex, ref } = useCardVideoActivation(cardId);
   const poster = event.poster ?? cloudinaryPosterFromMp4(event.mp4Src);
 
   return (
     <motion.article
+      ref={ref}
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
@@ -204,14 +205,14 @@ export default function Events() {
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mx-auto mb-14 max-w-3xl text-center"
+          className="mx-auto mb-10 max-w-3xl px-1 text-center md:mb-14"
         >
           <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-1.5 text-sm font-semibold text-primary-700 shadow-sm ring-1 ring-primary-100/80">
             <Sparkles className="h-4 w-4 text-primary-500" />
             At the Shelter
           </span>
           <h2 className="font-sora text-3xl font-bold text-tropical md:text-5xl">Show Up. Give Back. Belong.</h2>
-          <p className="mt-4 text-lg leading-relaxed text-dark/60">
+          <p className="mt-4 text-base leading-relaxed text-pretty text-dark/60 sm:text-lg">
             Every event is a chance to stand beside the children and families we serve. Whether you clean a beach,
             teach a workshop, or simply share a meal -- your presence is the gift.
           </p>
@@ -229,7 +230,7 @@ export default function Events() {
           viewport={{ once: true }}
           className="mx-auto mt-20 max-w-2xl"
         >
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-tropical to-primary-700 p-8 text-center text-white md:p-12">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-tropical to-primary-700 p-6 text-center text-white sm:p-8 md:p-12">
             <div className="absolute right-0 top-0 h-[200px] w-[200px] -translate-y-1/2 translate-x-1/2 rounded-full bg-white/5 blur-[40px]" />
             <div className="relative">
               <Mail className="mx-auto mb-4 h-10 w-10 opacity-80" />
@@ -259,12 +260,12 @@ export default function Events() {
                     }}
                     placeholder="your@email.com"
                     required
-                    className="form-field flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-white outline-none placeholder:text-white/40 focus:border-white/50"
+                    className="form-field min-h-12 flex-1 rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-white outline-none placeholder:text-white/40 focus:border-white/50"
                   />
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-tropical transition-colors hover:bg-primary-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-tropical transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Subscribe
                     <ArrowRight className="h-4 w-4" />

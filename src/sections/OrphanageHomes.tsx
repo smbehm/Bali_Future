@@ -70,7 +70,7 @@ function VideoModal({ videoId, onClose }: { videoId: string; onClose: () => void
         type="button"
         onClick={onClose}
         aria-label="Close video"
-        className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/25 transition-all duration-200"
+        className="absolute top-4 right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-200 hover:bg-white/25 sm:top-6 sm:right-6"
       >
         <X className="w-5 h-5" />
       </button>
@@ -106,7 +106,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-white/20 blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative h-[72px] w-[72px] rounded-full bg-white/15 border border-white/30 flex items-center justify-center shadow-2xl shadow-black/30 transition-all duration-400 group-hover:scale-110 [-webkit-backdrop-filter:blur(12px)] [backdrop-filter:blur(12px)] group-hover:bg-white/25 group-hover:border-white/50">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-white/15 shadow-2xl shadow-black/30 transition-all duration-400 [-webkit-backdrop-filter:blur(12px)] [backdrop-filter:blur(12px)] group-hover:scale-110 group-hover:border-white/50 group-hover:bg-white/25 sm:h-[72px] sm:w-[72px]">
               <Play className="w-8 h-8 text-white fill-white ml-1 drop-shadow-lg" />
             </div>
           </div>
@@ -137,7 +137,7 @@ function StoryCard({ story, index, onPlay }: { story: typeof stories[0]; index: 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <button
             onClick={() => onPlay(story.videoId)}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl gradient-green text-white text-sm font-semibold shadow-md shadow-primary-200/30 hover:shadow-lg hover:shadow-primary-300/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-semibold text-white shadow-md shadow-primary-200/30 transition-all gradient-green hover:scale-[1.02] hover:shadow-lg hover:shadow-primary-300/40 active:scale-[0.98]"
           >
             <Play className="w-4 h-4 fill-white" />
             Watch Their Story
@@ -172,7 +172,7 @@ export default function OrphanageHomes() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center max-w-3xl mx-auto mb-16"
+          className="mx-auto mb-10 max-w-3xl px-1 text-center md:mb-16"
         >
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-warm-100 text-warm-700 text-sm font-semibold mb-4">
             <Home className="w-4 h-4" />
@@ -181,7 +181,7 @@ export default function OrphanageHomes() {
           <h2 className="font-sora font-bold text-3xl md:text-5xl text-tropical mb-6">
             Meet the Children Waiting for You
           </h2>
-          <p className="text-dark/60 text-lg leading-relaxed max-w-2xl mx-auto">
+          <p className="mx-auto max-w-2xl text-base leading-relaxed text-pretty text-dark/60 sm:text-lg">
             Behind every face is a story of resilience. These are not just videos --
             they are invitations to witness the extraordinary courage of children
             who still believe in tomorrow.

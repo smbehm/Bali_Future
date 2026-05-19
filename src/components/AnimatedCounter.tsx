@@ -71,7 +71,7 @@ export default function AnimatedCounter({ end, duration = 2, prefix = '', suffix
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md ring-1 ring-black/[0.06]">
         {icon}
       </div>
-      <div className="bg-transparent font-sora text-3xl font-bold text-tropical md:text-4xl tabular-nums">
+      <div className="bg-transparent font-sora text-2xl font-bold tabular-nums text-tropical sm:text-3xl md:text-4xl">
         {prefix}
         {count.toLocaleString()}
         {suffix}

@@ -52,8 +52,8 @@ export default function Footer() {
         />
       ))}
 
-      <div className="relative pt-24 pb-8 px-6 md:px-12 max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+      <div className="relative mx-auto max-w-7xl px-4 pb-8 pt-20 sm:px-6 md:px-12 md:pt-24">
+        <div className="mb-12 grid gap-8 sm:gap-10 md:grid-cols-2 md:gap-12 lg:grid-cols-5 lg:mb-16">
           {/* Brand */}
           <div className="lg:col-span-2">
             <a href="#top" className="mb-4 flex w-fit min-w-0 max-w-full items-center gap-3 rounded-lg outline-none ring-offset-2 ring-offset-tropical focus-visible:ring-2 focus-visible:ring-primary-300">

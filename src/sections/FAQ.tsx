@@ -34,7 +34,7 @@ export default function FAQ() {
 
   return (
     <section id="faq" className="section-padding relative overflow-hidden">
-      <div className="mx-auto w-full min-w-0 max-w-3xl">
+      <div className="section-container mx-auto w-full min-w-0 max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -61,7 +61,7 @@ export default function FAQ() {
             >
               <button
                 onClick={() => setOpen(open === i ? null : i)}
-                className={`w-full text-left p-6 rounded-2xl transition-all ${
+                className={`w-full min-h-[56px] touch-manipulation rounded-2xl p-5 text-left transition-all sm:p-6 ${
                   open === i ? 'bg-white shadow-lg shadow-primary-100/50' : 'glass hover:bg-white/80'
                 }`}
               >

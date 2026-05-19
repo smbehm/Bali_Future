@@ -53,7 +53,7 @@ export default function Navbar() {
             : 'bg-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-12 pt-[env(safe-area-inset-top,0px)]">
+        <div className="mx-auto max-w-7xl px-4 pt-[env(safe-area-inset-top,0px)] sm:px-6 md:px-12">
           <div className="flex items-center justify-between h-20">
             <a href="#top" className="flex min-w-0 max-w-[min(100%,14rem)] items-center gap-3 group sm:max-w-none">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-green shadow-lg shadow-primary-300/30 transition-transform group-hover:scale-110">
@@ -92,9 +92,9 @@ export default function Navbar() {
               onClick={() => setMobileOpen(true)}
               aria-label="Open menu"
               aria-expanded={mobileOpen}
-              className="lg:hidden p-2 text-tropical"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-tropical lg:hidden -mr-1 active:bg-primary-50/60"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="h-6 w-6" />
             </button>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function Navbar() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] bg-cream/95 glass lg:hidden"
           >
-            <div className="flex h-full flex-col p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <div className="flex h-full flex-col p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:p-6">
               <div className="flex items-center justify-between">
                 <a
                   href="#top"
@@ -141,7 +141,7 @@ export default function Navbar() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="text-2xl font-sora font-semibold text-tropical"
+                    className="flex min-h-11 items-center text-2xl font-sora font-semibold text-tropical"
                   >
                     {link.label}
                   </motion.a>
