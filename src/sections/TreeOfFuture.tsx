@@ -1,8 +1,5 @@
-import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import SectionErrorBoundary from '../components/SectionErrorBoundary';
-
-const DonationTreeExperience = lazy(() => import('../components/donation-tree/DonationTreeExperience'));
 
 export default function TreeOfFuture() {
   return (
@@ -29,12 +26,16 @@ export default function TreeOfFuture() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="donation-tree-embed w-full min-w-0"
+          className="w-full min-w-0 overflow-hidden rounded-3xl"
         >
           <SectionErrorBoundary sectionName="Donation Tree">
-            <Suspense fallback={null}>
-              <DonationTreeExperience />
-            </Suspense>
+            <iframe
+              src="https://donation-tree-2.vercel.app/?v=2"
+              style={{ width: '100%', height: '100svh', border: 'none', display: 'block' }}
+              title="Donation Tree"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
           </SectionErrorBoundary>
         </motion.div>
       </motion.div>
