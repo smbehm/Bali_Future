@@ -12,25 +12,37 @@
   width: 100%;
   height: 100%;
   min-height: 100%;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  background: transparent;
+  background: #040b06;
+  color: #dceadc;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
 }
 
 .donation-tree-embed .donation-panel {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   width: 100%;
-  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .donation-tree-embed .campaign-details {
-  position: absolute;
-  left: clamp(10px, 2vw, 20px);
-  bottom: clamp(10px, 2vw, 20px);
+  position: relative;
+  flex: 0 0 auto;
+  align-self: flex-start;
   z-index: 3;
-  width: min(268px, calc(100% - 20px));
-  max-width: calc(100% - 20px);
+  width: min(196px, calc(100% - 32px));
+  max-width: 196px;
+  margin: 0 0 max(16px, env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
   border-radius: 8px;
-  padding: clamp(10px, 1.5vw, 14px);
+  padding: 8px 9px 10px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -38,87 +50,82 @@
   background:
     linear-gradient(180deg, rgba(7, 19, 9, 0.41), rgba(4, 11, 6, 0.46)),
     rgba(4, 11, 6, 0.45);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(16px);
 }
 
-.campaign-details .eyebrow {
-  margin: 0 0 4px;
+.donation-tree-embed .campaign-details .eyebrow {
+  margin: 0 0 3px;
   color: #3dba60;
-  font-size: 0.56rem;
+  font-size: 0.5rem;
   font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
-.campaign-details h1 {
+.donation-tree-embed .campaign-details h1 {
   margin: 0;
   color: #edf8ed;
-  font-size: clamp(1rem, 2.2vw, 1.35rem);
-  line-height: 1.1;
+  font-size: 0.88rem;
+  line-height: 1.15;
   letter-spacing: 0;
 }
 
-.campaign-copy {
+.donation-tree-embed .campaign-copy {
   display: none;
-  max-width: 54ch;
-  margin: 22px 0 30px;
-  color: #4e5d52;
-  font-size: 1rem;
-  line-height: 1.65;
 }
 
-.amount-card {
+.donation-tree-embed .campaign-details .amount-card {
   display: grid;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 6px;
+  margin-top: 6px;
   padding: 0;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
 }
 
-.amount-card label {
+.donation-tree-embed .campaign-details .amount-card label {
   color: #8aaa90;
-  font-size: 0.62rem;
+  font-size: 0.54rem;
   font-weight: 750;
   text-transform: uppercase;
 }
 
-.amount-input-row {
+.donation-tree-embed .campaign-details .amount-input-row {
   display: grid;
-  grid-template-columns: 18px 1fr;
+  grid-template-columns: 14px 1fr;
   align-items: center;
   gap: 6px;
-  min-height: 40px;
-  padding: 6px 8px;
+  min-height: 32px;
+  padding: 5px 6px;
   border: 1px solid rgba(61, 186, 96, 0.24);
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.023);
 }
 
-.amount-input-row svg {
+.donation-tree-embed .campaign-details .amount-input-row svg {
   color: #3dba60;
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
 }
 
-.amount-input-row input {
+.donation-tree-embed .campaign-details .amount-input-row input {
   width: 100%;
   min-width: 0;
   border: 0;
   outline: 0;
   color: #f1fff1;
   background: transparent;
-  font-size: clamp(1.25rem, 4.5vw, 1.65rem);
+  font-size: 1.05rem;
   font-weight: 850;
   line-height: 1;
 }
 
-.range {
+.donation-tree-embed .campaign-details .range {
   display: block;
   width: 100%;
-  height: 2rem;
+  height: 1.5rem;
   margin: 0;
   padding: 0;
   cursor: pointer;
@@ -130,120 +137,129 @@
   appearance: none;
 }
 
-.range:focus-visible {
+.donation-tree-embed .campaign-details .range:focus-visible {
   outline: 2px solid rgba(61, 186, 96, 0.55);
   outline-offset: 3px;
 }
 
-.range::-webkit-slider-runnable-track {
-  height: 8px;
+.donation-tree-embed .campaign-details .range::-webkit-slider-runnable-track {
+  height: 6px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.16);
 }
 
-.range::-webkit-slider-thumb {
+.donation-tree-embed .campaign-details .range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   margin-top: -6px;
   border-radius: 50%;
   background: #3dba60;
   border: 2px solid rgba(4, 11, 6, 0.85);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
-.range::-moz-range-track {
-  height: 8px;
+.donation-tree-embed .campaign-details .range::-moz-range-track {
+  height: 6px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.16);
 }
 
-.range::-moz-range-thumb {
+.donation-tree-embed .campaign-details .range::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 50%;
   background: #3dba60;
   border: 2px solid rgba(4, 11, 6, 0.85);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
-.stats-grid {
+.donation-tree-embed .campaign-details .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 5px;
-  margin-top: 8px;
+  gap: 4px;
+  margin-top: 6px;
 }
 
-.stats-grid div {
+.donation-tree-embed .campaign-details .stats-grid div {
   min-width: 0;
-  padding: 7px 6px;
+  padding: 5px 4px;
   border: 1px solid rgba(124, 210, 137, 0.12);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.023);
 }
 
-.stats-grid svg {
+.donation-tree-embed .campaign-details .stats-grid svg {
   display: block;
-  width: 14px;
-  height: 14px;
-  margin-bottom: 4px;
+  width: 11px;
+  height: 11px;
+  margin-bottom: 3px;
   color: #3dba60;
 }
 
-.stats-grid span,
-.stats-grid strong {
+.donation-tree-embed .campaign-details .stats-grid span,
+.donation-tree-embed .campaign-details .stats-grid strong {
   display: block;
 }
 
-.stats-grid span {
+.donation-tree-embed .campaign-details .stats-grid span {
   color: #75927c;
-  font-size: 0.54rem;
+  font-size: 0.5rem;
   text-transform: uppercase;
-  line-height: 1.2;
 }
 
-.stats-grid strong {
+.donation-tree-embed .campaign-details .stats-grid strong {
   overflow-wrap: anywhere;
   margin-top: 2px;
   color: #dceadc;
-  font-size: clamp(0.72rem, 1.5vw, 0.82rem);
-  line-height: 1.15;
+  font-size: 0.62rem;
 }
 
-.visual-panel {
-  position: absolute;
-  inset: 0;
+.donation-tree-embed .visual-panel {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
   overflow: hidden;
   border-radius: 0;
 }
 
-.tree-shell,
-.tree-canvas {
+.donation-tree-embed .tree-shell {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
-  min-height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
-.tree-canvas canvas {
+.donation-tree-embed .tree-canvas {
+  position: relative;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+}
+
+.donation-tree-embed .tree-canvas canvas {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.progress-track {
+.donation-tree-embed .progress-track {
   position: absolute;
-  right: clamp(10px, 2vw, 18px);
-  top: clamp(10px, 2vw, 18px);
-  bottom: clamp(10px, 2vw, 18px);
-  width: 8px;
+  right: clamp(14px, 3vw, 28px);
+  top: clamp(14px, 3vw, 28px);
+  bottom: clamp(14px, 3vw, 28px);
+  width: 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
   z-index: 2;
 }
 
-.progress-track span {
+.donation-tree-embed .progress-track span {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -253,94 +269,101 @@
   transition: height 180ms ease;
 }
 
-@media (max-width: 860px) {
-  .campaign-details {
-    left: max(8px, env(safe-area-inset-left, 0px));
-    right: auto;
-    top: auto;
-    bottom: max(8px, env(safe-area-inset-bottom, 0px));
-    width: min(196px, 44vw);
-    max-height: none;
-    overflow: visible;
-    padding: 8px 9px 9px;
+@media (min-width: 768px) {
+  .donation-tree-embed .donation-panel {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
-  .campaign-details .eyebrow {
-    font-size: 0.48rem;
-    margin-bottom: 2px;
+  .donation-tree-embed .visual-panel {
+    position: absolute;
+    inset: 0;
+    flex: none;
+    height: auto;
   }
 
-  .campaign-details h1 {
-    font-size: clamp(0.82rem, 2.8vw, 0.98rem);
+  .donation-tree-embed .tree-shell,
+  .donation-tree-embed .tree-canvas {
+    height: 100%;
+    min-height: 0;
   }
 
-  .amount-card {
+  .donation-tree-embed .campaign-details {
+    position: absolute;
+    left: max(16px, env(safe-area-inset-left, 0px));
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    margin: 0;
+    width: min(196px, calc(100% - 32px));
+    max-width: 196px;
+  }
+}
+
+@media (max-width: 767px) {
+  .donation-tree-embed .donation-panel {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .donation-tree-embed .campaign-details {
+    width: min(196px, calc(100% - 32px));
+    flex-shrink: 0;
+  }
+
+  .donation-tree-embed .campaign-details h1 {
+    font-size: 0.84rem;
+  }
+
+  .donation-tree-embed .campaign-details .amount-card {
     margin-top: 6px;
-    gap: 5px;
+    gap: 6px;
   }
 
-  .amount-card label {
-    font-size: 0.56rem;
+  .donation-tree-embed .campaign-details .amount-input-row {
+    min-height: 30px;
+    padding: 5px 6px;
   }
 
-  .amount-input-row {
-    min-height: 32px;
-    padding: 4px 6px;
-    gap: 5px;
-    grid-template-columns: 16px 1fr;
+  .donation-tree-embed .campaign-details .amount-input-row input {
+    font-size: 1rem;
   }
 
-  .amount-input-row svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .amount-input-row input {
-    font-size: clamp(1rem, 4.2vw, 1.2rem);
-  }
-
-  .range {
-    height: 1.5rem;
-  }
-
-  .stats-grid {
+  .donation-tree-embed .campaign-details .stats-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
     margin-top: 6px;
   }
 
-  .stats-grid div {
+  .donation-tree-embed .campaign-details .stats-grid div {
+    display: block;
     padding: 5px 4px;
   }
 
-  .stats-grid svg {
-    width: 12px;
-    height: 12px;
-    margin-bottom: 2px;
+  .donation-tree-embed .campaign-details .stats-grid svg {
+    margin-bottom: 3px;
+    width: 11px;
+    height: 11px;
   }
 
-  .stats-grid span {
-    font-size: 0.46rem;
+  .donation-tree-embed .campaign-details .stats-grid strong {
+    margin-top: 2px;
+    font-size: 0.6rem;
   }
 
-  .stats-grid strong {
-    font-size: clamp(0.62rem, 2.2vw, 0.72rem);
-    margin-top: 1px;
-  }
-
-  .progress-track {
-    left: max(8px, env(safe-area-inset-left, 0px));
-    right: max(8px, env(safe-area-inset-right, 0px));
-    top: max(8px, env(safe-area-inset-top, 0px));
+  .donation-tree-embed .progress-track {
+    right: max(10px, env(safe-area-inset-right, 0px));
+    top: max(10px, env(safe-area-inset-top, 0px));
     bottom: auto;
-    width: auto;
-    height: 6px;
+    left: auto;
+    width: clamp(72px, 34vw, 132px);
+    height: 8px;
   }
 
-  .progress-track span {
+  .donation-tree-embed .progress-track span {
     top: 0;
     right: auto;
     bottom: 0;
+    left: 0;
     width: var(--progress-width, 0%);
     height: 100% !important;
     background: linear-gradient(90deg, #236d3f, #42cb73, #b5f1a4);

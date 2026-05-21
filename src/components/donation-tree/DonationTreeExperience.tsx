@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ChangeEvent, type CSSProperties } from 'react';
 import { CircleDollarSign, HeartHandshake, Target } from 'lucide-react';
 import { DonationTree3D } from './DonationTree3D.jsx';
 import './donation-tree.css';
@@ -6,11 +6,11 @@ import './donation-tree.css';
 const CAMPAIGN_TARGET = 1000;
 const CAMPAIGN_NAME = 'Plumbing Repairs';
 
-function clamp(value, min, max) {
+function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-function currency(value) {
+function currency(value: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -18,12 +18,12 @@ function currency(value) {
   }).format(value);
 }
 
-export function App() {
+export default function DonationTreeExperience() {
   const [amount, setAmount] = useState(100);
   const progress = useMemo(() => clamp(amount / CAMPAIGN_TARGET, 0, 1), [amount]);
   const remaining = Math.max(CAMPAIGN_TARGET - amount, 0);
 
-  const handleAmountChange = (event) => {
+  const handleAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = Number(event.target.value);
     setAmount(Number.isFinite(nextValue) ? clamp(nextValue, 0, CAMPAIGN_TARGET) : 0);
   };
@@ -39,10 +39,12 @@ export function App() {
           />
           <div className="progress-track" aria-hidden="true">
             <span
-              style={{
-                height: `${progress * 100}%`,
-                '--progress-width': `${progress * 100}%`
-              }}
+              style={
+                {
+                  height: `${progress * 100}%`,
+                  '--progress-width': `${progress * 100}%`
+                } as CSSProperties
+              }
             />
           </div>
         </div>
@@ -100,5 +102,4 @@ export function App() {
     </main>
   );
 }
-export default App;
 
