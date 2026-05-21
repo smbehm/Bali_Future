@@ -31,6 +31,12 @@
     scroll-margin-top: 5.5rem;
   }
 
+  /* Defer layout/paint for below-the-fold sections (helps iOS Safari scroll perf) */
+  section[id]:not([id='top']):not([id='mission']) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 480px;
+  }
+
   img,
   video,
   iframe {

@@ -61,8 +61,9 @@ export default function TreeBackground() {
       (window.matchMedia('(max-width: 820px)').matches ||
         window.matchMedia('(pointer: coarse)').matches);
 
-    const DPR_CAP        = isMobile ? 1.5 : 2;
-    const PARTICLE_COUNT = isMobile ? 90  : 260;
+    const DPR_CAP        = isMobile ? 1.25 : 2;
+    const PARTICLE_COUNT = isMobile ? 48  : 260;
+    const maxDepth       = isMobile ? 5 : MAX_DEPTH;
 
     // ── Renderer ──────────────────────────────────────────────────────────────
     let renderer: THREE.WebGLRenderer;
@@ -161,9 +162,9 @@ export default function TreeBackground() {
       rotY:   number,
       queue:  TreeNode[]
     ): void {
-      if (depth > MAX_DEPTH) return;
+      if (depth > maxDepth) return;
 
-      const isLeaf = depth === MAX_DEPTH;
+      const isLeaf = depth === maxDepth;
 
       // Pivot anchored at parent tip; rotation tilts branch outward
       const pivot = new THREE.Object3D();
@@ -199,7 +200,7 @@ export default function TreeBackground() {
         windPhase:  Math.random() * Math.PI * 2,
         windFreq:   0.35 + Math.random() * 1.0,
         // deeper branches sway more; all zero at reveal
-        windAmp:    (0.012 + (depth / MAX_DEPTH) * 0.055) * (0.7 + Math.random() * 0.6),
+        windAmp:    (0.012 + (depth / maxDepth) * 0.055) * (0.7 + Math.random() * 0.6),
       };
 
       queue.push(node);

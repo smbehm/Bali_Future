@@ -8,7 +8,10 @@ export default function FloatingLeaves() {
     if (!container) return;
 
     const leaves: HTMLDivElement[] = [];
-    const leafCount = 10;
+    const isTouch =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(pointer: coarse)').matches;
+    const leafCount = isTouch ? 4 : 10;
 
     const leafSVG = (hue: number, opacity: number) => `
       <svg width="18" height="24" viewBox="0 0 18 24" fill="none" xmlns="http://www.w3.org/2000/svg">

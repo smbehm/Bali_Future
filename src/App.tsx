@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { useWebGLScene } from './contexts/WebGLSceneContext';
+import { useDeferredMount } from './hooks/useDeferredMount';
 import Navbar from './components/Navbar';
 import FloatingLeaves from './components/FloatingLeaves';
 import Hero from './sections/Hero';
@@ -7,21 +8,22 @@ import Mission from './sections/Mission';
 import OrphanageHomes from './sections/OrphanageHomes';
 import Impact from './sections/Impact';
 import TreeOfFuture from './sections/TreeOfFuture';
-import Donate from './sections/Donate';
-import Volunteer from './sections/Volunteer';
 import SectionErrorBoundary from './components/SectionErrorBoundary';
 import { HoverVideoProvider } from './contexts/HoverVideoContext';
-import Events from './sections/Events';
 import Gallery from './sections/Gallery';
 import FAQ from './sections/FAQ';
 import Footer from './sections/Footer';
 
 const TreeBackground = lazy(() => import('./components/TreeBackground'));
+const Events = lazy(() => import('./sections/Events'));
+const Donate = lazy(() => import('./sections/Donate'));
+const Volunteer = lazy(() => import('./sections/Volunteer'));
 
 function App() {
   const { donationTreeActive } = useWebGLScene();
+  const webglReady = useDeferredMount();
   // Fullscreen hero tree on every section except while Donation Tree owns WebGL.
-  const showHeroTree = !donationTreeActive;
+  const showHeroTree = webglReady && !donationTreeActive;
 
   return (
     <>
@@ -38,11 +40,17 @@ function App() {
         <OrphanageHomes />
         <Impact />
         <TreeOfFuture />
-        <Donate />
-        <Volunteer />
+        <Suspense fallback={null}>
+          <Donate />
+        </Suspense>
+        <Suspense fallback={null}>
+          <Volunteer />
+        </Suspense>
         <HoverVideoProvider>
           <SectionErrorBoundary sectionName="Events">
-            <Events />
+            <Suspense fallback={null}>
+              <Events />
+            </Suspense>
           </SectionErrorBoundary>
           <SectionErrorBoundary sectionName="Gallery">
             <Gallery />

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import SectionErrorBoundary from '../components/SectionErrorBoundary';
+import DonationTreeIframe from '../components/DonationTreeIframe';
 
 export default function TreeOfFuture() {
   return (
@@ -29,13 +30,7 @@ export default function TreeOfFuture() {
           className="w-full min-w-0 overflow-hidden rounded-3xl"
         >
           <SectionErrorBoundary sectionName="Donation Tree">
-            <iframe
-              src="https://donation-tree-2.vercel.app/?v=2"
-              style={{ width: '100%', height: '100svh', border: 'none', display: 'block' }}
-              title="Donation Tree"
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
+            <DonationTreeIframe />
           </SectionErrorBoundary>
         </motion.div>
       </motion.div>
