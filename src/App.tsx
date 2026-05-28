@@ -1,12 +1,12 @@
 import { lazy, Suspense } from 'react';
 import { useWebGLScene } from './contexts/WebGLSceneContext';
 import { useDeferredMount } from './hooks/useDeferredMount';
-import Navbar from './components/Navbar';
 import FloatingLeaves from './components/FloatingLeaves';
-import Hero from './sections/Hero';
 import SectionErrorBoundary from './components/SectionErrorBoundary';
 import { HoverVideoProvider } from './contexts/HoverVideoContext';
 
+const Navbar = lazy(() => import('./components/Navbar'));
+const Hero = lazy(() => import('./sections/Hero'));
 const TreeBackground = lazy(() => import('./components/TreeBackground'));
 const Mission = lazy(() => import('./sections/Mission'));
 const OrphanageHomes = lazy(() => import('./sections/OrphanageHomes'));
@@ -34,8 +34,12 @@ function App() {
       ) : null}
       <div className="relative z-10 min-h-screen min-h-[100dvh] min-w-0">
         <FloatingLeaves />
-        <Navbar />
-        <Hero />
+        <Suspense fallback={<div className="h-20" aria-hidden="true" />}>
+          <Navbar />
+        </Suspense>
+        <Suspense fallback={<section id="top" className="min-h-screen min-h-[100dvh]" aria-hidden="true" />}>
+          <Hero />
+        </Suspense>
         <Suspense fallback={null}>
           <Mission />
           <OrphanageHomes />
