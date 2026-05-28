@@ -4,20 +4,20 @@ import { useDeferredMount } from './hooks/useDeferredMount';
 import Navbar from './components/Navbar';
 import FloatingLeaves from './components/FloatingLeaves';
 import Hero from './sections/Hero';
-import Mission from './sections/Mission';
-import OrphanageHomes from './sections/OrphanageHomes';
-import Impact from './sections/Impact';
-import TreeOfFuture from './sections/TreeOfFuture';
 import SectionErrorBoundary from './components/SectionErrorBoundary';
 import { HoverVideoProvider } from './contexts/HoverVideoContext';
-import Gallery from './sections/Gallery';
-import FAQ from './sections/FAQ';
-import Footer from './sections/Footer';
 
 const TreeBackground = lazy(() => import('./components/TreeBackground'));
+const Mission = lazy(() => import('./sections/Mission'));
+const OrphanageHomes = lazy(() => import('./sections/OrphanageHomes'));
+const Impact = lazy(() => import('./sections/Impact'));
+const TreeOfFuture = lazy(() => import('./sections/TreeOfFuture'));
 const Events = lazy(() => import('./sections/Events'));
+const Gallery = lazy(() => import('./sections/Gallery'));
 const Donate = lazy(() => import('./sections/Donate'));
 const Volunteer = lazy(() => import('./sections/Volunteer'));
+const FAQ = lazy(() => import('./sections/FAQ'));
+const Footer = lazy(() => import('./sections/Footer'));
 
 function App() {
   const { donationTreeActive } = useWebGLScene();
@@ -36,10 +36,12 @@ function App() {
         <FloatingLeaves />
         <Navbar />
         <Hero />
-        <Mission />
-        <OrphanageHomes />
-        <Impact />
-        <TreeOfFuture />
+        <Suspense fallback={null}>
+          <Mission />
+          <OrphanageHomes />
+          <Impact />
+          <TreeOfFuture />
+        </Suspense>
         <Suspense fallback={null}>
           <Donate />
         </Suspense>
@@ -53,11 +55,15 @@ function App() {
             </Suspense>
           </SectionErrorBoundary>
           <SectionErrorBoundary sectionName="Gallery">
-            <Gallery />
+            <Suspense fallback={null}>
+              <Gallery />
+            </Suspense>
           </SectionErrorBoundary>
         </HoverVideoProvider>
-        <FAQ />
-        <Footer />
+        <Suspense fallback={null}>
+          <FAQ />
+          <Footer />
+        </Suspense>
       </div>
     </>
   );

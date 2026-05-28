@@ -18,8 +18,46 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"></noscript>
+    <style>
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: #fffdf7;
+        color: #2c3e50;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      }
+      #boot-splash .inner {
+        text-align: center;
+        padding: 24px;
+      }
+      #boot-splash h1 {
+        margin: 0;
+        font-family: 'Sora', system-ui, -apple-system, sans-serif;
+        font-size: clamp(1.35rem, 5vw, 2rem);
+        color: #2f5d50;
+      }
+      #boot-splash p {
+        margin: 10px 0 0;
+        font-size: clamp(0.9rem, 3.4vw, 1rem);
+        color: rgba(44, 62, 80, 0.75);
+      }
+      #boot-splash.is-hidden {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 220ms ease;
+      }
+    </style>
   </head>
   <body>
+    <div id="boot-splash" aria-hidden="true">
+      <div class="inner">
+        <h1>Bali Future</h1>
+        <p>Growing the future together</p>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
